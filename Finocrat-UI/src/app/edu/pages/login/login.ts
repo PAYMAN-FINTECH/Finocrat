@@ -48,10 +48,10 @@ export class LoginComponent implements OnInit {
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
-        // localStorage.setItem('token', res.token);
-
+        console.log('Login response:', res);
+        // Navigate to My Learning and pass backend message (fallback if missing)
         this.router.navigate(['/my-learning'], {
-          state: { loginSuccess: true }
+          state: { loginSuccess: true, message: res?.message ?? 'Login successful' }
         });
       },
       error: (err) => {

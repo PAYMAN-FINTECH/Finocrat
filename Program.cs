@@ -1,5 +1,4 @@
-﻿using Finocrat.Api.Data;
-using Finocrat.Api.Helpers;
+using Finocrat.Api.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
@@ -21,7 +20,7 @@ builder.Services.AddDbContext<FinocratDbContext>(options =>
 );
 
 // JWT Helper - register for DI
-builder.Services.AddScoped<JwtHelper>();
+builder.Services.AddScoped<Finocrat.Api.Helpers.JwtHelper>();
 
 // CORS (Angular access)
 builder.Services.AddCors(options =>

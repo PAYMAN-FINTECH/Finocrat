@@ -88,6 +88,84 @@ export class CoursesComponent {
       author: 'Ritika Deshmukh',
       rating: 4.7,
       price: 14999
+    },
+    {
+      id: 8,
+      image: 'assets/images/course-blockchain.jpg',
+      category: 'Blockchain',
+      level: 'Beginner',
+      title: 'Blockchain & Cryptocurrency Fundamentals',
+      subtitle: 'Learn blockchain technology and cryptocurrency basics.',
+      description: 'Understand blockchain technology, smart contracts, and cryptocurrency fundamentals.',
+      author: 'By Aditya Chhabra',
+      rating: 4.8,
+      price: 111000,
+      duration: '280 minutes'
+    },
+    {
+      id: 9,
+      image: 'assets/images/course-react.jpg',
+      category: 'Web Development',
+      level: 'Intermediate',
+      title: 'React & Next.js Professional Developer Course',
+      subtitle: 'Learn React and Next.js for professional web development.',
+      description: 'Master React and Next.js for building modern web applications.',
+      author: 'By Ram Chandra',
+      rating: 4.6,
+      price: 100000,
+      duration: '244 minutes'
+    },
+    {
+      id: 10,
+      image: 'assets/images/course-fullstack.jpg',
+      category: 'Web Development',
+      level: 'beginner',
+      title: 'Full Stack Web Development Bootcamp',
+      subtitle: 'Learn to build complete web apps using React, Node.js, and MongoDB.',
+      description: 'Master full stack web development with React, Node.js, and MongoDB.',
+      author: 'By Prasdh Kumar',
+      rating: 4.2,
+      price: 19000,
+      duration: '72 minutes'
+    },
+    {
+      id: 11,
+      image: 'assets/images/course-android.jpg',
+      category: 'Mobile Development',
+      level: 'beginner',
+      title: 'Android App Development with Kotlin',
+      subtitle: 'Learn to build Android apps using Kotlin programming language.',
+      description: 'Master Android app development with Kotlin and build real-world applications.',
+      author: 'By Kumar',
+      rating: 4.5,
+      price: 89000,
+      duration: '180 minutes'
+    },
+    {
+      id: 12,
+      image: 'assets/images/course-product.jpg',
+      category: 'Mobile Development',
+      level: 'beginner',
+      title: 'AI-Powered Product Management Program',
+      subtitle: 'Learn AI-powered product management techniques.',
+      description: 'Master AI-powered product management and build intelligent products.',
+      author: 'By Jhon Doe',
+      rating: 4.5,
+      price: 139000,
+      duration: '190 minutes'
+    },
+    {
+      id: 13,
+      image: 'assets/images/course-ai.jpg',
+      category: 'AI & Machine Learning',
+      level: 'Beginner',
+      title: 'Complete AI & Machine Learning Bootcamp',
+      subtitle: 'Learn AI and machine learning from scratch.',
+      description: 'Master AI and machine learning concepts with hands-on projects.',
+      author: 'By Jhon Doe',
+      rating: 4.4,
+      price: 119000,
+      duration: '190 minutes'
     }
   ];
 

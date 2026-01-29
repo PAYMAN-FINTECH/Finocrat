@@ -1,8 +1,12 @@
 <div class="learning-page">
 
   <!-- Success Message -->
-  <div class="success-alert" *ngIf="showSuccessMessage">
-    ✅ Login successful. Welcome back!
+  <!-- Bottom toast -->
+  <div class="toast-container" *ngIf="showSuccessMessage">
+    <div class="toast">
+      <span class="toast-icon">✅</span>
+      <span class="toast-text">{{ successMessage }}</span>
+    </div>
   </div>
 
   <h1>My Learning</h1>

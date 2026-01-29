@@ -39,7 +39,9 @@
       <p class="author">By Abhishek Nair</p>
       <div class="card-footer">
         <span class="price">Rs. 89999</span>
-        <button>View Details</button>
+        <button [routerLink]="['/course-details', 1]">
+            View Details
+          </button>
       </div>
     </div>
 
@@ -54,7 +56,9 @@
       <p class="author">By Pooja Sethi</p>
       <div class="card-footer">
         <span class="price">Rs. 24999</span>
-        <button>View Details</button>
+        <button [routerLink]="['/course-details', 2]">
+            View Details
+          </button>
       </div>
     </div>
 
@@ -69,7 +73,9 @@
       <p class="author">By Ananya Ghosh</p>
       <div class="card-footer">
         <span class="price">Rs. 29999</span>
-        <button>View Details</button>
+        <button [routerLink]="['/course-details', 3]">
+            View Details
+          </button>
       </div>
     </div>
   </div>
