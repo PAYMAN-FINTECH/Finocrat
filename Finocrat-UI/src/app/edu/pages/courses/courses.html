@@ -1,0 +1,41 @@
+<div class="courses-container">
+  <h1>All Courses</h1>
+
+  <div class="courses-grid">
+
+    <div class="course-card" *ngFor="let course of courses">
+      <img [src]="course.image" [alt]="course.title" />
+
+      <div class="card-body">
+        <div class="badges">
+          <span class="category">{{ course.category }}</span>
+          <span class="level">{{ course.level }}</span>
+        </div>
+
+        <h3>{{ course.title }}</h3>
+        <p>{{ course.description }}</p>
+
+        <!-- Author -->
+        <div class="author">
+          By {{ course.author }}
+        </div>
+
+        <!-- ⭐ Rating -->
+        <div class="course-rating">
+          <span class="star">★</span>
+          <span class="rating-value">{{ course.rating }}</span>
+        </div>
+
+        <div class="footer">
+          <span class="price">Rs. {{ course.price }}</span>
+
+          <!-- 🔥 Dynamic navigation -->
+          <button [routerLink]="['/course-details', course.id]">
+            View Details
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

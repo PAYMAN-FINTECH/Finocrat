@@ -1,0 +1,29 @@
+.refund-page {
+  max-width: 900px;
+  margin: 60px auto;
+  padding: 0 20px;
+  line-height: 1.7;
+}
+
+.refund-page h1 {
+  font-size: 2.4rem;
+  margin-bottom: 10px;
+}
+
+.refund-page .updated {
+  color: #777;
+  margin-bottom: 30px;
+}
+
+.refund-page h2 {
+  margin-top: 30px;
+  font-size: 1.4rem;
+}
+
+.refund-page ul {
+  padding-left: 20px;
+}
+
+.refund-page li {
+  margin-bottom: 8px;
+}

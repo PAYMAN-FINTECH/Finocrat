@@ -1,0 +1,37 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 40px;
+  background: #ffffff;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.logo {
+  font-size: 22px;
+  font-weight: 700;
+  color: #0f4c5c;
+}
+
+nav a {
+  margin-left: 22px;
+  text-decoration: none;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+nav a:hover {
+  color: #0f4c5c;
+}
+
+.btn {
+  padding: 8px 16px;
+  background: #0f4c5c;
+  color: #fff !important;
+  border-radius: 8px;
+}
+
+.logout {
+  cursor: pointer;
+  color: #dc2626;
+}

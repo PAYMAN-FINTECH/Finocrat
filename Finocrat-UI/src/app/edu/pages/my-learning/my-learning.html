@@ -1,0 +1,19 @@
+<div class="learning-page">
+
+  <!-- Success Message -->
+  <div class="success-alert" *ngIf="showSuccessMessage">
+    ✅ Login successful. Welcome back!
+  </div>
+
+  <h1>My Learning</h1>
+
+  <div class="learning-card" *ngIf="enrolledCourses.length === 0">
+    <p class="empty-text">
+      You haven't enrolled in any courses yet.
+    </p>
+
+    <button class="browse-btn" (click)="browseCourses()">
+      Browse Courses
+    </button>
+  </div>
+</div>

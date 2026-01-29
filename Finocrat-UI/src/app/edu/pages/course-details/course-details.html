@@ -1,0 +1,114 @@
+<!-- HERO SECTION -->
+<div class="course-hero" *ngIf="course">
+
+  <div class="badges">
+    <span class="category">{{ course.category }}</span>
+    <span class="level">{{ course.level }}</span>
+  </div>
+
+  <h1>{{ course.title }}</h1>
+
+  <p class="subtitle">
+    {{ course.subtitle }}
+  </p>
+
+  <div class="rating-author">
+    <span class="star">★</span>
+    <span class="rating">{{ course.rating }}</span>
+    <span class="author">By {{ course.author }}</span>
+  </div>
+
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="course-container" *ngIf="course">
+
+  <!-- LEFT SIDE -->
+  <!-- LEFT SIDE -->
+<div class="left">
+
+  <!-- About -->
+  <h2>About This Course</h2>
+  <p class="about-text">
+    {{ course.description }}
+  </p>
+
+  <!-- What You'll Learn -->
+  <h2 class="section-title">What You'll Learn</h2>
+
+  <div class="learn-grid">
+    <div class="learn-item">
+      <span class="check">✔</span>
+      <span>Master the fundamentals</span>
+    </div>
+
+    <div class="learn-item">
+      <span class="check">✔</span>
+      <span>Build real-world projects</span>
+    </div>
+
+    <div class="learn-item">
+      <span class="check">✔</span>
+      <span>Industry best practices</span>
+    </div>
+
+    <div class="learn-item">
+      <span class="check">✔</span>
+      <span>Hands-on experience</span>
+    </div>
+  </div>
+
+  <!-- Certificate -->
+  <h2 class="section-title">Course Completion Certificate</h2>
+
+  <p class="certificate-text">
+    The Course Completion Certificate will be issued only after the successful completion of all mandatory tests and assessments associated with this course.
+  </p>
+
+</div>
+
+
+  <!-- RIGHT SIDE -->
+  <div class="right">
+
+    <div class="price-card">
+      <h2>Rs. {{ course.price }}</h2>
+      <p>⏱ {{ course.duration }}</p>
+      <p>🎓 Certificate of completion</p>
+
+      <!-- NOT LOGGED IN -->
+      <button
+        *ngIf="!isLoggedIn"
+        routerLink="/login"
+        class="buy-btn">
+        Login to Buy
+      </button>
+
+      <!-- LOGGED IN -->
+      <button
+        *ngIf="isLoggedIn"
+        (click)="buyCourse()"
+        class="buy-btn">
+        Buy This Course
+      </button>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- MODAL -->
+<div class="modal-backdrop" *ngIf="showModal">
+  <div class="modal">
+    <h2>Complete Your Purchase</h2>
+    <p>This is a demo payment. Click confirm to continue.</p>
+
+    <p><b>Course:</b> {{ course.title }}</p>
+    <p><b>Price:</b> Rs. {{ course.price }}</p>
+
+    <div class="actions">
+      <button class="cancel" (click)="closeModal()">Cancel</button>
+      <button class="confirm" (click)="confirmPurchase()">Confirm Purchase</button>
+    </div>
+  </div>
+</div>
