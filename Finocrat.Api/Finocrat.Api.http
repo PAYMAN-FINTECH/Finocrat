@@ -1,0 +1,6 @@
+@Finocrat.Api_HostAddress = http://localhost:5134
+
+GET {{Finocrat.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
