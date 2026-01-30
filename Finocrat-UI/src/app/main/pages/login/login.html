@@ -1,0 +1,68 @@
+<p>login works!</p>
+<div class="login-wrapper">
+
+  <!-- LEFT IMAGE SECTION -->
+  <div class="login-left">
+    <div class="overlay-text">
+      <p>
+        "Access customer transactions and manage your daily activities with ease."
+      </p>
+    </div>
+  </div>
+
+  <!-- RIGHT FORM SECTION -->
+  <div class="login-right">
+
+    <div class="login-card">
+
+      <img src="assets/images/main/finocrat-logo.png" class="logo" alt="PaySwitch" />
+
+      <h1>Welcome Back!</h1>
+      <p class="subtitle">
+        Enter your user id and password to access your account securely.
+        Welcome back to our platform!
+      </p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+        <!-- USER ID -->
+        <div class="form-group">
+          <label>User ID</label>
+          <input
+            type="text"
+            formControlName="userId"
+            placeholder="Enter your user id"
+          />
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="form-group password-box">
+          <label>Password</label>
+          <input
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+          />
+          <span class="eye" (click)="togglePassword()">👁</span>
+        </div>
+
+        <div class="forgot">
+          <a routerLink="/forgot-password">Forgot password?</a>
+        </div>
+
+        <!-- BUTTON -->
+        <button type="submit" [disabled]="loading">
+          <span *ngIf="!loading">Log in</span>
+          <span *ngIf="loading" class="spinner"></span>
+        </button>
+
+      </form>
+
+      <p class="footer-text">
+        All rights reserved. Copyright © 2026 finocrat
+      </p>
+
+    </div>
+  </div>
+
+</div>

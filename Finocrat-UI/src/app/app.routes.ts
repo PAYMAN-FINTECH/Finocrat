@@ -19,6 +19,9 @@ import { AppEntryComponent } from './app-entry/app-entry';
 import { AboutUsComponent } from './main/pages/about-us/about-us';
 import { ContactUsComponent } from './main/pages/contact-us/contact-us';
 import { ServicesComponent } from './main/pages/services/services';
+import { MainLoginComponent } from './main/pages/login/login';
+import { AuthGuard } from './services/mainservices/auth.guard';
+import { LoginGuard } from './services/mainservices/login.auth.guard';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -49,10 +52,12 @@ export const routes: Routes = [
   {
     path: 'dashboard',
     children: [
-      { path: '', component: DashboradComponent },
+      { path: '', component: DashboradComponent},
       { path: 'about', component: AboutUsComponent },
       { path: 'contact', component: ContactUsComponent },    
-      { path: 'services', component: ServicesComponent }
+      { path: 'services', component: ServicesComponent },
+      { path: 'login', component: MainLoginComponent ,canActivate: [LoginGuard] },
+      // { path: 'dashboard/home', component: DashboardHomeComponent,canActivate: [AuthGuard]},
     ]
   },
 
