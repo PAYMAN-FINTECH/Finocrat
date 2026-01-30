@@ -1,5 +1,14 @@
-<edu-header></edu-header>
+<!-- EDU HEADER -->
+<edu-header *ngIf="isEdu"></edu-header>
 
+<!-- MAIN HEADER -->
+<app-mainheader *ngIf="!isEdu"></app-mainheader>
+
+<!-- ROUTER CONTENT -->
 <router-outlet></router-outlet>
 
-<edu-footer></edu-footer>
+<!-- EDU FOOTER -->
+<edu-footer *ngIf="isEdu"></edu-footer>
+
+<!-- MAIN FOOTER -->
+<app-mainfooter *ngIf="!isEdu"></app-mainfooter>

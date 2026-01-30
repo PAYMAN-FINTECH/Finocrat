@@ -1,19 +1,19 @@
 <header class="navbar">
-  <div class="logo" routerLink="/">
+  <div class="logo" routerLink="/edu">
     🎓 Finocrat Edu
   </div>
 
   <nav>
-    <a routerLink="/">Home</a>
-    <a routerLink="/courses">Courses</a>
+    <a routerLink="/edu">Home</a>
+    <a routerLink="/edu/courses">Courses</a>
 
     @if (!isLoggedIn) {
-      <a routerLink="/login">Login</a>
-      <a routerLink="/signup" class="btn">Sign Up</a>
+      <a routerLink="/edu/login">Login</a>
+      <a routerLink="/edu/signup" class="btn">Sign Up</a>
     }
 
     @if (isLoggedIn) {
-      <a routerLink="/my-learning">My Learning</a>
+      <a routerLink="/edu/my-learning">My Learning</a>
       <a (click)="logout()" class="logout">
         ⎋ Logout
       </a>

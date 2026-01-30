@@ -44,7 +44,7 @@ export class SignupComponent {
     this.authService.signup(this.signupForm.value).subscribe({
       next: (res) => {
         alert(res.message);
-        this.router.navigate(['/login'], {
+        this.router.navigate(['/edu/login'], {
           state: { signupSuccess: true }
         });
       },

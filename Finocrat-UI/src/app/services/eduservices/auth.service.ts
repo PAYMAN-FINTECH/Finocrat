@@ -10,7 +10,7 @@ export class AuthService {
  private loggedInSubject = new BehaviorSubject<boolean>(this.hasToken());
   isLoggedIn$ = this.loggedInSubject.asObservable();
 
-  private baseUrl = 'https://thefinocrat.com/api/EduAuth';
+  private baseUrl = 'https://edu.thefinocrat.com/api/EduAuth';
 
   private hasToken(): boolean {
     return !!localStorage.getItem('token');

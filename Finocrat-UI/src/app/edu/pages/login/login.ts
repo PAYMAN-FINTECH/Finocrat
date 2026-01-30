@@ -16,6 +16,7 @@ export class LoginComponent implements OnInit {
   loginForm!: FormGroup;
   submitted = false;
   showSignupSuccess = false;
+  isLoading = false; // 👈 ADD THIS
 
   constructor(
     private fb: FormBuilder,
@@ -45,16 +46,19 @@ export class LoginComponent implements OnInit {
   onLogin(): void {
     this.submitted = true;
     if (this.loginForm.invalid) return;
+    this.isLoading = true; // 👈 START LOADING
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
+        this.isLoading = false; // 👈 STOP LOADING
         console.log('Login response:', res);
         // Navigate to My Learning and pass backend message (fallback if missing)
-        this.router.navigate(['/my-learning'], {
+        this.router.navigate(['/edu/my-learning'], {
           state: { loginSuccess: true, message: res?.message ?? 'Login successful' }
         });
       },
       error: (err) => {
+        this.isLoading = false; // 👈 STOP LOADING
         alert(err?.error?.message || 'Invalid credentials');
       }
     });

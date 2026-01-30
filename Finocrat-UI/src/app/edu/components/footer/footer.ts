@@ -8,11 +8,11 @@ import { RouterModule } from '@angular/router';
   template: `
     <footer class="footer">
       <div class="footer-links">
-        <a routerLink="/about">About</a>
-        <a routerLink="/contact">Contact</a>
-        <a routerLink="/terms">Terms and Conditions</a>
-        <a routerLink="/privacy">Privacy Policy</a>
-        <a routerLink="/refund">Refund Policy</a>
+        <a routerLink="/edu/about">About</a>
+        <a routerLink="/edu/contact">Contact</a>
+        <a routerLink="/edu/terms">Terms and Conditions</a>
+        <a routerLink="/edu/privacy">Privacy Policy</a>
+        <a routerLink="/edu/refund">Refund Policy</a>
       </div>
 
       <div class="footer-copy">

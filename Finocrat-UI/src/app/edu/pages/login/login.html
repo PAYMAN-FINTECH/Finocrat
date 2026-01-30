@@ -33,12 +33,19 @@
         </small>
       </div>
 
-      <button class="btn-primary" type="submit">Login</button>
+      <button class="btn-primary" type="submit" [disabled]="isLoading">
+      <span *ngIf="!isLoading">Login</span>
+
+  <span *ngIf="isLoading" class="loading">
+    <span class="spinner"></span>
+    Logging in...
+  </span>
+</button>
     </form>
 
     <p class="switch-text">
       Don’t have an account?
-      <a routerLink="/signup">Sign up</a>
+      <a routerLink="/edu/signup">Sign up</a>
     </p>
   </div>
 </div>

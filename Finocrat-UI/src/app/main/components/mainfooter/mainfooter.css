@@ -1,0 +1,139 @@
+.fintech-footer {
+  background: #f8fafc;
+  color: #334155;
+  padding-top: 70px;
+  border-top: 1px solid #e2e8f0;
+  font-family: 'Inter', sans-serif;
+}
+
+.footer-top {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr;
+  gap: 60px;
+  padding-bottom: 50px;
+}
+
+.footer-brand h3 {
+  margin: 0;
+  font-size: 22px;
+  color: #0f172a;
+}
+
+.footer-brand span {
+  font-size: 14px;
+  color: #64748b;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.logo-box {
+  width: 44px;
+  height: 44px;
+  background: #16a34a;
+  color: white;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  font-size: 20px;
+}
+
+.brand-desc {
+  font-size: 15px;
+  line-height: 1.7;
+  margin-bottom: 24px;
+  max-width: 420px;
+}
+
+.newsletter-title {
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #0f172a;
+}
+
+.newsletter {
+  display: flex;
+  max-width: 360px;
+}
+
+.newsletter input {
+  flex: 1;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  outline: none;
+}
+
+.newsletter button {
+  margin-left: 10px;
+  background: #16a34a;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  width: 48px;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+/* Links */
+.footer-links h4,
+.footer-contact h4 {
+  font-size: 16px;
+  color: #0f172a;
+  margin-bottom: 14px;
+}
+
+.footer-links a {
+  display: block;
+  margin-bottom: 10px;
+  font-size: 14px;
+  color: #475569;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.footer-links a:hover {
+  color: #16a34a;
+  transform: translateX(4px);
+}
+
+/* Contact */
+.footer-contact p {
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.footer-contact .address {
+  margin-top: 14px;
+  line-height: 1.6;
+  color: #475569;
+}
+
+/* Bottom */
+.footer-bottom {
+  border-top: 1px solid #e2e8f0;
+  padding: 20px 0;
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Responsive */
+@media (max-width: 900px) {
+  .footer-top {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  .footer-bottom {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+}

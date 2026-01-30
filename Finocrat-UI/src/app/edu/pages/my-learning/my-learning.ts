@@ -40,6 +40,6 @@ export class MyLearningComponent implements OnInit {
   }
 
   browseCourses() {
-    this.router.navigate(['/courses']);
+    this.router.navigate(['/edu/courses']);
   }
 }
