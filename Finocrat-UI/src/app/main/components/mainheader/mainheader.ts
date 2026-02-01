@@ -36,6 +36,7 @@ export class MainheaderComponent implements OnInit {
   }
 
   goHome() {
+    debugger;
     if (this.isLoggedIn()) {
       this.router.navigate(['/app/finhome']); // ✅ logged in
     } else {

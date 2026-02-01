@@ -27,10 +27,12 @@ namespace Finocrat.Api.Controllers
         public IActionResult Login([FromBody] LoginRequestDTO request)
         {
             var user = _db.fUsers
-                .FirstOrDefault(x => x.UserName == request.UserId && x.IsActive == true);
+                .FirstOrDefault(x => x.UserName == request.UserId && x.IsActive);
 
             if (user == null || user.Password != request.Password)
+            {
                 return Unauthorized(new { message = "Invalid credentials" });
+            }
 
             var expiry = request.RememberMe
                 ? DateTime.UtcNow.AddDays(7)
@@ -38,8 +40,20 @@ namespace Finocrat.Api.Controllers
 
             var token = _jwt.GenerateJwtMain(user, expiry);
 
-            return Ok(new { token });
+            // ✅ Send only required user details to frontend
+            var userDto = new
+            {
+                userId = "PM",
+                name = user.UserName
+            };
+
+            return Ok(new
+            {
+                token,
+                user = userDto
+            });
         }
+
 
     }
 }

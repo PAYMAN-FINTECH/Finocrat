@@ -8,7 +8,7 @@ export class HomeService {
 
   constructor(private http: HttpClient) {}
 
-  getStats() {
-    return this.http.get<any>(this.api);
+  getStats(payload: any) {
+    return this.http.post<any>(this.api, payload);
   }
 }

@@ -57,8 +57,8 @@ export class MainLoginComponent implements OnInit {
         this.authService.saveSession(res.token, false);
 
         const user = {
-    name: 'ACHYUTH BUTTI',
-    userId: 'PSR3163'
+    name: res.user.name ?? 'Finocrat User',
+    userId: res.user.userId ?? ''
   };
         this.tokenService.saveToken(res.token, user);
 
