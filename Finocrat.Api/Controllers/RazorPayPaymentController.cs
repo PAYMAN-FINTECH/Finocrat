@@ -10,8 +10,8 @@ namespace Finocrat.Api.Controllers
     [ApiController]
     public class RazorPayPaymentController : ControllerBase
     {
-        private const string RAZORPAY_KEY = "rzp_test_xxxxx";
-        private const string RAZORPAY_SECRET = "xxxxxxxx";
+        private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
+        private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
 
         [HttpGet("gateways")]
         public IActionResult GetGateways()

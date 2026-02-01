@@ -1,23 +1,33 @@
 .dashboard-container {
+  width: 100%;
   padding: 24px;
-  background: #f6f7fb;
+  background: #f7f9fc;
+  box-sizing: border-box;
 }
 
+/* HEADER */
 .dashboard-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 24px;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
 }
 
+.dashboard-header h2 {
+  margin: 0;
+}
+
+/* FILTER BAR */
 .filter-bar {
   display: flex;
   gap: 10px;
   align-items: center;
   background: #fff;
-  padding: 10px;
-  border-radius: 10px;
+  padding: 12px;
+  border-radius: 12px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .filter-bar select,
@@ -31,7 +41,7 @@
   background: #6a1bb1;
   color: #fff;
   border: none;
-  padding: 8px 14px;
+  padding: 8px 16px;
   border-radius: 6px;
   cursor: pointer;
 }
@@ -43,7 +53,7 @@
 /* STATS */
 .stats-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 20px;
 }
 
@@ -73,18 +83,4 @@
 
 .stat-card.danger {
   border-left: 6px solid #ef4444;
-}
-
-/* MOBILE */
-@media (max-width: 768px) {
-  .dashboard-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-  }
-
-  .filter-bar {
-    flex-wrap: wrap;
-    width: 100%;
-  }
 }

@@ -1,6 +1,5 @@
 <div class="dashboard-container">
 
-  <!-- HEADER -->
   <div class="dashboard-header">
     <h2>Dashboard</h2>
 
@@ -13,25 +12,14 @@
         <option value="custom">Custom Range</option>
       </select>
 
-      <input
-        *ngIf="filterType === 'custom'"
-        type="date"
-        [(ngModel)]="fromDate"
-      />
-
-      <input
-        *ngIf="filterType === 'custom'"
-        type="date"
-        [(ngModel)]="toDate"
-      />
+      <input *ngIf="filterType === 'custom'" type="date" [(ngModel)]="fromDate" />
+      <input *ngIf="filterType === 'custom'" type="date" [(ngModel)]="toDate" />
 
       <button (click)="applyFilter()">Apply</button>
     </div>
   </div>
 
-  <!-- STATS -->
   <div class="stats-grid">
-
     <div class="stat-card primary">
       <span>Total Transaction Count</span>
       <h3>{{ stats.totalCount }}</h3>
@@ -51,6 +39,6 @@
       <span>Total Failed Count</span>
       <h3>{{ stats.failedCount }}</h3>
     </div>
-
   </div>
+
 </div>

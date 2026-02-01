@@ -10,7 +10,12 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),   // 👈 THIS IS MANDATORY
     provideHttpClient()  ,
     provideAnimations(),
-    provideToastr()    // 👈 REQUIRED FOR API CALLS
+    provideToastr({
+      positionClass: 'toast-top-right',   // ✅ IMPORTANT LINE
+      timeOut: 3000,
+      closeButton: true,
+      progressBar: true
+    })   // 👈 REQUIRED FOR API CALLS
     ,
     {
       provide: APP_INITIALIZER,

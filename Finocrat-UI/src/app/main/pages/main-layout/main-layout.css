@@ -5,6 +5,18 @@
   overflow:hidden;
 }
 
+.app-layout {
+  display: flex;
+  height: calc(100vh - 64px); /* header height */
+}
+
+.app-content {
+  flex: 1;
+  overflow-y: auto; /* ✅ content scrolls here */
+  background: #f7f9fc;
+}
+
+
 .sidebar{
   width:240px;
   min-height:100vh;
