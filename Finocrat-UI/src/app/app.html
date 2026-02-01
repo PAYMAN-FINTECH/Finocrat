@@ -8,7 +8,7 @@
 <router-outlet></router-outlet>
 
 <!-- EDU FOOTER -->
-<edu-footer *ngIf="isEdu"></edu-footer>
+<edu-footer *ngIf="isEdu && !showFooter"></edu-footer>
 
 <!-- MAIN FOOTER -->
-<app-mainfooter *ngIf="!isEdu"></app-mainfooter>
+<app-mainfooter *ngIf="!isEdu && !showFooter"></app-mainfooter>

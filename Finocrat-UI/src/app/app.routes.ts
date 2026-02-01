@@ -22,6 +22,9 @@ import { ServicesComponent } from './main/pages/services/services';
 import { MainLoginComponent } from './main/pages/login/login';
 import { AuthGuard } from './services/mainservices/auth.guard';
 import { LoginGuard } from './services/mainservices/login.auth.guard';
+import { MainLayout } from './main/pages/main-layout/main-layout';
+import { FinhomeComponent } from './main/pages/home/home';
+import { WalletComponent } from './main/pages/wallet/wallet';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -48,18 +51,36 @@ export const routes: Routes = [
     ]
   },
 
-  // MAIN APP ROUTES
-  {
-    path: 'dashboard',
-    children: [
-      { path: '', component: DashboradComponent},
-      { path: 'about', component: AboutUsComponent },
-      { path: 'contact', component: ContactUsComponent },    
-      { path: 'services', component: ServicesComponent },
-      { path: 'login', component: MainLoginComponent ,canActivate: [LoginGuard] },
-      // { path: 'dashboard/home', component: DashboardHomeComponent,canActivate: [AuthGuard]},
-    ]
-  },
+ // MAIN APP ROUTES
+{
+  path: 'dashboard',
+  children: [
+    { path: '', component: DashboradComponent },
+    //{ path: 'finhome', component: FinhomeComponent },
+    { path: 'about', component: AboutUsComponent },
+    { path: 'contact', component: ContactUsComponent },
+    { path: 'services', component: ServicesComponent }
+  ]
+},
+
+// Separate login route
+{ 
+  path: 'dashboard/login', 
+  component: MainLoginComponent, 
+  //canActivate: [LoginGuard] 
+},
+
+// --------- AUTHENTICATED APP (WITH SIDEBAR) ----------
+{
+  path: 'app',
+  component: MainLayout,      // <-- SIDEBAR + HEADER WRAPPER
+  //canActivate: [AuthGuard],
+  children: [
+    { path: 'finhome', component: FinhomeComponent },
+    { path: 'wallet', component: WalletComponent },
+    
+  ]
+},
 
   // FALLBACK
   { path: '**', redirectTo: '' }

@@ -1,0 +1,155 @@
+.wallet-page {
+  padding: 24px;
+  background: #f5f7fb;
+}
+
+/* WALLET CARD */
+.wallet-card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.wallet-card h2 {
+  margin: 6px 0 0;
+}
+
+.label {
+  color: #667085;
+  font-size: 14px;
+}
+
+.refresh-btn {
+  border: none;
+  background: #f1f5f9;
+  padding: 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* TABS */
+.wallet-tabs {
+  display: flex;
+  gap: 20px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 24px;
+}
+
+.wallet-tabs button {
+  background: none;
+  border: none;
+  padding: 10px 0;
+  font-weight: 600;
+  cursor: pointer;
+  color: #667085;
+}
+
+.wallet-tabs .active {
+  color: #6c3ef4;
+  border-bottom: 3px solid #6c3ef4;
+}
+
+/* SECTION */
+.section {
+  margin-bottom: 30px;
+}
+
+.section h3 {
+  margin-bottom: 16px;
+}
+
+/* PRICING */
+.pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.price-card {
+  background: #fff;
+  padding: 16px;
+  border-radius: 10px;
+  border-left: 4px solid #6c3ef4;
+}
+
+.price-card h4 {
+  margin-bottom: 10px;
+}
+
+.price-card ul {
+  padding-left: 18px;
+  font-size: 14px;
+}
+
+/* FORM CARD */
+.card {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+}
+
+/* FORM */
+.fund-form .form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14px;
+  margin-bottom: 6px;
+}
+
+.form-group input,
+.form-group select {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid #d0d5dd;
+  font-size: 14px;
+}
+
+.form-action {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
+}
+
+.form-action button {
+  background: #0f5d63;
+  color: #fff;
+  border: none;
+  padding: 12px 28px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .wallet-page {
+    padding: 14px;
+  }
+
+  .wallet-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .fund-form .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .form-action button {
+    width: 100%;
+  }
+}

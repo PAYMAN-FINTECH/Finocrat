@@ -1,12 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { tap } from 'rxjs';
 import { TokenService } from './token.service';
 
 @Injectable({ providedIn: 'root' })
 export class MainAuthService {
 
-  private api = 'https://yourapi.com/auth/login';
+  private api = 'https://thefinocrat.com/api/auth/login';
 
   constructor(
     private http: HttpClient,
@@ -14,18 +13,23 @@ export class MainAuthService {
   ) {}
 
   login(data: any) {
-    return this.http.post<any>(this.api, data).pipe(
-      tap(res => {
-        this.tokenService.saveToken(res.token, data.rememberMe);
-      })
-    );
+    return this.http.post<any>(this.api, data);
+  }
+
+  saveSession(token: string, rememberMe: boolean) {
+    if (rememberMe) {
+      localStorage.setItem('token', token);
+    } else {
+      sessionStorage.setItem('token', token);
+    }
   }
 
   isLoggedIn(): boolean {
-    return !!this.tokenService.getToken();
+    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
   }
 
   logout() {
-    this.tokenService.clear();
+    localStorage.clear();
+    sessionStorage.clear();
   }
 }

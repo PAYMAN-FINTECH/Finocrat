@@ -1,7 +1,8 @@
 
 
 import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs/operators';
 
 import { HeaderComponent as EduHeaderComponent } from './edu/components/header/header';
 import { FooterComponent as EduFooterComponent } from './edu/components/footer/footer';
@@ -25,5 +26,22 @@ import { CommonModule } from '@angular/common';
 })
 export class App {
   isEdu = window.location.hostname.startsWith('edu.');
+  showFooter = true;
+
+  constructor(private router: Router) {
+    // initialize and respond to navigation changes
+    this.updateFooter(this.router.url);
+    this.router.events.pipe(filter(e => e instanceof NavigationEnd)).subscribe((e: any) => {
+      const url = e.urlAfterRedirects ?? e.url;
+      this.updateFooter(url);
+    });
+  }
+
+  private updateFooter(url: string) {
+    const path = (url || '').split('?')[0] || '';
+    // hide footer for login routes
+    const isLogin = path === '/dashboard' || path === '/';
+    this.showFooter = !isLogin;
+  }
 }
 

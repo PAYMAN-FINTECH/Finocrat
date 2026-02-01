@@ -1,4 +1,5 @@
 ﻿using Finocrat.Api.Models.Entities.Edu;
+using Finocrat.Api.Models.Entities.Main;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finocrat.Api.Data
@@ -10,6 +11,8 @@ namespace Finocrat.Api.Data
         {
         }
 
+
         public DbSet<eduUser>  eduUsers { get; set; }
+        public DbSet<FUser> fUsers { get; set; }
     }
 }

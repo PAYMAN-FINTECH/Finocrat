@@ -1,0 +1,45 @@
+.sidebar-container{
+  background:#0b3b44;
+  color:white;
+  height:100vh;
+  padding:15px;
+}
+
+.logo{
+  text-align:center;
+  margin-bottom:20px;
+}
+
+ul{
+  list-style:none;
+  padding:0;
+}
+
+li{
+  padding:12px;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+li:hover,
+.active{
+  background:#0f5f6b;
+}
+
+
+/* Mobile */
+@media (max-width: 768px) {
+  .sidebar-container{
+    height:auto;
+  }
+
+  ul{
+    display:flex;
+    overflow-x:auto;
+  }
+
+  li{
+    white-space:nowrap;
+    margin-right:10px;
+  }
+}
