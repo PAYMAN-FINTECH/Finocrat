@@ -11,11 +11,11 @@ html, body {
 }
 
 /* FORCE TOAST TO TOP-RIGHT REGARDLESS OF LAYOUT */
-.toast-container.toast-top-right {
+/* .toast-container.toast-top-right {
   top: 16px !important;
   right: 16px !important;
   bottom: auto !important;
   left: auto !important;
   position: fixed !important;
   z-index: 99999 !important;
-}
+} */
