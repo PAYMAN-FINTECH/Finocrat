@@ -57,6 +57,12 @@ namespace Finocrat.Api.Controllers
                 model.OrderId + "|" + model.PaymentId;
 
             string generatedSignature = GenerateSignature(payload, RAZORPAY_SECRET);
+            var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
+
+            var order = client.Order.Fetch(model.OrderId);
+            var payment = client.Payment.Fetch(model.PaymentId);
+            var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
+
 
             if (generatedSignature == model.Signature)
             {

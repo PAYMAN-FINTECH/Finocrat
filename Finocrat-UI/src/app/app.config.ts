@@ -1,27 +1,38 @@
 import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient } from '@angular/common/http';
+import { provideAnimations } from '@angular/platform-browser/animations';
+import { provideToastr } from 'ngx-toastr';
+
 import { routes } from './app.routes';
 import { AuthService } from './services/eduservices/auth.service';
-import { provideToastr } from 'ngx-toastr';
-import { provideAnimations } from '@angular/platform-browser/animations';
+
 export const appConfig: ApplicationConfig = {
   providers: [
-    provideRouter(routes),   // 👈 THIS IS MANDATORY
-    provideHttpClient()  ,
+    // ✅ Router
+    provideRouter(routes),
+
+    // ✅ HTTP Client (For API Calls)
+    provideHttpClient(),
+
+    // ✅ Required for Toastr
     provideAnimations(),
+
+    // ✅ Toastr Configuration
     provideToastr({
-      positionClass: 'toast-top-right',   // ✅ IMPORTANT LINE
+      positionClass: 'toast-top-right',
       timeOut: 3000,
       closeButton: true,
-      progressBar: true
-    })   // 👈 REQUIRED FOR API CALLS
-    ,
+      progressBar: true,
+      preventDuplicates: true
+    }),
+
+    // ✅ Run on App Start
     {
       provide: APP_INITIALIZER,
       useFactory: (auth: AuthService) => {
         return () => {
-          // Clear any existing token on fresh application start
+          // Optional: Clear token on fresh start
           auth.logout();
         };
       },

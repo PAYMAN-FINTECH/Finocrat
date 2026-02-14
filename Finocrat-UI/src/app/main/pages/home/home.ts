@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HomeService } from '../../../services/mainservices/home.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -23,7 +23,7 @@ export class FinhomeComponent implements OnInit {
     failedCount: 0
   };
 
-  constructor(private homeService: HomeService) {}
+  constructor(private homeService: HomeService, private cdr: ChangeDetectorRef ) {}
 
   // ✅ FIXED: Use ngOnInit instead of ngAfterViewInit
   ngOnInit(): void {
@@ -55,6 +55,8 @@ export class FinhomeComponent implements OnInit {
       this.stats.totalAmount = res?.totalAmount ?? 0;
       this.stats.successCount = res?.successCount ?? 0;
       this.stats.failedCount = res?.failedCount ?? 0;
+
+      this.cdr.detectChanges();   // ⭐ MAGIC LINE
 
     },
     error: err => console.error('API Error', err)

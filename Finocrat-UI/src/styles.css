@@ -10,6 +10,19 @@ html, body {
   font-family: Inter, system-ui, sans-serif;
 }
 
+.toast-container {
+  z-index: 999999;
+}
+
+.toast-success {
+  font-size: 14px;
+}
+
+.toast-error {
+  font-size: 14px;
+}
+
+
 /* FORCE TOAST TO TOP-RIGHT REGARDLESS OF LAYOUT */
 /* .toast-container.toast-top-right {
   top: 16px !important;
