@@ -1,106 +1,164 @@
-<div class="wallet-page">
+<div class="wallet-container">
 
-  <!-- WALLET BALANCE -->
-  <div class="wallet-balance">
-    <div>
-      <p class="label">Funds Wallet Balance</p>
-      <h2>₹ 83,387.22</h2>
-    </div>
-    <button class="refresh-btn">⟳</button>
-  </div>
-
-  <!-- TABS -->
-  <div class="wallet-tabs">
-    <button class="active">Add Funds</button>
-    <button>Withdraw Funds</button>
-  </div>
-
-  <!-- PRICES -->
-  <h3 class="section-title">Prices</h3>
-
-  <div class="pricing-grid">
-    <div class="price-card">
-      <h4>Education Pure</h4>
-      <ul>
-        <li>Domestic: 1.40%</li>
-        <li>Business: 1.80%</li>
-        <li>Limit: ₹99,999</li>
-      </ul>
+  <!-- BALANCE CARD -->
+  <div class="balance-card">
+    <div class="balance-left">
+      <p class="balance-label">Available Balance</p>
+      <h1 class="balance-amount">
+        ₹ {{ walletBalance | number:'1.2-2' }}
+      </h1>
     </div>
 
-    <div class="price-card">
-      <h4>Travel Pure</h4>
-      <ul>
-        <li>Domestic: 1.43%</li>
-        <li>Business: 1.70%</li>
-        <li>Limit: ₹15,000</li>
-      </ul>
-    </div>
-
-    <div class="price-card">
-      <h4>New Education</h4>
-      <ul>
-        <li>Domestic: 1.43%</li>
-        <li>Business: 1.80%</li>
-        <li>Limit: ₹50,000</li>
-      </ul>
-    </div>
-
-    <div class="price-card">
-      <h4>Retail Travel</h4>
-      <ul>
-        <li>Domestic: 1.40%</li>
-        <li>Business: 1.80%</li>
-        <li>Limit: ₹40,000</li>
-      </ul>
-    </div>
+    <button class="refresh-btn" (click)="refreshBalance()" [disabled]="isLoading">
+      ⟳
+    </button>
   </div>
 
   <!-- ADD FUNDS -->
-  <div class="add-funds-card">
-    <h3>Add Funds</h3>
+  <div class="fund-card">
 
-    <form (ngSubmit)="addFunds()">
+    <div class="card-header">
+      <h2>Add Money to Wallet</h2>
+      <p>Securely add funds using your preferred gateway</p>
+    </div>
 
-      <div class="form-row">
+    <form #fundForm="ngForm"
+          (ngSubmit)="addFunds(fundForm)"
+          class="fund-form">
+
+      <div class="form-grid">
+
         <div class="form-group">
-          <label>Customer Name *</label>
-          <input type="text" [(ngModel)]="model.name" name="name">
+          <label>Customer Name</label>
+          <input type="text"
+                 name="name"
+                 [(ngModel)]="model.name"
+                 required
+                 [disabled]="isLoading"
+                 #name="ngModel">
+          <small *ngIf="name.invalid && name.touched">
+            Name is required
+          </small>
         </div>
 
         <div class="form-group">
-          <label>Mobile Number *</label>
-          <input type="text" [(ngModel)]="model.mobile" name="mobile">
+          <label>Mobile Number</label>
+          <input type="text"
+                 name="mobile"
+                 [(ngModel)]="model.mobile"
+                 required
+                 minlength="10"
+                 maxlength="10"
+                 pattern="^[0-9]{10}$"
+                 [disabled]="isLoading"
+                 #mobile="ngModel">
+          <small *ngIf="mobile.invalid && mobile.touched">
+            Enter valid 10 digit mobile number
+          </small>
         </div>
-      </div>
 
-      <div class="form-row">
         <div class="form-group">
-          <label>Email *</label>
-          <input type="email" [(ngModel)]="model.email" name="email">
+          <label>Email Address</label>
+          <input type="email"
+                 name="email"
+                 [(ngModel)]="model.email"
+                 required
+                 email
+                 [disabled]="isLoading"
+                 #email="ngModel">
+          <small *ngIf="email.invalid && email.touched">
+            Valid email required
+          </small>
         </div>
 
         <div class="form-group">
-          <label>Payment Category *</label>
-          <select [(ngModel)]="model.category" name="category">
-            <option value="">Select...</option>
+          <label>Payment Gateway</label>
+          <select name="category"
+                  [(ngModel)]="model.category"
+                  required
+                  [disabled]="isLoading"
+                  #category="ngModel">
+            <option value="">Select Gateway</option>
             <option *ngFor="let g of gateways" [value]="g.name">
               {{ g.name }}
             </option>
           </select>
+          <small *ngIf="category.invalid && category.touched">
+            Please select gateway
+          </small>
         </div>
+
       </div>
 
-      <div class="form-group full">
-        <label>Enter Amount *</label>
-        <input type="number" [(ngModel)]="model.amount" name="amount">
+      <!-- AMOUNT -->
+      <div class="amount-section">
+        <label>Enter Amount</label>
+
+        <div class="amount-input">
+          <span>₹</span>
+          <input type="number"
+                 name="amount"
+                 [(ngModel)]="model.amount"
+                 required
+                 min="1"
+                 max="99999"
+                 [disabled]="isLoading"
+                 #amount="ngModel">
+        </div>
+
+        <small *ngIf="amount.errors?.['required'] && amount.touched">
+          Amount required
+        </small>
+
+        <small *ngIf="amount.errors?.['max'] && amount.touched">
+          Maximum allowed ₹ 99,999
+        </small>
       </div>
 
-      <div class="form-actions">
-        <button type="submit">Add Funds</button>
-      </div>
+      <!-- BUTTON -->
+      <button type="submit"
+              class="primary-btn"
+              [disabled]="fundForm.invalid || model.amount > 99999 || isLoading">
+
+        <span *ngIf="!isLoading">
+          Add Funds Securely
+        </span>
+
+        <span *ngIf="isLoading" class="btn-loader">
+          <span class="spinner"></span>
+          Processing...
+        </span>
+
+      </button>
 
     </form>
   </div>
+</div>
 
+<!-- OVERLAY LOADER -->
+<div class="overlay-loader" *ngIf="isLoading">
+  <div class="loader-card">
+    <div class="spinner-large"></div>
+    <p>Processing your payment...</p>
+  </div>
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div class="success-overlay" *ngIf="showSuccessScreen">
+  <div class="success-card">
+
+    <div class="success-animation">
+      <div class="checkmark-circle">
+        <div class="checkmark"></div>
+      </div>
+    </div>
+
+    <h2>Payment Successful 🎉</h2>
+    <p>Your wallet has been credited successfully.</p>
+
+    <button class="success-btn" (click)="goToDashboard()">
+      Go to Dashboard
+    </button>
+
+  </div>
 </div>

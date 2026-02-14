@@ -54,8 +54,35 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        [HttpGet("wallet-balance")]
+        public IActionResult GetWalletBalance([FromQuery] string userPhone)
+        {
+            if (string.IsNullOrEmpty(userPhone))
+            {
+                return BadRequest(new { message = "User phone is required" });
+            }
 
-       
+            //var wallet = _db.Wallets
+            //    .FirstOrDefault(x => x.UserPhone == userPhone);
+
+            //if (wallet == null)
+            //{
+            //    return Ok(new
+            //    {
+            //        userPhone,
+            //        balance = 1000
+            //    });
+            //}
+
+            return Ok(new
+            {
+                userPhone,
+                balance = 10000//wallet.Balance
+            });
+        }
+
+
+
     }
     public class DashboardFilter
     {

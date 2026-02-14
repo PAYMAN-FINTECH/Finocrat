@@ -15,6 +15,7 @@ namespace Finocrat.Api.Controllers
 
         [HttpGet("gateways")]
         public IActionResult GetGateways()
+        
         {
             return Ok(new[]
             {
@@ -42,7 +43,7 @@ namespace Finocrat.Api.Controllers
 
             return Ok(new
             {
-                orderId = order["id"],
+                orderId = order["id"].ToString(),
                 amount = model.Amount,
                 key = RAZORPAY_KEY
             });
@@ -86,5 +87,10 @@ namespace Finocrat.Api.Controllers
         public string OrderId { get; set; }
         public string PaymentId { get; set; }
         public string Signature { get; set; }
+
+        public decimal Amount { get; set; }
+        public string Mobile { get; set; }
+        public string SelectedGateway { get; set; }
+        public string LoggedInUserPhone { get; set; }
     }
 }

@@ -6,8 +6,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 @Component({
   selector: 'app-finhome',
   templateUrl: './home.html',
-  imports: [CommonModule,ReactiveFormsModule, FormsModule],
   standalone: true,
+  imports: [CommonModule, ReactiveFormsModule, FormsModule],
   styleUrls: ['./home.css']
 })
 export class FinhomeComponent implements OnInit {
@@ -16,7 +16,7 @@ export class FinhomeComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
 
-  stats = {
+  stats: any = {
     totalCount: 0,
     totalAmount: 0,
     successCount: 0,
@@ -25,21 +25,23 @@ export class FinhomeComponent implements OnInit {
 
   constructor(private homeService: HomeService) {}
 
-  ngOnInit() {
+  // ✅ FIXED: Use ngOnInit instead of ngAfterViewInit
+  ngOnInit(): void {
     this.loadStats();
   }
 
-  onFilterTypeChange() {
+  onFilterTypeChange(): void {
     if (this.filterType !== 'custom') {
       this.loadStats();
     }
   }
 
-  applyFilter() {
+  applyFilter(): void {
     this.loadStats();
   }
 
-  loadStats() {
+  loadStats(): void {
+
   const payload = {
     filter: this.filterType,
     fromDate: this.fromDate || null,
@@ -47,7 +49,14 @@ export class FinhomeComponent implements OnInit {
   };
 
   this.homeService.getStats(payload).subscribe({
-    next: res => this.stats = res,
+    next: (res: any) => {
+
+      this.stats.totalCount = res?.totalCount ?? 0;
+      this.stats.totalAmount = res?.totalAmount ?? 0;
+      this.stats.successCount = res?.successCount ?? 0;
+      this.stats.failedCount = res?.failedCount ?? 0;
+
+    },
     error: err => console.error('API Error', err)
   });
 }

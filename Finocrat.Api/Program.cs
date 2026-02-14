@@ -3,8 +3,8 @@ using Finocrat.Api.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,10 +20,25 @@ builder.Services.AddDbContext<FinocratDbContext>(options =>
     )
 );
 
-// JWT Helper - register for DI
+// JWT Helper
 builder.Services.AddScoped<JwtHelper>();
 
-// CORS (Angular access)
+// -------------------- CORS --------------------
+// 🔥 Allow Angular (change origin when deploying)
+//builder.Services.AddCors(options =>
+//{
+//    //options.AddPolicy("AllowAngular", policy =>
+//    //{
+//    //    policy.WithOrigins(
+//    //            "http://localhost:4200",     // Angular local
+//    //            "https://edu.thefinocrat.com" // Production Angular
+//    //        )
+//    //        .AllowAnyHeader()
+//    //        .AllowAnyMethod();
+//    //});
+
+//});
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
@@ -35,27 +50,29 @@ builder.Services.AddCors(options =>
         });
 });
 
-// JWT Authentication
+// -------------------- JWT Authentication --------------------
+
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-.AddJwtBearer(options =>
-{
-    options.TokenValidationParameters = new TokenValidationParameters
+    .AddJwtBearer(options =>
     {
-        ValidateIssuer = true,
-        ValidateAudience = true,
-        ValidateLifetime = true,
-        ValidateIssuerSigningKey = true,
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
 
-        ValidIssuer = builder.Configuration["Jwt:Issuer"],
-        ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
 
-        IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
-        )
-    };
-});
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
+        };
+    });
 
-// Swagger
+// -------------------- Swagger --------------------
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -95,15 +112,23 @@ var app = builder.Build();
 
 // -------------------- MIDDLEWARE --------------------
 
-// Developer exception page (only in Development)
+// Development error page
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 
-// Serve Angular build
+// Serve Angular build (if hosted inside API)
 app.UseDefaultFiles();
 app.UseStaticFiles();
+
+app.UseRouting();
+
+// 🔥 VERY IMPORTANT: CORS must come AFTER UseRouting and BEFORE Auth
+app.UseCors("AllowAngular");
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Swagger
 app.UseSwagger();
@@ -112,13 +137,6 @@ app.UseSwaggerUI(c =>
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Finocrat API v1");
     c.RoutePrefix = "swagger";
 });
-
-app.UseRouting();
-
-app.UseCors("AllowAngular");
-
-app.UseAuthentication();
-app.UseAuthorization();
 
 app.MapControllers();
 

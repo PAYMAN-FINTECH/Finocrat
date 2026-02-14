@@ -1,72 +1,171 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { RazorPaymentService } from '../../../services/mainservices/razorpayment.service';
 import { CommonModule } from '@angular/common';
-import {  FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
+import { TokenService } from '../../../services/mainservices/token.service';
+import { HomeService } from '../../../services/mainservices/home.service';
+import { Router } from '@angular/router';
+
 declare var Razorpay: any;
 
 @Component({
   selector: 'app-wallet',
-  imports: [CommonModule,ReactiveFormsModule, FormsModule],
   standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './wallet.html',
   styleUrls: ['./wallet.css']
 })
 export class WalletComponent implements OnInit {
 
   gateways: any[] = [];
-  model: any = {};
+  walletBalance: number = 0;
+  isLoading: boolean = false;
+  showSuccessScreen: boolean = false;
 
-  constructor(private razorService: RazorPaymentService) {}
+  model: any = {
+    name: '',
+    mobile: '',
+    email: '',
+    category: '',
+    amount: null
+  };
 
-  ngOnInit() {
+  username: string = '';
+  userId: string = '';
+  userPhone: string = '';
+
+  constructor(
+    private razorService: RazorPaymentService,
+    private tokenService: TokenService,
+    private homeService: HomeService,
+    private cd: ChangeDetectorRef,
+    private router: Router
+  ) {}
+
+  ngOnInit(): void {
+    const user = this.tokenService.getUser();
+
+    if (user) {
+      this.username = user.name;
+      this.userId = user.userId;
+      this.userPhone = user.userPhone;
+    }
+
     this.loadGateways();
+    this.loadWalletBalance();
   }
 
-  loadGateways() {
-    this.razorService.getGateways().subscribe(res => {
-      this.gateways = res;
+  loadGateways(): void {
+    this.razorService.getGateways().subscribe({
+      next: (res) => this.gateways = res || [],
+      error: (err) => console.error('Gateway load error', err)
     });
   }
 
-  addFunds() {
-    this.razorService.createOrder(this.model.amount)
-      .subscribe(res => {
+  loadWalletBalance(): void {
 
-        const options = {
-          key: res.key,
-          amount: this.model.amount * 100,
-          currency: 'INR',
-          name: 'Finocrat',
-          description: 'Add Wallet Funds',
-          order_id: res.orderId,
-          handler: (response: any) => {
-            this.verifyPayment(response);
-          },
-          prefill: {
-            name: this.model.name,
-            email: this.model.email,
-            contact: this.model.mobile
-          },
-          theme: { color: '#6A1B9A' }
-        };
+    if (!this.userPhone) return;
 
-        new Razorpay(options).open();
+    this.homeService.getWalletBalance(this.userPhone)
+      .subscribe({
+        next: (res: any) => {
+          this.walletBalance = Number(res.balance) || 0;
+          setTimeout(() => this.cd.detectChanges());
+        },
+        error: () => this.walletBalance = 0
       });
   }
 
-  verifyPayment(response: any) {
-    const payload = {
-      orderId: response.razorpay_order_id,
-      paymentId: response.razorpay_payment_id,
-      signature: response.razorpay_signature
-    };
+  refreshBalance(): void {
+    this.loadWalletBalance();
+  }
 
-    this.razorService.verifyPayment(payload)
-      .subscribe(res => {
-        if (res.success) {
-          alert('Payment Successful');
-        } else {
-          alert('Payment Verification Failed');
+  goToDashboard(): void {
+  this.showSuccessScreen = false;
+  //window.location.reload();
+  this.router.navigate(['/app/finhome']).then(() => {
+    window.location.reload(); // reload dashboard & wallet data
+  });
+}
+
+  addFunds(form: any): void {
+
+    if (form.invalid || this.model.amount > 99999) {
+      form.control.markAllAsTouched();
+      return;
+    }
+
+    this.isLoading = true;
+
+    this.razorService.createOrder(this.model.amount)
+      .subscribe({
+        next: (res) => {
+          debugger;
+          this.isLoading = false;   // 👈 ADD THIS
+
+          const options: any = {
+            key: res.key,
+            amount: res.amount * 100,
+            currency: "INR",
+            order_id: res.orderId,
+            name: 'Finocrat',
+            description: 'Add Wallet Funds',
+
+            handler: (response: any) => {
+              debugger;
+               this.isLoading = true;
+
+              const verifyPayload = {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                amount: this.model.amount,
+                mobile: this.model.mobile,
+                selectedGateway: this.model.category,
+                loggedInUserPhone: this.userPhone
+              };
+
+              this.razorService.verifyPayment(verifyPayload)
+                .subscribe({
+                  next: (result) => {
+                    debugger;
+                    this.isLoading = false;
+
+                    if (result.status == 'SUCCESS') {
+                      alert("Payment Verified Successfully");
+                      this.loadWalletBalance();
+                      form.resetForm();
+                      this.showSuccessScreen = true;
+                            setTimeout(() => {
+                              this.goToDashboard();
+                             }, 3000);
+                    } else {
+                      this.isLoading = false;
+                      alert("Payment Verification Failed");
+                    }
+                  },
+                  error: () => {
+                    this.isLoading = false;
+                    alert("Payment Verification Failed");
+                  }
+                });
+            },
+
+            prefill: {
+              name: this.model.name,
+              email: this.model.email,
+              contact: this.model.mobile
+            },
+
+            theme: { color: '#6A1B9A' }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open();
+        },
+        error: () => {
+          this.isLoading = false;
+          alert("Unable to create payment order");
         }
       });
   }

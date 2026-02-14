@@ -44,7 +44,8 @@ namespace Finocrat.Api.Controllers
             var userDto = new
             {
                 userId = "PM",
-                name = user.UserName
+                name = user.UserName,
+                userPhone = user.UserPhone
             };
 
             return Ok(new

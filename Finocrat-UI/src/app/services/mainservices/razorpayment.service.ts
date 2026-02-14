@@ -19,4 +19,5 @@ export class RazorPaymentService {
   getGateways() {
     return this.http.get<any[]>(`${this.api}/gateways`);
   }
+  
 }

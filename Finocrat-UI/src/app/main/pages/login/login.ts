@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, signal, computed, effect } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -16,8 +16,17 @@ import { TokenService } from '../../../services/mainservices/token.service';
 export class MainLoginComponent implements OnInit {
 
   loginForm!: FormGroup;
-  loading = false;
-  showPassword = false;
+
+  loading = signal(false);
+  showPassword = signal(false);
+
+  // 🔥 NEW: form validity signal
+  formValid = signal(false);
+
+  // 🔥 computed disabled state
+  isDisabled = computed(() =>
+    this.loading() || !this.formValid()
+  );
 
   constructor(
     private fb: FormBuilder,
@@ -28,48 +37,56 @@ export class MainLoginComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+
     this.loginForm = this.fb.group({
       userId: ['', Validators.required],
       password: ['', Validators.required],
       rememberMe: [true]
     });
+
+    // 🔥 Connect form status to signal
+    this.loginForm.statusChanges.subscribe(() => {
+      this.formValid.set(this.loginForm.valid);
+    });
+
+    // Initialize value
+    this.formValid.set(this.loginForm.valid);
   }
 
   togglePassword() {
-    this.showPassword = !this.showPassword;
+    this.showPassword.update(v => !v);
   }
 
   onLogin() {
+    debugger;
+
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
-      this.toastr.warning('Please enter User ID and Password', 'Login Required');
+      this.toastr.warning('Please enter User ID and Password');
       return;
     }
 
-    this.loading = true;
+    this.loading.set(true);
 
-    const payload = this.loginForm.value;
-
-    this.authService.login(payload).subscribe({
+    this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
-        debugger;
-        this.loading = false;
+
         this.authService.saveSession(res.token, false);
 
-        const user = {
-    name: res.user.name ?? 'Finocrat User',
-    userId: res.user.userId ?? ''
-  };
-        this.tokenService.saveToken(res.token, user);
+        this.tokenService.saveToken(res.token, {
+          name: res.user?.name ?? '',
+          userId: res.user?.userId ?? '',
+          userPhone: res.user?.userPhone ?? ''
+        });
 
-        this.toastr.success('Login successful!', 'Welcome');
-       this.router.navigate(['/app/finhome']);
-
+        this.toastr.success('Login successful!');
+        this.router.navigate(['/app/finhome']);
       },
-      error: (err) => {
-        this.loading = false;
-        const msg = err?.error?.message || 'Invalid credentials';
-        this.toastr.error(msg, 'Login Failed');
+      error: () => {
+        this.toastr.error('Invalid credentials');
+      },
+      complete: () => {
+        this.loading.set(false);
       }
     });
   }
