@@ -25,6 +25,7 @@ import { LoginGuard } from './services/mainservices/login.auth.guard';
 import { MainLayout } from './main/pages/main-layout/main-layout';
 import { FinhomeComponent } from './main/pages/home/home';
 import { WalletComponent } from './main/pages/wallet/wallet';
+import { AdminUserLookupComponent } from './main/pages/admin-user-lookup/admin-user-lookup';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -78,6 +79,7 @@ export const routes: Routes = [
   children: [
     { path: 'finhome', component: FinhomeComponent },
     { path: 'wallet', component: WalletComponent },
+    { path: 'admin-user-lookup', component: AdminUserLookupComponent },
     
   ]
 },

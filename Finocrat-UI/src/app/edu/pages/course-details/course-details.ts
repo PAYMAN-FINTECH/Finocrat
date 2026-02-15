@@ -28,7 +28,7 @@ export class CourseDetailsComponent implements OnInit {
   confirmPurchase() {
     alert('✅ Purchase successful (Demo)');
     this.showModal = false;
-    this.router.navigate(['/']);
+    this.router.navigate(['/edu']);
   }
 
   courses = [

@@ -6,6 +6,7 @@ import { Observable } from 'rxjs';
 export class HomeService {
 
   private api = 'https://thefinocrat.com/api/dashboard';
+  private fuserlookupapi = 'https://thefinocrat.com/api/FUserLookup';
 
   constructor(private http: HttpClient) {}
 
@@ -19,5 +20,13 @@ export class HomeService {
         params: { userPhone: userPhone }
       }
     );
+  }
+
+   getUserLookup(userPhone: string): Observable<any> {
+    return this.http.get(`${this.fuserlookupapi}/${userPhone}`);
+  }
+
+  saveUserLookup(data: any): Observable<any> {
+    return this.http.post(`${this.fuserlookupapi}`, data);
   }
 }

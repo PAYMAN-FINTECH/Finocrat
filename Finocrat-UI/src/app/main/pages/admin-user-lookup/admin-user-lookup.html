@@ -1,0 +1,64 @@
+<div class="lookup-card">
+
+  <div class="header">
+    <h2>Admin User Lookup</h2>
+    <button class="btn primary" (click)="save()" [disabled]="loading">
+      <span *ngIf="!loading">Save</span>
+      <span *ngIf="loading" class="spinner-mini"></span>
+    </button>
+  </div>
+
+  <div *ngIf="loading" class="loader">Loading...</div>
+
+  <div *ngIf="!loading">
+
+    <div class="setting-row" *ngFor="let key of keys">
+
+      <label>{{ key }}</label>
+
+      <div *ngIf="isBoolean(settings[key]); else inputBlock">
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="settings[key]">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <ng-template #inputBlock>
+        <input type="text" [(ngModel)]="settings[key]" />
+      </ng-template>
+
+    </div>
+
+    <button class="btn secondary" (click)="toggleAdd()">
+      {{ showAddSection ? 'Cancel' : '+ Add Setting' }}
+    </button>
+
+    <div *ngIf="showAddSection" class="add-section">
+
+      <input type="text" placeholder="Key" [(ngModel)]="newKey" />
+      <select [(ngModel)]="newValueType">
+        <option value="string">String</option>
+        <option value="number">Number</option>
+        <option value="boolean">Boolean</option>
+      </select>
+
+      <input *ngIf="newValueType !== 'boolean'"
+             type="text"
+             placeholder="Value"
+             [(ngModel)]="newValue" />
+
+      <select *ngIf="newValueType === 'boolean'"
+              [(ngModel)]="newValue">
+        <option [ngValue]="true">True</option>
+        <option [ngValue]="false">False</option>
+      </select>
+
+      <button class="btn primary" (click)="addSetting()">Add</button>
+    </div>
+
+    <div *ngIf="message" class="toast">
+      ✔ {{ message }}
+    </div>
+
+  </div>
+</div>
