@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Finocrat.Api.Data;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Finocrat.Api.Controllers
@@ -7,6 +8,14 @@ namespace Finocrat.Api.Controllers
     [ApiController]
     public class DashboardController : ControllerBase
     {
+        private readonly FinocratDbContext _db;
+        private readonly DataUtils _dataUtils;
+        public DashboardController(FinocratDbContext db, DataUtils dataUtils)
+        {
+            _db = db;
+            _dataUtils = dataUtils;
+        }
+
         [HttpPost]
         public IActionResult GetStats([FromBody] DashboardFilter model)
         {
@@ -62,8 +71,7 @@ namespace Finocrat.Api.Controllers
                 return BadRequest(new { message = "User phone is required" });
             }
 
-            //var wallet = _db.Wallets
-            //    .FirstOrDefault(x => x.UserPhone == userPhone);
+            var wallet = _db.fPayIns.Where(t=>t.UserPhone == userPhone).Sum(t=>t.Amount);
 
             //if (wallet == null)
             //{
@@ -77,7 +85,7 @@ namespace Finocrat.Api.Controllers
             return Ok(new
             {
                 userPhone,
-                balance = 10000//wallet.Balance
+                balance = wallet
             });
         }
 

@@ -122,7 +122,11 @@ export class WalletComponent implements OnInit {
                 amount: this.model.amount,
                 mobile: this.model.mobile,
                 selectedGateway: this.model.category,
-                loggedInUserPhone: this.userPhone
+                loggedInUserPhone: this.userPhone,
+                cardHolderName: this.model.name,
+                cardHolderCard: '',
+                cardHolderMail: this.model.email || null
+
               };
 
               this.razorService.verifyPayment(verifyPayload)

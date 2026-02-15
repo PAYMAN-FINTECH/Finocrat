@@ -1,4 +1,7 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Finocrat.Api.Data;
+using Finocrat.Api.Helpers;
+using Finocrat.Api.Models.Entities.Main;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Razorpay.Api;
 using System.Security.Cryptography;
@@ -12,6 +15,14 @@ namespace Finocrat.Api.Controllers
     {
         private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
         private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
+        private readonly FinocratDbContext _db;
+        private readonly DataUtils _dataUtils;
+        public RazorPayPaymentController(FinocratDbContext db, DataUtils dataUtils)
+        {
+            _db = db;
+            _dataUtils = dataUtils;
+        }
+
 
         [HttpGet("gateways")]
         public IActionResult GetGateways()
@@ -19,8 +30,7 @@ namespace Finocrat.Api.Controllers
         {
             return Ok(new[]
             {
-        new { id = 1, name = "Education" },
-        new { id = 2, name = "Travel" }
+        new { id = 1, name = "REducation" }
     });
         }
 
@@ -53,6 +63,9 @@ namespace Finocrat.Api.Controllers
         [HttpPost("verify")]
         public IActionResult VerifyPayment([FromBody] VerifyPaymentRequest model)
         {
+            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
             string payload =
                 model.OrderId + "|" + model.PaymentId;
 
@@ -63,9 +76,41 @@ namespace Finocrat.Api.Controllers
             var payment = client.Payment.Fetch(model.PaymentId);
             var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
 
+            var userdetails = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
+
+            
 
             if (generatedSignature == model.Signature)
             {
+                if (userdetails != null)
+                {
+                    var payIns = new FPayIn
+                    {
+                        UserId = userdetails.Id,
+                        UserPhone = model.LoggedInUserPhone,
+                        UserEmail = userdetails.Email,
+                        CardHolderName = model.CardHolderName,
+                        CardHolderPhone = model.Mobile,
+                        CardHolderEmail = model.CardHolderMail,
+                        CardHolderCardNumber = model.CardHolderCard,
+                        Result = payment["status"],
+                        CardBrand = razorPayCard["issuer"] ?? "",
+                        BankName = razorPayCard["network"] ?? "",// razorPayCard["sub_type"]
+                        CardType = razorPayCard["sub_type"] ?? "",
+                        Status = payment["status"] == "captured",
+                        CardNo = razorPayCard["last4"] ?? "",
+                        PaymentId = model.PaymentId,
+                        TaxNumber = model.OrderId,
+                        Amount = model.Amount,
+                        PayInCommission = model.Amount / 100,
+                        FCommission = model.Amount / 100,
+                        Gateway = model.SelectedGateway,
+                        Created = istNow
+                    };
+
+                    var res = _dataUtils.InsertAsync(payIns);
+                }
+               
                 // ✅ SAVE SUCCESS PAYMENT IN DB HERE
                 return Ok(new { status = "SUCCESS" });
             }
@@ -98,5 +143,8 @@ namespace Finocrat.Api.Controllers
         public string Mobile { get; set; }
         public string SelectedGateway { get; set; }
         public string LoggedInUserPhone { get; set; }
+        public string CardHolderName { get; set; }
+        public string CardHolderMail { get; set; }
+        public string CardHolderCard { get; set; }
     }
 }

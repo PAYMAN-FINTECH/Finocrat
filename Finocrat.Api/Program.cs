@@ -22,33 +22,34 @@ builder.Services.AddDbContext<FinocratDbContext>(options =>
 
 // JWT Helper
 builder.Services.AddScoped<JwtHelper>();
+builder.Services.AddScoped<DataUtils>();
 
 // -------------------- CORS --------------------
 // 🔥 Allow Angular (change origin when deploying)
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngular", policy =>
-    {
-        policy.WithOrigins(
-                "http://localhost:4200",     // Angular local
-                "https://edu.thefinocrat.com" // Production Angular
-            )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-    });
-
-});
-
 //builder.Services.AddCors(options =>
 //{
-//    options.AddPolicy("AllowAngular",
-//        policy =>
-//        {
-//            policy.AllowAnyOrigin()
-//                  .AllowAnyHeader()
-//                  .AllowAnyMethod();
-//        });
+//    options.AddPolicy("AllowAngular", policy =>
+//    {
+//        policy.WithOrigins(
+//                "http://localhost:4200",     // Angular local
+//                "https://edu.thefinocrat.com" // Production Angular
+//            )
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
+//    });
+
 //});
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular",
+        policy =>
+        {
+            policy.AllowAnyOrigin()
+                  .AllowAnyHeader()
+                  .AllowAnyMethod();
+        });
+});
 
 // -------------------- JWT Authentication --------------------
 
