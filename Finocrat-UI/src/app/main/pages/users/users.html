@@ -1,0 +1,115 @@
+<div class="dashboard-container">
+
+  <!-- HEADER -->
+  <div class="dashboard-header">
+    <h2>User Management</h2>
+    <button class="primary-btn" (click)="openAdd()">+ Add New User</button>
+  </div>
+
+  <!-- TABLE CARD -->
+  <div class="card">
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>UserName</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Margin</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let user of users">
+          <td>{{user.userName}}</td>
+          <td>{{user.email}}</td>
+          <td>{{user.userPhone}}</td>
+          <td>{{user.marginName}}</td>
+          <td>
+            <span class="status"
+              [ngClass]="user.isActive ? 'active' : 'inactive'">
+              {{user.isActive ? 'Active' : 'Inactive'}}
+            </span>
+          </td>
+          <td>
+            <button class="edit-btn" (click)="openEdit(user)">
+              Edit
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MODAL POPUP -->
+  <div class="modal-overlay" *ngIf="showModal">
+
+    <div class="modal-box">
+
+      <div class="modal-header">
+        <h3>{{editMode ? 'Edit User' : 'Add User'}}</h3>
+        <span class="close-btn" (click)="showModal=false">✖</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="save()" class="form-grid">
+
+        <div class="form-group">
+          <label>User Name</label>
+          <input type="text" formControlName="userName">
+        </div>
+
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" formControlName="password">
+        </div>
+
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" formControlName="userPhone">
+        </div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" formControlName="email">
+        </div>
+
+        <div class="form-group full-width">
+          <label>Margin</label>
+          <select formControlName="marginId">
+            <option value="">Select Margin</option>
+            <option *ngFor="let m of margins" [value]="m.id">
+              {{m.percentage}}
+            </option>
+          </select>
+        </div>
+
+        <div class="checkbox-group">
+          <label>
+            <input type="checkbox" formControlName="isActive">
+            Active
+          </label>
+
+          <label>
+            <input type="checkbox" formControlName="isRazorpayEnabled">
+            Razorpay Enabled
+          </label>
+        </div>
+
+        <div class="form-actions">
+          <button type="button" class="cancel-btn"
+                  (click)="showModal=false">
+            Cancel
+          </button>
+
+          <button type="submit" class="primary-btn">
+            {{editMode ? 'Update User' : 'Save User'}}
+          </button>
+        </div>
+
+      </form>
+
+    </div>
+  </div>
+
+</div>

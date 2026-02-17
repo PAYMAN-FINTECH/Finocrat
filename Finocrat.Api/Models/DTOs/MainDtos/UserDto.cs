@@ -1,8 +1,8 @@
-﻿namespace Finocrat.Api.Models.Entities.Main
+﻿namespace Finocrat.Api.Models.DTOs.MainDtos
 {
-    public class FUser
+    public class UserDto
     {
-        public Guid Id { get; set; }
+
         public string UserName { get; set; }
         public string Password { get; set; }
         public string UserPhone { get; set; }
@@ -10,9 +10,6 @@
         public bool IsActive { get; set; }
         public Guid MarginId { get; set; }
         public string? Gender { get; set; }
-        public bool? IsRazorpayEnabled { get; set; } = false;
-        public DateTime Created { get; set; }
-
-        public FMargin Margin { get; set; }
+        public bool? IsRazorpayEnabled { get; set; }
     }
 }

@@ -16,5 +16,6 @@ namespace Finocrat.Api.Data
         public DbSet<FUser> fUsers { get; set; }
         public DbSet<FPayIn> fPayIns { get; set; }
         public DbSet<FUserLookup> fUserLookups { get; set; }
+        public DbSet<FMargin> fMargins { get; set; }
     }
 }

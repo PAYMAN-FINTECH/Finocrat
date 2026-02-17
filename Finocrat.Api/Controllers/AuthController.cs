@@ -1,6 +1,7 @@
 ﻿using Finocrat.Api.Data;
 using Finocrat.Api.Helpers;
 using Finocrat.Api.Models.DTOs.MainDtos;
+using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
@@ -53,6 +54,97 @@ namespace Finocrat.Api.Controllers
                 token,
                 user = userDto
             });
+        }
+
+        // GET ALL USERS
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
+        {
+            var users = await _db.fUsers
+                .Include(x => x.Margin)
+                .Select(u => new
+                {
+                    u.Id,
+                    u.UserName,
+                    u.UserPhone,
+                    u.Email,
+                    u.IsActive,
+                    u.Gender,
+                    u.IsRazorpayEnabled,
+                    MarginName = u.Margin.Percentage
+                })
+                .ToListAsync();
+
+            return Ok(users);
+        }
+
+        // ADD USER
+        [HttpPost("add")]
+        public async Task<IActionResult> AddUser(UserDto model)
+        {
+            var exists = await _db.fUsers
+                .AnyAsync(x => x.UserPhone == model.UserPhone);
+
+            if (exists)
+                return BadRequest("User already exists");
+
+            var user = new FUser
+            {
+                Id = Guid.NewGuid(),
+                UserName = model.UserName,
+                Password = model.Password, // ⚠️ Hash in production
+                UserPhone = model.UserPhone,
+                Email = model.Email,
+                IsActive = model.IsActive,
+                MarginId = model.MarginId,
+                Gender = model.Gender,
+                IsRazorpayEnabled = model.IsRazorpayEnabled,
+                Created = DateTime.UtcNow
+            };
+
+            _db.fUsers.Add(user);
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "User Created",
+                data = user.Id
+            });
+        }
+
+        // UPDATE USER
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateUser(Guid id, UserDto model)
+        {
+            var user = await _db.fUsers.FindAsync(id);
+            if (user == null) return NotFound();
+
+            user.UserName = model.UserName;
+            user.Email = model.Email;
+            user.UserPhone = model.UserPhone;
+            user.Gender = model.Gender;
+            user.IsActive = model.IsActive;
+            user.MarginId = model.MarginId;
+            user.IsRazorpayEnabled = model.IsRazorpayEnabled;
+
+            if (!string.IsNullOrEmpty(model.Password))
+                user.Password = model.Password;
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new
+            {
+                success = true,
+                message = "Update Created",
+                data = user.Id
+            });
+        }
+        [HttpGet("margin")]
+        public async Task<IActionResult> GetMargins()
+        {
+            var data = await _db.fMargins.Where(t=>t.IsActive == true).ToListAsync();
+            return Ok(data);
         }
 
 
