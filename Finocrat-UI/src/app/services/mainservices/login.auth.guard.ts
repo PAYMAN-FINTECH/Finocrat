@@ -2,9 +2,7 @@ import { Injectable } from '@angular/core';
 import { CanActivate, Router } from '@angular/router';
 import { MainAuthService } from './mainauth.service';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class LoginGuard implements CanActivate {
 
   constructor(
@@ -13,11 +11,10 @@ export class LoginGuard implements CanActivate {
   ) {}
 
   canActivate(): boolean {
-    // If already logged in → go to home
     if (this.auth.isLoggedIn()) {
-      this.router.navigate(['/dashboard/finhome']);
+      this.router.navigate(['/app/finhome']);
       return false;
     }
-    return true; // allow login page
+    return true;
   }
 }

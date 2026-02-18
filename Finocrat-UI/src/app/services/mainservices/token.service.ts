@@ -30,4 +30,9 @@ export class TokenService {
     const u = localStorage.getItem('user');
     return u ? JSON.parse(u) : null;
   }
+
+  getuserPhone(): string | null {
+    const user = this.getUser();
+    return user ? user.userPhone : null;
+  }
 }

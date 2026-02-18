@@ -1,11 +1,12 @@
 import { ApplicationConfig, APP_INITIALIZER } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { provideToastr } from 'ngx-toastr';
 
 import { routes } from './app.routes';
 import { AuthService } from './services/eduservices/auth.service';
+import { loaderInterceptor } from './services/mainservices/loader.interceptor';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -13,7 +14,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
 
     // ✅ HTTP Client (For API Calls)
-    provideHttpClient(),
+    provideHttpClient(withInterceptors([loaderInterceptor])),
 
     // ✅ Required for Toastr
     provideAnimations(),

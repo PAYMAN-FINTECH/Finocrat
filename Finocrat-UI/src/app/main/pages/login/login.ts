@@ -66,12 +66,12 @@ export class MainLoginComponent implements OnInit {
       return;
     }
 
-    this.loading.set(true);
+    //this.loading.set(true);
 
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
 
-        this.authService.saveSession(res.token, false);
+        this.authService.saveSession(res.token);
 
         this.tokenService.saveToken(res.token, {
           name: res.user?.name ?? '',

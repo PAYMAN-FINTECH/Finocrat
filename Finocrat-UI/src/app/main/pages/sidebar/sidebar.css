@@ -2,50 +2,101 @@
   background: #0b3b44;
   color: white;
   width: 240px;
-  padding: 15px;
-  height: 100%; /* ✅ take parent height */
+  padding: 18px;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
-
 
 .logo {
-  text-align: center;
-  margin-bottom: 24px;
   font-size: 20px;
   font-weight: 600;
+  margin-bottom: 25px;
 }
 
-ul {
+.menu {
   list-style: none;
   padding: 0;
   margin: 0;
+  flex: 1;
 }
 
-li {
+.menu li {
   padding: 12px 14px;
   cursor: pointer;
   border-radius: 8px;
   margin-bottom: 6px;
+  transition: 0.3s;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-li:hover,
+.menu li:hover,
 .active {
   background: #0f5f6b;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
-  .sidebar-container {
-    width: 100%;
-    height: auto;
-  }
+.submenu {
+  padding-left: 15px;
+}
 
-  ul {
-    display: flex;
-    overflow-x: auto;
-  }
+.submenu li {
+  background: rgba(255, 255, 255, 0.05);
+  font-size: 14px;
+}
 
-  li {
-    white-space: nowrap;
-    margin-right: 10px;
-  }
+/* Arrow */
+.arrow {
+  transition: 0.3s;
+}
+.rotate {
+  transform: rotate(180deg);
+}
+
+/* 🔥 Footer Section */
+.sidebar-footer {
+  border-top: 1px solid rgba(255,255,255,0.15);
+  padding-top: 15px;
+}
+
+/* User Info */
+.user-info {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.avatar {
+  width: 36px;
+  height: 36px;
+  background: #6c5ce7;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.username {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Logout Button */
+.logout-btn {
+  width: 100%;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.1);
+  color: white;
+  cursor: pointer;
+  transition: 0.3s;
+  font-weight: 500;
+}
+
+.logout-btn:hover {
+  background: #e74c3c;
 }

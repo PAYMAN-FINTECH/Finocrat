@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { MainAuthService } from '../services/mainservices/mainauth.service';
 
 @Component({
   selector: 'app-entry',
@@ -8,17 +9,24 @@ import { Router } from '@angular/router';
 })
 export class AppEntryComponent implements OnInit {
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private auth: MainAuthService
+  ) {}
 
   ngOnInit(): void {
+
     const isEduDomain = window.location.hostname.startsWith('edu.');
 
     if (isEduDomain) {
-      // https://edu.thefinocrat.com
       this.router.navigateByUrl('/edu');
+      return;
+    }
+
+    if (this.auth.isLoggedIn()) {
+      this.router.navigateByUrl('/app/finhome');
     } else {
-      // https://thefinocrat.com
-      this.router.navigateByUrl('/dashboard');
+      this.router.navigateByUrl('/dashboard'); // Landing page
     }
   }
 }

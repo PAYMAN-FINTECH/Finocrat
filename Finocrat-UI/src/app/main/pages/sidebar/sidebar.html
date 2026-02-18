@@ -1,13 +1,43 @@
 <div class="sidebar-container">
+
   <div class="logo">Finocrat</div>
 
-  <ul>
+  <ul class="menu">
     <li routerLink="/app/finhome" routerLinkActive="active">Dashboard</li>
     <li routerLink="/app/wallet" routerLinkActive="active">Wallet</li>
     <li routerLink="/app/services" routerLinkActive="active">Services</li>
-    <li routerLink="/app/reports" routerLinkActive="active">Reports</li>
+
+    <li (click)="toggleReports()" class="parent">
+      Reports
+      <span class="arrow" [class.rotate]="reportsOpen">▾</span>
+    </li>
+    <ul *ngIf="reportsOpen" class="submenu">
+      <li routerLink="/app/payin-history" routerLinkActive="active">PayIn</li>
+      <li routerLink="/app/payout-report" routerLinkActive="active">PayOut</li>
+    </ul>
+
+    <li (click)="toggleAdmin()" class="parent">
+      Admin
+      <span class="arrow" [class.rotate]="adminOpen">▾</span>
+    </li>
+    <ul *ngIf="adminOpen" class="submenu">
+      <li routerLink="/app/admin-user-lookup" routerLinkActive="active">Test</li>
+      <li routerLink="/app/users" routerLinkActive="active">Users</li>
+    </ul>
+
     <li routerLink="/app/profile" routerLinkActive="active">Profile</li>
-    <li routerLink="/app/admin-user-lookup" routerLinkActive="active">Test</li>
-    <li routerLink="/app/users" routerLinkActive="active">Users</li>
   </ul>
+
+  <!-- 🔥 PROFESSIONAL LOGOUT SECTION -->
+  <div class="sidebar-footer">
+    <!-- <div class="user-info">
+      <div class="avatar">J</div>
+      <div class="username">Jurra</div>
+    </div> -->
+
+    <button class="logout-btn" (click)="logout()">
+      <span>🚪</span> Logout
+    </button>
+  </div>
+
 </div>

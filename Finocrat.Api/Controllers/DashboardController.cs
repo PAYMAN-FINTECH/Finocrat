@@ -1,6 +1,8 @@
 ﻿using Finocrat.Api.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
 
 namespace Finocrat.Api.Controllers
 {
@@ -17,70 +19,80 @@ namespace Finocrat.Api.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetStats([FromBody] DashboardFilter model)
+        public async Task<IActionResult> GetStats([FromBody] DashboardFilter model)
         {
+            if (model == null)
+                return BadRequest("Invalid request");
 
-            //DateTime startDate;
-            //DateTime endDate = DateTime.Today;
+            // 🔹 Get IST Time
+            var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
 
-            //switch (filter)
-            //{
-            //    case "today":
-            //        startDate = DateTime.Today;
-            //        break;
+            DateTime startDate;
+            DateTime endDate = istNow;
 
-            //    case "yesterday":
-            //        startDate = DateTime.Today.AddDays(-1);
-            //        endDate = DateTime.Today.AddDays(-1);
-            //        break;
+            switch (model.Filter?.ToLower())
+            {
+                case "today":
+                    startDate = istNow.Date;
+                    endDate = istNow.Date.AddDays(1).AddSeconds(-1);
+                    break;
 
-            //    case "week":
-            //        startDate = DateTime.Today.AddDays(-7);
-            //        break;
+                case "yesterday":
+                    startDate = istNow.Date.AddDays(-1);
+                    endDate = istNow.Date.AddSeconds(-1);
+                    break;
 
-            //    case "month":
-            //        startDate = new DateTime(DateTime.Today.Year, DateTime.Today.Month, 1);
-            //        break;
+                case "week":
+                    startDate = istNow.Date.AddDays(-7);
+                    break;
 
-            //    case "custom":
-            //        if (from == null || to == null)
-            //            return BadRequest("Invalid date range");
-            //        startDate = from.Value;
-            //        endDate = to.Value;
-            //        break;
+                case "month":
+                    startDate = new DateTime(istNow.Year, istNow.Month, 1);
+                    break;
 
-            //    default:
-            //        startDate = DateTime.Today.AddDays(-7);
-            //        break;
-            //}
+                case "custom":
+                    if (model.FromDate == null || model.ToDate == null)
+                        return BadRequest("Invalid date range");
+
+                    startDate = model.FromDate.Value.Date;
+                    endDate = model.ToDate.Value.Date.AddDays(1).AddSeconds(-1);
+                    break;
+
+                default:
+                    startDate = istNow.Date.AddDays(-7);
+                    break;
+            }
+
+            var query = _db.fPayIns
+                .Where(x => x.Created >= startDate &&
+                            x.Created <= endDate);
+
+            var totalCount = await query.CountAsync();
+            var successCount = await query.CountAsync(x => x.Status);
+            var failedCount = await query.CountAsync(x => !x.Status);
+            var totalAmount = await query
+                .Where(x => x.Status)
+                .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             return Ok(new
             {
-                totalCount = 12,
-                totalAmount = 48500,
-                successCount = 10,
-                failedCount = 2
+                totalCount,
+                totalAmount,
+                successCount,
+                failedCount
             });
         }
 
         [HttpGet("wallet-balance")]
-        public IActionResult GetWalletBalance([FromQuery] string userPhone)
+        public async Task<IActionResult> GetWalletBalance([FromQuery] string userPhone)
         {
             if (string.IsNullOrEmpty(userPhone))
             {
                 return BadRequest(new { message = "User phone is required" });
             }
 
-            var wallet = _db.fPayIns.Where(t=>t.UserPhone == userPhone).Sum(t=>t.Amount);
-
-            //if (wallet == null)
-            //{
-            //    return Ok(new
-            //    {
-            //        userPhone,
-            //        balance = 1000
-            //    });
-            //}
+            var wallet = await _dataUtils.GetWalletAmount(userPhone);
 
             return Ok(new
             {

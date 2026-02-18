@@ -9,18 +9,20 @@ import { FooterComponent as EduFooterComponent } from './edu/components/footer/f
 import { MainheaderComponent } from './main/components/mainheader/mainheader';
 import { MainfooterComponent } from './main/components/mainfooter/mainfooter';
 import { CommonModule } from '@angular/common';
+import { LoaderComponent } from "./main/components/loader/loader";
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [
-    CommonModule, 
+    CommonModule,
     RouterOutlet,
     EduHeaderComponent,
     EduFooterComponent,
     MainheaderComponent,
-    MainfooterComponent
-  ],
+    MainfooterComponent,
+    LoaderComponent
+],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })

@@ -12,7 +12,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class UsersComponent implements OnInit {
 
-  baseUrl = 'https://localhost:7081/api';
+  baseUrl = 'https://thefinocrat.com/api';
   users: any[] = [];
   margins: any[] = [];
 

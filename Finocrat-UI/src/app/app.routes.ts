@@ -27,6 +27,7 @@ import { FinhomeComponent } from './main/pages/home/home';
 import { WalletComponent } from './main/pages/wallet/wallet';
 import { AdminUserLookupComponent } from './main/pages/admin-user-lookup/admin-user-lookup';
 import { UsersComponent } from './main/pages/users/users';
+import { PayInHistoryComponent } from './main/pages/payin-history/payin-history';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -58,30 +59,31 @@ export const routes: Routes = [
   path: 'dashboard',
   children: [
     { path: '', component: DashboradComponent },
-    //{ path: 'finhome', component: FinhomeComponent },
+    { path: 'login', component: MainLoginComponent },
     { path: 'about', component: AboutUsComponent },
     { path: 'contact', component: ContactUsComponent },
     { path: 'services', component: ServicesComponent }
   ]
 },
 
-// Separate login route
-{ 
-  path: 'dashboard/login', 
-  component: MainLoginComponent, 
-  //canActivate: [LoginGuard] 
-},
+// // Separate login route
+// { 
+//   path: 'dashboard/login', 
+//   component: MainLoginComponent, 
+//   canActivate: [LoginGuard] 
+// },
 
 // --------- AUTHENTICATED APP (WITH SIDEBAR) ----------
 {
   path: 'app',
   component: MainLayout,      // <-- SIDEBAR + HEADER WRAPPER
-  //canActivate: [AuthGuard],
+  canActivate: [AuthGuard],
   children: [
     { path: 'finhome', component: FinhomeComponent },
     { path: 'wallet', component: WalletComponent },
     { path: 'admin-user-lookup', component: AdminUserLookupComponent },
     { path: 'users', component: UsersComponent },
+    { path: 'payin-history', component: PayInHistoryComponent },
   ]
 },
 
