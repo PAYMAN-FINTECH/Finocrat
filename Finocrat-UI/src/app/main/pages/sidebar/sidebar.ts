@@ -24,9 +24,9 @@ toggleReports() {
   this.reportsOpen = !this.reportsOpen;
 }
 
-toggleAdmin() {
-  this.adminOpen = !this.adminOpen;
-}
+// toggleAdmin() {
+//   this.adminOpen = !this.adminOpen;
+// }
 logout() {
   localStorage.clear();   // or remove specific token
   sessionStorage.clear();

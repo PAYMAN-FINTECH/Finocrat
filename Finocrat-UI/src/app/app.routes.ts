@@ -28,6 +28,7 @@ import { WalletComponent } from './main/pages/wallet/wallet';
 import { AdminUserLookupComponent } from './main/pages/admin-user-lookup/admin-user-lookup';
 import { UsersComponent } from './main/pages/users/users';
 import { PayInHistoryComponent } from './main/pages/payin-history/payin-history';
+import { EduWalletComponent } from './edu/pages/edu-wallet/edu-wallet';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -50,7 +51,8 @@ export const routes: Routes = [
       { path: 'course-details/:id', component: CourseDetailsComponent },
       { path: 'login', component: LoginComponent },
       { path: 'signup', component: SignupComponent },
-      { path: 'my-learning', component: MyLearningComponent }
+      { path: 'my-learning', component: MyLearningComponent },
+      { path: 'edu-wallet', component: EduWalletComponent },
     ]
   },
 

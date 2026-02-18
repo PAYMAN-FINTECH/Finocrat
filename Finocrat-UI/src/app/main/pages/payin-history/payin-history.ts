@@ -56,16 +56,16 @@ export class PayInHistoryComponent implements OnInit {
 
   getTotalAmount(): number {
     return this.history
-      .filter(x => x.status === 'SUCCESS')
+      .filter(x => x.status === true)
       .reduce((sum, x) => sum + x.amount, 0);
   }
 
   getSuccessCount(): number {
-    return this.history.filter(x => x.status === 'SUCCESS').length;
+    return this.history.filter(x => x.status === true).length;
   }
 
   getFailedCount(): number {
-    return this.history.filter(x => x.status === 'FAILED').length;
+    return this.history.filter(x => x.status === false).length;
   }
 
   downloadExcel() {
@@ -75,9 +75,9 @@ export class PayInHistoryComponent implements OnInit {
     const exportData = this.history.map((x, i) => ({
       'S.No': i + 1,
       'Amount': x.amount,
-      'Status': x.status,
-      'Transaction ID': x.transactionId,
-      'Date': new Date(x.createdDate).toLocaleString()
+      'Status': x.status ? 'SUCCESS' : 'FAILED',
+      'Transaction ID': x.paymentId,
+      'Date': new Date(x.created).toLocaleString()
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(exportData);

@@ -2,7 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../services/eduservices/auth.service';
+import { RazorPaymentService } from '../../../services/mainservices/razorpayment.service';
+import { form } from '@angular/forms/signals';
+import { ToastrService } from 'ngx-toastr';
 
+declare var Razorpay: any;
 @Component({
   selector: 'edu-course-details',
   standalone: true,
@@ -17,6 +21,10 @@ export class CourseDetailsComponent implements OnInit {
   isLoggedIn = false;
   showModal = false;
 
+  showSuccessScreen = false;
+  showFailureScreen = false;
+
+
   buyCourse() {
     this.showModal = true;
   }
@@ -24,11 +32,90 @@ export class CourseDetailsComponent implements OnInit {
   closeModal() {
     this.showModal = false;
   }
+goToDashboard(): void {
+  this.showSuccessScreen = false;
+  this.showFailureScreen = false;
+ // this.toastr.success('Payment successful!');
+  this.router.navigate(['/edu']);
+}
 
   confirmPurchase() {
-    alert('✅ Purchase successful (Demo)');
-    this.showModal = false;
-    this.router.navigate(['/edu']);
+    this.razorService.createOrder(this.course.price)
+      .subscribe({
+        next: (res) => {
+          debugger;
+          //this.isLoading = false;   // 👈 ADD THIS
+
+          const options: any = {
+            key: res.key,
+            amount: res.amount * 100,
+            currency: "INR",
+            order_id: res.orderId,
+            name: 'Finocrat Edu',
+            description: 'Add Wallet Funds',
+
+            handler: (response: any) => {
+              debugger;
+               //this.isLoading = true;
+
+              const verifyPayload = {
+                orderId: response.razorpay_order_id,
+                paymentId: response.razorpay_payment_id,
+                signature: response.razorpay_signature,
+                amount: this.course.price,
+                mobile: '9849800697',
+                selectedGateway: 'Education e',
+                loggedInUserPhone: '9849800697',
+                cardHolderName: 'Jhon Doe',
+                cardHolderCard: '',
+                cardHolderMail: 'john.doe@gmail.com'
+
+              };
+
+              this.razorService.verifyPayment(verifyPayload)
+                .subscribe({
+                  next: (result) => {
+
+                    if (result.status == 'SUCCESS') {
+                      this.showSuccessScreen = true;
+                            setTimeout(() => {
+                              this.goToDashboard();
+                             }, 3000);
+                    } else {
+                      alert("Payment Verification Failed");
+                      setTimeout(() => {
+                              this.goToDashboard();
+                             }, 3000);
+                    }
+                  },
+                  error: () => {
+                    alert("Payment Verification Failed");
+                    setTimeout(() => {
+                              this.goToDashboard();
+                             }, 3000);
+                  }
+                });
+            },
+
+            prefill: {
+              name: 'Jhon Doe',
+              email: 'john.doe@gmail.com',
+              contact: '9849800697'
+            },
+
+            theme: { color: '#6A1B9A' }
+          };
+
+          const rzp = new Razorpay(options);
+          rzp.open();
+        },
+        error: () => {
+          alert("Unable to create payment order");
+        }
+      });
+    // alert('✅ Purchase successful (Demo)');
+    // this.showModal = false;
+    // this.router.navigate(['/edu']);
   }
 
   courses = [
@@ -204,7 +291,7 @@ export class CourseDetailsComponent implements OnInit {
 
   ];
 
-  constructor(private route: ActivatedRoute,private authService: AuthService,private router: Router) {}
+  constructor(private route: ActivatedRoute,private authService: AuthService,private router: Router,  private razorService: RazorPaymentService, private toastr: ToastrService,) {}
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();

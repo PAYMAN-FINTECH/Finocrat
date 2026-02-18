@@ -2,6 +2,7 @@ import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TokenService } from '../../../services/mainservices/token.service';
+import { MainAuthService } from '../../../services/mainservices/mainauth.service';
 
 @Component({
   selector: 'app-mainheader',
@@ -17,7 +18,7 @@ export class MainheaderComponent implements OnInit {
   userId: string = '';
   isMenuOpen = false;
 
-  constructor(private tokenService: TokenService,private router: Router,) {}
+  constructor(private tokenService: TokenService,private router: Router,private mainAuthService: MainAuthService) {}
 
   ngOnInit(): void {
     const user = this.tokenService.getUser();
@@ -28,7 +29,11 @@ export class MainheaderComponent implements OnInit {
   }
 
   isLoggedIn(): boolean {
-    return !!(localStorage.getItem('token') || sessionStorage.getItem('token'));
+     if (this.mainAuthService.isLoggedIn()) {
+      return true;
+    }else{
+      return false;
+    }
   }
 
   toggleMenu() {

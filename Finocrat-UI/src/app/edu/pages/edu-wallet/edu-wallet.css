@@ -1,0 +1,173 @@
+/* SUCCESS OVERLAY */
+.success-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #0f172a, #1e293b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.success-card {
+  background: #ffffff;
+  padding: 50px 60px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-width: 420px;
+  width: 90%;
+}
+
+.success-card h2 {
+  margin-top: 20px;
+  font-size: 24px;
+  color: #16a34a;
+}
+
+.success-card p {
+  color: #555;
+  margin: 10px 0 25px;
+}
+
+/* CHECKMARK ANIMATION */
+.checkmark-circle {
+  width: 90px;
+  height: 90px;
+  background: #16a34a;
+  border-radius: 50%;
+  position: relative;
+  margin: auto;
+  animation: pop 0.4s ease-out;
+}
+
+.checkmark {
+  position: absolute;
+  left: 26px;
+  top: 40px;
+  width: 25px;
+  height: 50px;
+  border-right: 6px solid white;
+  border-bottom: 6px solid white;
+  transform: rotate(45deg);
+  animation: draw 0.3s ease-out 0.3s forwards;
+  opacity: 0;
+}
+
+@keyframes draw {
+  to { opacity: 1; }
+}
+
+@keyframes pop {
+  0% { transform: scale(0.5); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* SUCCESS BUTTON */
+.success-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.success-btn:hover {
+  opacity: 0.9;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* FAILURE OVERLAY */
+.failure-overlay {
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(135deg, #7f1d1d, #991b1b);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.failure-card {
+  background: #ffffff;
+  padding: 50px 60px;
+  border-radius: 20px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+  max-width: 420px;
+  width: 90%;
+}
+
+.failure-card h2 {
+  margin-top: 20px;
+  font-size: 24px;
+  color: #dc2626;
+}
+
+.failure-card p {
+  color: #555;
+  margin: 10px 0 25px;
+}
+
+/* CROSS ANIMATION */
+.cross-circle {
+  width: 90px;
+  height: 90px;
+  background: #dc2626;
+  border-radius: 50%;
+  position: relative;
+  margin: auto;
+  animation: pop 0.4s ease-out;
+}
+
+.cross {
+  position: absolute;
+  left: 30px;
+  top: 30px;
+  width: 30px;
+  height: 30px;
+}
+
+.cross:before,
+.cross:after {
+  content: '';
+  position: absolute;
+  width: 6px;
+  height: 40px;
+  background: white;
+  left: 12px;
+  top: -5px;
+}
+
+.cross:before {
+  transform: rotate(45deg);
+}
+
+.cross:after {
+  transform: rotate(-45deg);
+}
+
+/* FAILURE BUTTON */
+.failure-btn {
+  padding: 12px 25px;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #dc2626, #991b1b);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+.failure-btn:hover {
+  opacity: 0.9;
+}

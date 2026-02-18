@@ -76,16 +76,16 @@
           <td>
             <span class="status"
               [ngClass]="{
-                'status-success': item.status === 'SUCCESS',
-                'status-failed': item.status === 'FAILED',
-                'status-pending': item.status === 'PENDING'
+                'status-success': item.status === true,
+                'status-failed': item.status === false,
+                'status-pending': item.status === null || item.status === undefined
               }">
-              {{ item.status }}
+              {{ item.status === true ? 'SUCCESS' : item.status === false ? 'FAILED' : 'PENDING' }}
             </span>
           </td>
 
-          <td>{{ item.transactionId }}</td>
-          <td>{{ item.createdDate | date:'medium' }}</td>
+          <td>{{ item.paymentId }}</td>
+          <td>{{ item.created | date:'medium' }}</td>
         </tr>
       </tbody>
     </table>
