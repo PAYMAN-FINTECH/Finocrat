@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { HomeService } from '../../../services/mainservices/home.service';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TokenService } from '../../../services/mainservices/token.service';
 
 @Component({
   selector: 'app-finhome',
@@ -15,6 +16,7 @@ export class FinhomeComponent implements OnInit {
   filterType: string = 'week';
   fromDate: string = '';
   toDate: string = '';
+  userPhone: string | null = null;
 
   stats: any = {
     totalCount: 0,
@@ -23,7 +25,7 @@ export class FinhomeComponent implements OnInit {
     failedCount: 0
   };
 
-  constructor(private homeService: HomeService, private cdr: ChangeDetectorRef ) {}
+  constructor(private homeService: HomeService, private cdr: ChangeDetectorRef,private tokenService: TokenService ) {}
 
   // ✅ FIXED: Use ngOnInit instead of ngAfterViewInit
   ngOnInit(): void {
@@ -41,11 +43,13 @@ export class FinhomeComponent implements OnInit {
   }
 
   loadStats(): void {
+    this.userPhone = this.tokenService.getuserPhone();
 
   const payload = {
     filter: this.filterType,
     fromDate: this.fromDate || null,
-    toDate: this.toDate || null
+    toDate: this.toDate || null,
+    userPhone: this.userPhone || null
   };
 
   this.homeService.getStats(payload).subscribe({

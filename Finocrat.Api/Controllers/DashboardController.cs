@@ -66,7 +66,7 @@ namespace Finocrat.Api.Controllers
 
             var query = _db.fPayIns
                 .Where(x => x.Created >= startDate &&
-                            x.Created <= endDate);
+                            x.Created <= endDate && x.UserPhone == model.UserPhone);
 
             var totalCount = await query.CountAsync();
             var successCount = await query.CountAsync(x => x.Status);
@@ -109,5 +109,6 @@ namespace Finocrat.Api.Controllers
         public string Filter { get; set; }
         public DateTime? FromDate { get; set; }
         public DateTime? ToDate { get; set; }
+        public string UserPhone { get; set; }
     }
 }

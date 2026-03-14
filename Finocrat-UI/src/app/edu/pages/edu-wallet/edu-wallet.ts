@@ -55,6 +55,7 @@ export class EduWalletComponent implements OnInit {
             order_id: res.orderId,
             name: 'Finocrat Edu',
             description: 'Add Wallet Funds',
+            redirect: true,
 
             handler: (response: any) => {
 

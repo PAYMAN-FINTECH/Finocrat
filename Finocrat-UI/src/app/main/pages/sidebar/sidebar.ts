@@ -28,9 +28,11 @@ toggleReports() {
 //   this.adminOpen = !this.adminOpen;
 // }
 logout() {
-  localStorage.clear();   // or remove specific token
-  sessionStorage.clear();
+  localStorage.removeItem('user');
+  localStorage.removeItem('token');   // if you are storing token
+  localStorage.removeItem('main_token');   // if you are storing token
+  sessionStorage.clear();             // only if really needed
 
-  this.router.navigate(['/dashboard/login']);
+  this.router.navigate(['/dashboard']);
 }
 }
