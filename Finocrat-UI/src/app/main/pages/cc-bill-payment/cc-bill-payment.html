@@ -1,0 +1,55 @@
+<p>cc-bill-payment works!</p>
+<div class="container">
+
+  <h3>Credit Card Bill Payment</h3>
+
+  <div class="wallet-box">
+    Wallet Balance : ₹ {{walletBalance}}
+  </div>
+
+  <form #form="ngForm">
+
+    <label>Select Biller</label>
+    <select [(ngModel)]="model.billerId" name="billerId" required>
+      <option value="">Select</option>
+      <option *ngFor="let b of billers" [value]="b.billerId">
+        {{b.billerName}}
+      </option>
+    </select>
+
+    <label>Card Number</label>
+    <input type="text"
+           [(ngModel)]="model.cardNumber"
+           name="cardNumber"
+           placeholder="Enter Card Number"
+           required>
+
+    <button type="button"
+            (click)="fetchBill()">
+      Fetch Bill
+    </button>
+
+    <div *ngIf="billDetails">
+
+      <p>Bill Amount : ₹ {{billDetails.amount}}</p>
+
+      <button type="button"
+              (click)="processPayment()">
+        Pay Now
+      </button>
+
+    </div>
+
+  </form>
+
+
+  <div *ngIf="showSuccessScreen" class="success-overlay">
+
+    <div class="success-card">
+      <h2>Payment Successful 🎉</h2>
+      <p>Your credit card bill paid successfully</p>
+    </div>
+
+  </div>
+
+</div>

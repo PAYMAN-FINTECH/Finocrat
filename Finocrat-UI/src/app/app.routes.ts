@@ -29,6 +29,10 @@ import { AdminUserLookupComponent } from './main/pages/admin-user-lookup/admin-u
 import { UsersComponent } from './main/pages/users/users';
 import { PayInHistoryComponent } from './main/pages/payin-history/payin-history';
 import { EduWalletComponent } from './edu/pages/edu-wallet/edu-wallet';
+import { CcBillPaymentComponent } from './main/pages/cc-bill-payment/cc-bill-payment';
+import { PrivacyPolicy } from './main/pages/privacy-policy/privacy-policy';
+import { RefundPolicy } from './main/pages/refund-policy/refund-policy';
+import { TermsConditions } from './main/pages/terms-conditions/terms-conditions';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -43,6 +47,7 @@ export const routes: Routes = [
     children: [
       { path: '', component: HomeComponent },
       { path: 'about', component: AboutComponent },
+      
       { path: 'contact', component: ContactComponent },
       { path: 'terms', component: TermsComponent },
       { path: 'privacy', component: PrivacyComponent },
@@ -61,6 +66,9 @@ export const routes: Routes = [
   path: 'dashboard',
   children: [
     { path: '', component: DashboradComponent },
+    { path: 'privacy-policy', component: PrivacyPolicy },
+    { path: 'refund-policy', component: RefundPolicy },
+    { path: 'terms-conditions', component: TermsConditions },
     { path: 'login', component: MainLoginComponent },
     { path: 'about', component: AboutUsComponent },
     { path: 'contact', component: ContactUsComponent },
@@ -83,6 +91,7 @@ export const routes: Routes = [
   children: [
     { path: 'finhome', component: FinhomeComponent },
     { path: 'wallet', component: WalletComponent },
+    { path: 'cc', component: CcBillPaymentComponent },
     { path: 'admin-user-lookup', component: AdminUserLookupComponent },
     { path: 'users', component: UsersComponent },
     { path: 'payin-history', component: PayInHistoryComponent },
