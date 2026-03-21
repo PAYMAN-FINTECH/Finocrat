@@ -53,5 +53,45 @@ namespace Finocrat.Api.Controllers
 
             return Ok(data);
         }
+
+
+
+        [HttpGet("payouthistory")]
+        public IActionResult GetPayOutInHistory(DateTime? fromDate, DateTime? toDate, string userPhone)
+        {
+
+            var query = _db.fPayouts
+                .Where(x => x.UserPhone == userPhone);
+
+            // Default: Today
+            if (!fromDate.HasValue && !toDate.HasValue)
+            {
+                var today = DateTime.UtcNow.Date;
+                query = query.Where(x => x.Created >= today);
+            }
+            else
+            {
+                if (fromDate.HasValue)
+                    query = query.Where(x => x.Created >= fromDate.Value);
+
+                if (toDate.HasValue)
+                    query = query.Where(x => x.Created <= toDate.Value.AddDays(1));
+            }
+
+            var data = query
+                .OrderByDescending(x => x.Created)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Amount,
+                    x.Status,
+                    x.TxnReferenceId,
+                    x.Created
+                })
+                .ToList();
+
+            return Ok(data);
+        }
+
     }
 }

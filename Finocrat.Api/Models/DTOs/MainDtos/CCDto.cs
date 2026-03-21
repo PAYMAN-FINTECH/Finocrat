@@ -312,4 +312,22 @@ namespace Finocrat.Api.Models.DTOs.MainDtos
         public string UserPhone { get; set; }
         public string UserName { get; set; }
     }
+
+    public class InstantPaySignupRequest
+    {
+        public string Mobile { get; set; }
+        public string Email { get; set; }
+        public string Aadhaar { get; set; }   // Plain Aadhaar
+        public string Pan { get; set; }
+        public string Latitude { get; set; }
+        public string Longitude { get; set; }
+        public string Consent { get; set; }
+    }
+
+    public class InstantPayValidateRequest
+    {
+        public string OtpReferenceID { get; set; }
+        public string Otp { get; set; }
+        public string Hash { get; set; }
+    }
 }

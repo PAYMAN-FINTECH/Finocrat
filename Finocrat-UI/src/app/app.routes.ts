@@ -33,6 +33,7 @@ import { CcBillPaymentComponent } from './main/pages/cc-bill-payment/cc-bill-pay
 import { PrivacyPolicy } from './main/pages/privacy-policy/privacy-policy';
 import { RefundPolicy } from './main/pages/refund-policy/refund-policy';
 import { TermsConditions } from './main/pages/terms-conditions/terms-conditions';
+import { PayoutHistoryComponent } from './main/pages/payout-history/payout-history';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -95,6 +96,7 @@ export const routes: Routes = [
     { path: 'admin-user-lookup', component: AdminUserLookupComponent },
     { path: 'users', component: UsersComponent },
     { path: 'payin-history', component: PayInHistoryComponent },
+    { path: 'payout-history', component: PayoutHistoryComponent },
   ]
 },
 

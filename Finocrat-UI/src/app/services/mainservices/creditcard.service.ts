@@ -6,7 +6,7 @@ import { Injectable } from '@angular/core';
 })
 export class CreditcardService {
 
-  private api = 'https://localhost:7081/api/CC';
+  private api = 'https://thefinocrat.com/api/CC';
 
   constructor(private http: HttpClient) { }
 
@@ -19,7 +19,8 @@ export class CreditcardService {
     return this.http.get(`${this.api}/BalanceCheck`);
   }
 
-  // Fetch Bill
+  
+  // FETCH BILL
   fetchBill(data: any) {
     return this.http.post(`${this.api}/FetchCreditCardBill`, data);
   }

@@ -1,9 +1,11 @@
 ﻿using Finocrat.Api.Data;
 using Finocrat.Api.Models.DTOs.MainDtos;
+using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Finocrat.Api.Controllers
@@ -14,11 +16,13 @@ namespace Finocrat.Api.Controllers
     {
         private readonly FinocratDbContext _db;
         private readonly IConfiguration _configuration;
+        private readonly DataUtils _dataUtils;
 
-        public CCController(FinocratDbContext db, IConfiguration configuration)
+        public CCController(FinocratDbContext db, IConfiguration configuration, DataUtils dataUtils)
         {
             _db = db;
             _configuration = configuration;
+            _dataUtils = dataUtils;
         }
 
         [HttpGet("BalanceCheck")]
@@ -100,7 +104,7 @@ namespace Finocrat.Api.Controllers
                     client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"]);
                     client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"]);
 
-                    client.DefaultRequestHeaders.Add("X-Ipay-Outlet-Id", "525216");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Outlet-Id", "627849");
 
                     string url = "https://api.instantpay.in/marketplace/utilityPayments/billers";
 
@@ -164,7 +168,7 @@ namespace Finocrat.Api.Controllers
             }
         }
 
-        [HttpPost]
+        [HttpPost("FetchCreditCardBill")]
         public async Task<IActionResult> FetchCreditCardBill([FromBody] BillRequestApp request)
         {
             if (string.IsNullOrWhiteSpace(request.BillerId) ||
@@ -185,10 +189,10 @@ namespace Finocrat.Api.Controllers
             {
                 using (HttpClient client = new HttpClient())
                 {
-                    var clientId = _configuration["Ipay:ClientId"];
-                    var clientSecret = _configuration["Ipay:ClientSecret"];
-                    var outletId = _configuration["Ipay:OutletId"];
-                    var endpointIp = _configuration["Ipay:EndpointIp"];
+                    var clientId = _configuration["InstantPay:X-Ipay-Client-Id"];
+                    var clientSecret = _configuration["InstantPay:X-Ipay-Client-Secret"];
+                    var outletId = _configuration["InstantPay:X-Ipay-Outlet-Id"];
+                    var endpointIp = _configuration["InstantPay:X-Ipay-Endpoint-Ip"];
                     var macAddress = _configuration["DeviceInfo:Mac"];
                     var ipAddress = _configuration["DeviceInfo:Ip"];
 
@@ -314,147 +318,344 @@ namespace Finocrat.Api.Controllers
         }
 
 
-        //[HttpPost]
-        //public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequestApp request)
+        [HttpPost("ProcessPayment")]
+        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequestApp request)
+        {
+            if (request == null ||
+                string.IsNullOrEmpty(request.CustomerMobile) ||
+                string.IsNullOrEmpty(request.EnquiryReferenceId) ||
+                request.Amount <= 0)
+            {
+                return Ok(GenerateFailureResponse("Invalid request."));
+            }
+
+            var userDetails = await _db.fUsers
+                .FirstOrDefaultAsync(t => t.UserPhone == request.Phone);
+
+            if (userDetails == null)
+                return Ok(GenerateFailureResponse("User not found"));
+
+            var panNumber = "BRXPK7957B";
+
+            //var panNumber = await _context.userDocuments
+            //    .Where(t => t.Phone == request.Phone)
+            //    .Select(t => t.PanCardNumber)
+            //    .FirstOrDefaultAsync();
+
+            if (panNumber == null)
+                return Ok(GenerateFailureResponse("PAN details not found"));
+
+            var walletBalance = await _dataUtils.GetWalletAmount(request.Phone);
+
+            if (request.Amount > walletBalance)
+                return Ok(GenerateFailureResponse("Insufficient wallet balance"));
+
+            var externalRef = "PAYMAN" + DateTime.Now.ToString("yyyyMMddHHmmss");
+
+            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
+
+            var existingPayment = await _db.fPayouts
+                .FirstOrDefaultAsync(t => t.ExternalRef == externalRef);
+            if(existingPayment == null)
+            {
+                var payout = new FPayout
+                {
+                    UserId = userDetails.Id,
+                    UserPhone = request.Phone,
+                    ExternalRef = externalRef,
+                    Amount = request.Amount,
+                    PaoutCommission= 15,
+                    Created = istNow,
+                    Status = false,
+                };
+                _db.fPayouts.Add(payout);
+                await _db.SaveChangesAsync();
+            }
+
+            try
+            {
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Accept", "application/json");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["InstantPay:X-Ipay-Client-Id"]);
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"]);
+                    client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"]);
+                    client.DefaultRequestHeaders.Add("X-Ipay-Outlet-Id", _configuration["InstantPay:X-Ipay-Outlet-Id"]);
+
+                    object paymentInfo;
+
+                    switch (request.PaymentMode?.ToUpper())
+                    {
+                        case "CASH":
+                            paymentInfo = new { Remarks = "CashPayment" };
+                            break;
+
+                        case "UPI":
+                            paymentInfo = new { remarks = "VPA", vpa = "9652724937@kotak" };
+                            break;
+
+                        default:
+                            paymentInfo = new { walletName = "Forpay", mobileNo = userDetails.UserPhone };
+                            break;
+                    }
+
+                    var holderMobile = request.holderMobile ?? userDetails.UserPhone;
+                    var holderName = request.customerName ?? userDetails.UserName;
+
+                    var requestData = new
+                    {
+                        billerId = request.BillerId,
+                        externalRef = externalRef,
+                        enquiryReferenceId = request.EnquiryReferenceId,
+                        initChannel = "AGT",
+
+                        inputParameters = new
+                        {
+                            param1 = request.Param1,
+                            param2 = request.Param2,
+                            param3 = holderMobile,
+                            param4 = holderName
+                        },
+
+                        deviceInfo = new
+                        {
+                            terminalId = "1998",
+                            mobile = userDetails.UserPhone,
+                            postalCode = "505402",
+                            geoCode = "28.6326,77.2175"
+                        },
+
+                        paymentMode = request.PaymentMode,
+                        paymentInfo = paymentInfo,
+
+                        remarks = new
+                        {
+                            param1 = request.CustomerMobile
+                        },
+
+                        transactionAmount = request.Amount,
+                        customerPan = panNumber
+                    };
+
+                    var json = JsonConvert.SerializeObject(requestData);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(
+                        "https://api.instantpay.in/marketplace/utilityPayments/payment",
+                        content
+                    );
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    if (!response.IsSuccessStatusCode)
+                        return Ok(GenerateFailureResponse("InstantPay API failed"));
+
+                    var transactionResponse =
+                        JsonConvert.DeserializeObject<TransactionResponse>(responseContent);
+
+                    if (transactionResponse?.Data == null)
+                        return Ok(GenerateFailureResponse("Transaction response invalid"));
+
+                    bool status =
+                        transactionResponse.Status == "Transaction Successful" ||
+                        transactionResponse.Status == "Transaction Under Process";
+                    var payout = await _db.fPayouts.FirstOrDefaultAsync(t => t.ExternalRef == externalRef);
+                    if (status)
+                    {
+                      
+                        if (payout != null)
+                        {
+                            payout.Status = true;
+                            payout.TxnReferenceId = transactionResponse.Data.TxnReferenceId;
+                            payout.OrderId = transactionResponse.Data.PoolReferenceId;
+                            payout.CustomerName = transactionResponse.Data.BillDetails.CustomerName;
+                            payout.CardNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
+                            payout.AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
+                            payout.Result = transactionResponse.Status;
+                            await _db.SaveChangesAsync();
+                        }
+                        _db.SaveChanges();
+                    }
+                    else
+                    {
+                        payout.Result = transactionResponse.Status;
+                        await _db.SaveChangesAsync();
+                    }
+
+                        return Ok(new PaymentResponseProcess
+                        {
+                            Success = status,
+                            Amount = transactionResponse.Data.BillDetails?.BillAmount ?? "0",
+                            OrderId = transactionResponse.Data.TxnReferenceId,
+                            ReferenceId = transactionResponse.Data.ExternalRef,
+                            Category = "Credit Card",
+                            BillerName = transactionResponse.Data.BillerDetails?.Name,
+                            Status = transactionResponse.Status,
+                            UserPhone = request.Phone,
+                            UserName = userDetails.UserName
+                        });
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(GenerateFailureResponse("Exception occurred: " + ex.Message));
+            }
+        }
+
+        [HttpGet("signup-initiate")]
+        public async Task<IActionResult> SignupInitiate()
+        {
+            try
+            {
+                string url = "https://api.instantpay.in/user/outlet/signup/initiate";
+
+                // 🔐 Static Encryption Key (use config in prod)
+                string key = "a48d5868db327556a48d5868db327556";
+                string hjb = "";
+
+
+
+                byte[] keyBytes = Encoding.UTF8.GetBytes(key);
+
+                using (Aes aes = Aes.Create())
+                {
+                    aes.Key = keyBytes;
+                    aes.Mode = CipherMode.CBC;
+                    aes.Padding = PaddingMode.PKCS7;
+
+                    // ✅ Generate RANDOM IV (same as PHP)
+                    aes.GenerateIV();
+                    byte[] iv = aes.IV;
+
+                    using (var encryptor = aes.CreateEncryptor(aes.Key, iv))
+                    using (var ms = new MemoryStream())
+                    {
+                        // ✅ First write IV
+                        ms.Write(iv, 0, iv.Length);
+
+                        using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
+                        {
+                            byte[] inputBytes = Encoding.UTF8.GetBytes("953633346915");
+                            cs.Write(inputBytes, 0, inputBytes.Length);
+                            cs.FlushFinalBlock();
+                        }
+
+                        // ✅ IV + CipherText → Base64
+                        hjb= Convert.ToBase64String(ms.ToArray());
+                    }
+                }
+
+                // 🔐 Static Aadhaar (ONLY FOR TEST)
+                //string encryptedAadhaar = ssEncrypt("527668581152", key);
+
+                var payload = new
+                {
+                    mobile = "8499977699",  
+                    email = "finocart2025@gmail.com",
+                    aadhaar = hjb,
+                    pan = "EUHPB0418J",
+                    latitude = "8.8973",
+                    longitude = "68.0880",
+                    consent = "Y"
+                };
+
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Accept", "application/json");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["InstantPay:X-Ipay-Client-Id"]);
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"]);
+                    client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"]);
+
+                    var json = JsonConvert.SerializeObject(payload);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(url, content);
+                    var result = await response.Content.ReadAsStringAsync();
+
+                    return Ok(new
+                    {
+                        request = payload,
+                        response = result
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { status = "ERROR", message = ex.Message });
+            }
+        }
+
+
+        [HttpPost("signup-validate")]
+        public async Task<IActionResult> SignupValidate()
+        {
+            try
+            {
+                string url = "https://api.instantpay.in/user/outlet/signup/validate";
+
+                var payload = new
+                {
+                    otpReferenceID = "NWMwNGU4MjYtMWZiNi00NGZmLTk4OTUtM2Y2NzkxZDdiYzRh",
+                    otp = "743981",
+                    hash = "lbH6q7u0DsKuvdKHemzcsT2dv3P93yWFTUzYWPDfEQItvh0Pua6ZFZWMZZP01pdTkK+P3rpbX2WPX6I\\/JtJWgyESGNRlx9SYRQCcboAfN7fsTfvb0w5FFe7JeE7JeM33\\/lMX6s4WGOyCPB5yuGzcNYZi4JWoL\\/a\\/L30HjIeekTMGsy5ZLuwk6\\/Cg1RLlOSd8HOr9RxcB1YPRikg5klRt4Q=="
+                };
+
+                using (HttpClient client = new HttpClient())
+                {
+                    client.DefaultRequestHeaders.Add("Accept", "application/json");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
+
+                    // 🔥 SAFE CONFIG (avoid null crash)
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["InstantPay:X-Ipay-Client-Id"] ?? "");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"] ?? "");
+                    client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"] ?? "");
+
+                    var json = JsonConvert.SerializeObject(payload);
+                    var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                    var response = await client.PostAsync(url, content);
+                    var result = await response.Content.ReadAsStringAsync();
+
+                    return Ok(result);
+                }
+            }
+            catch (Exception ex)
+            {
+                return Ok(new { error = ex.Message }); // 👈 avoid crash
+            }
+        }
+
+        //public string ssEncrypt(string aadhaar, string key)
         //{
-        //    if (request == null ||
-        //        string.IsNullOrEmpty(request.CustomerMobile) ||
-        //        string.IsNullOrEmpty(request.EnquiryReferenceId) ||
-        //        request.Amount <= 0)
+        //    byte[] keyBytes = Encoding.UTF8.GetBytes(key.PadRight(32).Substring(0, 32));
+
+        //    using (Aes aes = Aes.Create())
         //    {
-        //        return Ok(GenerateFailureResponse("Invalid request."));
-        //    }
+        //        aes.Key = keyBytes;
+        //        aes.GenerateIV();
+        //        aes.Mode = CipherMode.CBC;
+        //        aes.Padding = PaddingMode.PKCS7;
 
-        //    var userDetails = await _context.payManUsers
-        //        .FirstOrDefaultAsync(t => t.Phone == request.Phone);
-
-        //    if (userDetails == null)
-        //        return Ok(GenerateFailureResponse("User not found"));
-
-        //    var panNumber = await _context.userDocuments
-        //        .Where(t => t.Phone == request.Phone)
-        //        .Select(t => t.PanCardNumber)
-        //        .FirstOrDefaultAsync();
-
-        //    if (panNumber == null)
-        //        return Ok(GenerateFailureResponse("PAN details not found"));
-
-        //    var walletBalance = await _dataUtils.GetUserWalletAmount(request.Phone);
-
-        //    if (request.Amount > walletBalance)
-        //        return Ok(GenerateFailureResponse("Insufficient wallet balance"));
-
-        //    var externalRef = "PAYMAN" + DateTime.Now.ToString("yyyyMMddHHmmss");
-
-        //    try
-        //    {
-        //        using (HttpClient client = new HttpClient())
+        //        using (var encryptor = aes.CreateEncryptor(aes.Key, aes.IV))
+        //        using (var ms = new MemoryStream())
         //        {
-        //            client.DefaultRequestHeaders.Add("Accept", "application/json");
-        //            client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
-        //            client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["Ipay:ClientId"]);
-        //            client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["Ipay:ClientSecret"]);
-        //            client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["Ipay:EndpointIp"]);
-        //            client.DefaultRequestHeaders.Add("X-Ipay-Outlet-Id", _configuration["Ipay:OutletId"]);
+        //            ms.Write(aes.IV, 0, aes.IV.Length);
 
-        //            object paymentInfo;
-
-        //            switch (request.PaymentMode?.ToUpper())
+        //            using (var cs = new CryptoStream(ms, encryptor, CryptoStreamMode.Write))
         //            {
-        //                case "CASH":
-        //                    paymentInfo = new { remarks = "CashPayment" };
-        //                    break;
-
-        //                case "UPI":
-        //                    paymentInfo = new { remarks = "VPA", vpa = "9652724937@kotak" };
-        //                    break;
-
-        //                default:
-        //                    paymentInfo = new { walletName = "Forpay", mobileNo = userDetails.Phone };
-        //                    break;
+        //                var inputBytes = Encoding.UTF8.GetBytes(aadhaar);
+        //                cs.Write(inputBytes, 0, inputBytes.Length);
+        //                cs.FlushFinalBlock();
         //            }
 
-        //            var holderMobile = request.holderMobile ?? userDetails.Phone;
-        //            var holderName = request.customerName ?? userDetails.FirstName;
-
-        //            var requestData = new
-        //            {
-        //                billerId = request.BillerId,
-        //                externalRef = externalRef,
-        //                enquiryReferenceId = request.EnquiryReferenceId,
-        //                initChannel = "AGT",
-
-        //                inputParameters = new
-        //                {
-        //                    param1 = request.Param1,
-        //                    param2 = request.Param2,
-        //                    param3 = holderMobile,
-        //                    param4 = holderName
-        //                },
-
-        //                deviceInfo = new
-        //                {
-        //                    terminalId = "1998",
-        //                    mobile = userDetails.Phone,
-        //                    postalCode = "505402",
-        //                    geoCode = "28.6326,77.2175"
-        //                },
-
-        //                paymentMode = request.PaymentMode,
-        //                paymentInfo = paymentInfo,
-
-        //                remarks = new
-        //                {
-        //                    param1 = request.CustomerMobile
-        //                },
-
-        //                transactionAmount = request.Amount,
-        //                customerPan = panNumber
-        //            };
-
-        //            var json = JsonConvert.SerializeObject(requestData);
-        //            var content = new StringContent(json, Encoding.UTF8, "application/json");
-
-        //            var response = await client.PostAsync(
-        //                "https://api.instantpay.in/marketplace/utilityPayments/payment",
-        //                content
-        //            );
-
-        //            var responseContent = await response.Content.ReadAsStringAsync();
-
-        //            if (!response.IsSuccessStatusCode)
-        //                return Ok(GenerateFailureResponse("InstantPay API failed"));
-
-        //            var transactionResponse =
-        //                JsonConvert.DeserializeObject<TransactionResponse>(responseContent);
-
-        //            if (transactionResponse?.Data == null)
-        //                return Ok(GenerateFailureResponse("Transaction response invalid"));
-
-        //            bool status =
-        //                transactionResponse.Status == "Transaction Successful" ||
-        //                transactionResponse.Status == "Transaction Under Process";
-
-        //            return Ok(new PaymentResponseProcess
-        //            {
-        //                Success = status,
-        //                Amount = transactionResponse.Data.BillDetails?.BillAmount ?? "0",
-        //                OrderId = transactionResponse.Data.TxnReferenceId,
-        //                ReferenceId = transactionResponse.Data.ExternalRef,
-        //                Category = "Credit Card",
-        //                BillerName = transactionResponse.Data.BillerDetails?.Name,
-        //                Status = transactionResponse.Status,
-        //                UserPhone = request.Phone,
-        //                UserName = userDetails.FirstName
-        //            });
+        //            return Convert.ToBase64String(ms.ToArray());
         //        }
         //    }
-        //    catch (Exception ex)
-        //    {
-        //        return Ok(GenerateFailureResponse("Exception occurred: " + ex.Message));
-        //    }
         //}
-
         private PaymentResponseProcess GenerateFailureResponse(string message, string status = "FAILED")
         {
             return new PaymentResponseProcess

@@ -23,4 +23,22 @@ export class PayInService {
 
     return this.http.get<any[]>(this.api, { params });
   }
+
+
+getPayoutHistory(fromDate?: string, toDate?: string, userPhone?: string) {
+
+    let params = new HttpParams();
+
+    if (fromDate)
+      params = params.set('fromDate', fromDate);
+
+    if (toDate)
+      params = params.set('toDate', toDate);
+
+    if (userPhone)
+      params = params.set('userPhone', userPhone);
+
+    return this.http.get<any[]>(this.api, { params });
+  }
+
 }

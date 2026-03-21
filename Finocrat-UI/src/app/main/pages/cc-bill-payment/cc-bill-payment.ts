@@ -1,11 +1,11 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 
 import { TokenService } from '../../../services/mainservices/token.service';
-import { HomeService } from '../../../services/mainservices/home.service';
 import { CreditcardService } from '../../../services/mainservices/creditcard.service';
+import { ToastrService } from 'ngx-toastr';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-cc-bill-payment',
@@ -14,174 +14,187 @@ import { CreditcardService } from '../../../services/mainservices/creditcard.ser
   templateUrl: './cc-bill-payment.html',
   styleUrls: ['./cc-bill-payment.css']
 })
-
 export class CcBillPaymentComponent implements OnInit {
 
-  walletBalance: number = 0;
   billers: any[] = [];
+  filteredBillers: any[] = [];
+
+  searchText = '';
+
+  selectedBiller: any = null;
   billDetails: any = null;
+
+  userPhone = '';
 
   isLoading = false;
   showSuccessScreen = false;
 
-  userPhone: string = '';
-  username: string = '';
-
   model: any = {
     billerId: '',
-    cardNumber: '',
-    amount: 0
+    last4: '',
+    cardMobile: '',
+    amount: ''
   };
 
   constructor(
     private tokenService: TokenService,
-    private homeService: HomeService,
     private ccService: CreditcardService,
-    private cd: ChangeDetectorRef,
-    private router: Router
-  ) { }
+    private toastr: ToastrService,
+    private router: Router,
+  ) {}
+
+  goHome() {
+  this.router.navigate(['/app/finhome'], { replaceUrl: true });
+}
 
   ngOnInit(): void {
 
     const user = this.tokenService.getUser();
-
     if (user) {
       this.userPhone = user.userPhone;
-      this.username = user.name;
     }
 
-    this.loadInstancePayWalletBalance();
-
-    //this.loadWalletBalance();
     this.loadBillers();
-  }
-
-
-  // LOAD WALLET BALANCE
-  loadWalletBalance(): void {
-
-    if (!this.userPhone) return;
-
-    this.homeService.getWalletBalance(this.userPhone)
-      .subscribe({
-        next: (res: any) => {
-          this.walletBalance = Number(res.balance) || 0;
-          setTimeout(() => this.cd.detectChanges());
-        },
-        error: () => this.walletBalance = 0
-      });
-  }
-
-  // LOAD CREDIT CARD BILLERS
-  loadInstancePayWalletBalance(): void {
-
-    this.ccService.getInstancepayWalletBalance()
-      .subscribe({
-        next: (res: any) => {
-          debugger;
-          this.billers = res || [];
-        },
-        error: (err) => console.error("Biller load error", err)
-      });
-  }
-
-
-
-  // LOAD CREDIT CARD BILLERS
-  loadBillers(): void {
-
-    this.ccService.getCreditCardBillers()
-      .subscribe({
-        next: (res: any) => {
-          debugger;
-          this.billers = res || [];
-        },
-        error: (err) => console.error("Biller load error", err)
-      });
-  }
-
-
-  // FETCH BILL
-  fetchBill(): void {
-
-    if (!this.model.billerId || !this.model.cardNumber) {
-      alert("Enter card number");
-      return;
+    // 🔥 BLOCK BACK
+  history.pushState(null, '', location.href);
+  window.onpopstate = () => {
+    if (this.showSuccessScreen) {
+      this.goHome(); // force redirect
     }
-
-    this.isLoading = true;
-
-    const payload = {
-      billerId: this.model.billerId,
-      cardNumber: this.model.cardNumber
-    };
-
-    this.ccService.fetchBill(payload)
-      .subscribe({
-        next: (res: any) => {
-          this.billDetails = res;
-          this.model.amount = res.amount;
-          this.isLoading = false;
-        },
-        error: () => {
-          this.isLoading = false;
-          alert("Unable to fetch bill");
-        }
-      });
+  };
   }
 
-
-  // PROCESS PAYMENT
-  processPayment(): void {
-
-    if (!this.model.amount) {
-      alert("Invalid amount");
-      return;
-    }
-
-    this.isLoading = true;
-
-    const payload = {
-      billerId: this.model.billerId,
-      cardNumber: this.model.cardNumber,
-      amount: this.model.amount,
-      mobile: this.userPhone
-    };
-
-    this.ccService.processPayment(payload)
-      .subscribe({
-        next: (res: any) => {
-
-          this.isLoading = false;
-
-          if (res.status === "SUCCESS") {
-            this.showSuccessScreen = true;
-            this.loadWalletBalance();
-
-            setTimeout(() => {
-              this.goToDashboard();
-            }, 3000);
-          }
-          else {
-            alert("Payment Failed");
-          }
-        },
-        error: () => {
-          this.isLoading = false;
-          alert("Payment Error");
-        }
-      });
-
-  }
-
-
-  goToDashboard(): void {
-
-    this.showSuccessScreen = false;
-
-    this.router.navigate(['/app/finhome']).then(() => {
-      window.location.reload();
+  loadBillers() {
+    this.ccService.getCreditCardBillers().subscribe((res: any) => {
+      this.billers = res.billers || [];
+      this.filteredBillers = this.billers;
     });
   }
 
+  onSearch() {
+    const val = this.searchText.toLowerCase();
+    this.filteredBillers = this.billers.filter(x =>
+      x.billerName.toLowerCase().includes(val)
+    );
+  }
+
+  openPopup(b: any) {
+    this.selectedBiller = b;
+    this.model = {
+      billerId: b.billerId,
+      last4: '',
+      cardMobile: '',
+      amount: '',
+
+      // 🔥 hidden fields
+  consumerName: '',
+  dueDate: '',
+  param1: '',
+  param2: '',
+  enquiryReferenceId: '',
+  paymentMode:'Cash'
+    };
+    this.billDetails = null;
+  }
+
+  closePopup() {
+    this.selectedBiller = null;
+  }
+
+  // 🔥 FETCH BILL (FIXED PAYLOAD)
+  fetchBill() {
+
+  this.isLoading = true;
+
+  const payload = {
+    BillerId: this.model.billerId,
+    CreditCardLast4: this.model.last4,
+    RegisteredMobile: this.model.cardMobile,
+    CustomerMobile: this.userPhone,
+    UserPhone: this.userPhone,
+    ServiceNumber: this.model.last4,   // 👈 IMPORTANT
+    Category: "Credit Card"            // 👈 IMPORTANT
+  };
+
+  console.log("Payload 👉", payload);
+
+  this.ccService.fetchBill(payload).subscribe({
+    next: (res: any) => {
+      if(res.success !== true) {
+        this.toastr.error('Failed to fetch bill!');
+       // alert("Fetch Failed ❌");
+        this.isLoading = false;
+        return;
+      }
+      this.billDetails = res;
+      this.model.amount = res.totalAmount;
+
+      this.model.consumerName = res.consumerName;
+      this.model.dueDate = res.dueDate;
+      this.model.param1 = res.param1;
+      this.model.param2 = res.param2;
+      this.model.enquiryReferenceId = res.enquiryReferenceId;
+      this.model.paymentMode = res.paymentMode || 'Cash';
+      this.isLoading = false;
+    },
+    error: (err) => {
+      console.error("ERROR 👉", err);
+      this.isLoading = false;
+      alert("Fetch failed");
+    }
+  });
+}
+
+  processPayment() {
+
+    this.isLoading = true;
+
+    const payload = {
+
+    BillerId: this.model.billerId,
+
+    CustomerMobile: this.userPhone,
+    Phone: this.userPhone,
+
+    Amount: Number(this.model.amount),
+
+    PaymentMode: this.model.paymentMode,
+
+    EnquiryReferenceId: this.model.enquiryReferenceId,
+
+    Param1: this.model.param1,
+    Param2: this.model.param2,
+
+    LastFourDigits: this.model.last4,
+
+    customerName: this.model.consumerName,
+
+    holderMobile: this.model.cardMobile,
+
+    Device: "Web"
+  };
+
+
+    this.ccService.processPayment(payload).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
+
+        if (res.success === true) {
+          this.showSuccessScreen = true;
+
+        // 🔥 AUTO REDIRECT AFTER 3 SEC
+        setTimeout(() => {
+          this.goHome();
+        }, 3000);
+          this.closePopup();
+        } else {
+          this.toastr.error('Payment Failed ❌');
+        }
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toastr.error('Payment Error');
+      }
+    });
+  }
 }

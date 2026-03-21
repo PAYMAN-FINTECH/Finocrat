@@ -1,54 +1,109 @@
-<p>cc-bill-payment works!</p>
-<div class="container">
+<div class="page">
 
-  <h3>Credit Card Bill Payment</h3>
+  <h2 class="title">Credit Card</h2>
 
-  <div class="wallet-box">
-    Wallet Balance : ₹ {{walletBalance}}
+  <!-- SEARCH -->
+  <div class="search-box">
+    <input type="text"
+           placeholder="Search credit card..."
+           [(ngModel)]="searchText"
+           (input)="onSearch()">
   </div>
 
-  <form #form="ngForm">
+  <!-- GRID -->
+  <div class="grid">
+    <div class="card"
+         *ngFor="let b of filteredBillers"
+         (click)="openPopup(b)">
 
-    <label>Select Biller</label>
-    <select [(ngModel)]="model.billerId" name="billerId" required>
-      <option value="">Select</option>
-      <option *ngFor="let b of billers" [value]="b.billerId">
-        {{b.billerName}}
-      </option>
-    </select>
+      <img [src]="b.iconUrl">
+      <span>{{b.billerName}}</span>
 
-    <label>Card Number</label>
-    <input type="text"
-           [(ngModel)]="model.cardNumber"
-           name="cardNumber"
-           placeholder="Enter Card Number"
-           required>
+    </div>
+  </div>
 
-    <button type="button"
+</div>
+
+
+<!-- MODAL -->
+<div class="modal" *ngIf="selectedBiller">
+
+  <div class="modal-box">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <h3>Credit Card Bill</h3>
+      <span (click)="closePopup()">✖</span>
+    </div>
+
+    <!-- BANK -->
+    <div class="bank-section">
+      <img [src]="selectedBiller.iconUrl">
+      <p>{{selectedBiller.billerName}}</p>
+    </div>
+
+    <!-- INPUTS -->
+    <div class="form">
+
+      <label>Last 4 digits</label>
+      <input [(ngModel)]="model.last4">
+
+      <label>Card Holder Mobile</label>
+      <input [(ngModel)]="model.cardMobile">
+
+      <label>Customer Mobile</label>
+      <input [value]="userPhone" readonly>
+
+    </div>
+
+    <!-- FETCH -->
+    <button class="btn primary"
+            [disabled]="!model.last4 || !model.cardMobile"
+            *ngIf="!billDetails"
             (click)="fetchBill()">
-      Fetch Bill
+
+      {{isLoading ? 'Fetching...' : 'Fetch Bill'}}
+
     </button>
 
+    <!-- AFTER FETCH -->
     <div *ngIf="billDetails">
 
-      <p>Bill Amount : ₹ {{billDetails.amount}}</p>
+      <label>Amount</label>
+      <input [(ngModel)]="model.amount">
 
-      <button type="button"
+      <div class="bill-box">
+        <h4>Bill Details</h4>
+        <p>Due Amount: ₹ {{billDetails.totalAmount}}</p>
+        <p>Due Date: {{billDetails.dueDate}}</p>
+        <p>Name: {{billDetails.consumerName}}</p>
+      </div>
+
+      <button class="btn success"
               (click)="processPayment()">
-        Pay Now
+
+        {{isLoading ? 'Processing...' : 'Proceed'}}
+
       </button>
 
     </div>
 
-  </form>
+  </div>
 
+</div>
 
-  <div *ngIf="showSuccessScreen" class="success-overlay">
+<!-- SUCCESS SCREEN -->
+<div class="success-screen" *ngIf="showSuccessScreen">
 
-    <div class="success-card">
-      <h2>Payment Successful 🎉</h2>
-      <p>Your credit card bill paid successfully</p>
-    </div>
+  <div class="success-box">
+
+    <div class="tick">✔</div>
+
+    <h2>Payment Successful</h2>
+
+    <p>₹ {{model.amount}} paid successfully</p>
+
+    <p class="small">Redirecting to home...</p>
 
   </div>
 
