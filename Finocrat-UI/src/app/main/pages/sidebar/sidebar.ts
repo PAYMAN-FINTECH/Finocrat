@@ -17,6 +17,7 @@ import {
   Shield,
   Users
 } from 'lucide-angular';
+import { TokenService } from '../../../services/mainservices/token.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -48,14 +49,13 @@ export class SidebarComponent {
   Shield = Shield;   // 🔥 NEW
   Users = Users;     // 🔥 NEW
 
-  constructor(private router: Router) {}
+  constructor(private router: Router, private tokenService: TokenService) {}
 
  ngOnInit() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-    // ✅ ONLY SHOW FOR "jurra"
-    if (user?.name?.toLowerCase() === 'jurra') {
-      this.isAdmin = true;
+  const user = this.tokenService.getUser();
+    if (user) {
+      this.isAdmin = user.isAdmin || false; 
     }
   }
 

@@ -59,12 +59,20 @@ export class WalletComponent implements OnInit {
     this.loadCCBalance();
   }
 
-  loadGateways(): void {
-    this.razorService.getGateways().subscribe({
-      next: (res) => this.gateways = res || [],
-      error: (err) => console.error('Gateway load error', err)
-    });
-  }
+payInLimit: number = 0;
+payInEnabled: boolean = false;
+
+loadGateways(): void {
+  this.razorService.getGateways(this.userPhone).subscribe({
+    next: (res: any) => {
+      this.payInEnabled = res.payInEnabled;
+      this.payInLimit = res.payInLimit;
+      this.gateways = res.gateways || [];
+    },
+    error: (err) => console.error('Gateway load error', err)
+  });
+}
+
 
   loadWalletBalance(): void {
 

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../../../environments/environment.prod';
 
 @Component({
   selector: 'app-users',
@@ -12,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
 })
 export class UsersComponent implements OnInit {
 
-  baseUrl = 'https://localhost:7081/api';
+  private baseUrl = environment.apiUrl
 
   users: any[] = [];
 
@@ -39,7 +40,8 @@ export class UsersComponent implements OnInit {
       userPhone: ['', Validators.required],
       email: ['', [Validators.required, Validators.email]],
       gender: [''],
-      isActive: [true]
+      isActive: [true],
+      isAdmin: [false]
     });
   }
 
@@ -73,7 +75,8 @@ export class UsersComponent implements OnInit {
       userPhone: '',
       email: '',
       gender: '',
-      isActive: true
+      isActive: true,
+      isAdmin: false
     });
 
     this.showModal = true;
@@ -91,7 +94,8 @@ export class UsersComponent implements OnInit {
       userPhone: user.userPhone,
       email: user.email,
       gender: user.gender,
-      isActive: user.isActive
+      isActive: user.isActive,
+      isAdmin: user.isAdmin
     });
 
     this.showModal = true;

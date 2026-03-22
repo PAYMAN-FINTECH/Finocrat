@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { TokenService } from '../../../services/mainservices/token.service';
+import { environment } from '../../../../environments/environment.prod';
 
 @Component({
   selector: 'app-kyc',
@@ -13,7 +14,7 @@ import { TokenService } from '../../../services/mainservices/token.service';
 })
 export class KycComponent implements OnInit {
 
-  baseUrl = 'https://localhost:7081/api/Kyc';
+  private baseUrl = environment.apiUrl
 
   step = 1;
 
@@ -52,7 +53,7 @@ export class KycComponent implements OnInit {
 
     this.loading = true;
 
-    this.http.post<any>(`${this.baseUrl}/send-otp`, {
+    this.http.post<any>(`${this.baseUrl}/Kyc/send-otp`, {
       phone: this.phone,
       adharNumber: this.aadhaar
     }).subscribe({
@@ -73,7 +74,7 @@ export class KycComponent implements OnInit {
 
     this.loading = true;
 
-    this.http.post(`${this.baseUrl}/verify-otp`, {
+    this.http.post(`${this.baseUrl}/Kyc/verify-otp`, {
       phone: this.phone,
       refId: this.refId,
       otp: this.otp
@@ -94,7 +95,7 @@ export class KycComponent implements OnInit {
 
     this.loading = true;
 
-    this.http.post(`${this.baseUrl}/verify-pan`, {
+    this.http.post(`${this.baseUrl}/Kyc/verify-pan`, {
       phone: this.phone,
       panNumber: this.pan
     }).subscribe({
@@ -134,7 +135,7 @@ export class KycComponent implements OnInit {
 
     this.loading = true;
 
-    this.http.post(`${this.baseUrl}/upload-docs`, formData)
+    this.http.post(`${this.baseUrl}/Kyc/upload-docs`, formData)
       .subscribe({
         next: () => {
           this.loading = false;
@@ -152,7 +153,7 @@ export class KycComponent implements OnInit {
 
     this.loading = true;
 
-    this.http.post(`${this.baseUrl}/submit`, {
+    this.http.post(`${this.baseUrl}/Kyc/submit`, {
       phone: this.phone
     }).subscribe({
       next: () => {

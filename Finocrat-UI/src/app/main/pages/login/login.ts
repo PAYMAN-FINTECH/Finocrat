@@ -76,7 +76,8 @@ export class MainLoginComponent implements OnInit {
         this.tokenService.saveToken(res.token, {
           name: res.user?.name ?? '',
           userId: res.user?.userId ?? '',
-          userPhone: res.user?.userPhone ?? ''
+          userPhone: res.user?.userPhone ?? '',
+          isAdmin: res.user?.isAdmin ?? false
         });
 
         this.toastr.success('Login successful!');

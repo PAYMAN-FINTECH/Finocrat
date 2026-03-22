@@ -16,8 +16,9 @@ export class RazorPaymentService {
     return this.http.post<any>(`${this.api}/verify`, data);
   }
 
-  getGateways() {
-    return this.http.get<any[]>(`${this.api}/gateways`);
-  }
+  getGateways(userPhone: string) {
+  return this.http.get<any>(`${this.api}/gateways?userPhone=${userPhone}`);
+}
+
   
 }

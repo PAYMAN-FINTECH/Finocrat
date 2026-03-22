@@ -18,49 +18,70 @@ namespace Finocrat.Api.Controllers
             _db = db;
         }
 
-        // =========================================
-        // ✅ GET USER SETTINGS (MERGED ADMIN DEFAULT)
-        // =========================================
         [HttpGet("{userPhone}")]
         public async Task<IActionResult> GetUserLookup(string userPhone)
         {
             var data = await _db.fUserLookups
                 .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
 
-            Dictionary<string, object> defaultSettings = new()
+            var userDetails = await _db.fUsers
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            if (userDetails == null)
+                return BadRequest("User not found");
+
+            // =========================================
+            // DEFAULT SETTINGS
+            // =========================================
+            Dictionary<string, object> defaultSettings = new();
+
+            // ✅ ADMIN CONFIG
+            if (userDetails.IsAdmin == true)
             {
-                // 🔥 ADMIN DEFAULT CONFIG
-                { "PayIn Enabled", true },
-                { "PayOut Enabled", true },
-                { "CC Enabled", true },
+                defaultSettings.Add("System PayIn", false);
+                defaultSettings.Add("System PayOut", false);
+                defaultSettings.Add("System CC", false);
 
-                { "PayIn Limit", 10000 },
-                { "PayOut Limit", 5000 },
-                { "CC Limit", 2000 },
+                defaultSettings.Add("System PayIn Limit", 10000);
+                defaultSettings.Add("System PayOut Limit", 10000);
+                defaultSettings.Add("System CC Limit", 10000);
+            }
 
-                // 🔥 USER LEVEL CONFIG
-                { "Razorpay Enabled", false },
-                { "Cashfree Enabled", false },
+            // ✅ COMMON USER CONFIG
+            defaultSettings.Add("REduction Enabled", false);
+            defaultSettings.Add("CEducation Enabled", false);
 
-                { "PayIn Margin", 0 },
-                { "PayOut Margin", 0 },
-                { "CC Margin", 0 }
-            };
+            defaultSettings.Add("PayIn Margin", 0);
+            defaultSettings.Add("PayOut Margin", 0);
+            defaultSettings.Add("CC Margin", 0);
 
+            defaultSettings.Add("PayIn Enabled", false);
+            defaultSettings.Add("PayOut Enabled", false);
+            defaultSettings.Add("CC Enabled", false);
+
+            // =========================================
+            // IF NO DB DATA → RETURN DEFAULT
+            // =========================================
             if (data == null)
                 return Ok(defaultSettings);
 
-            var userSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+            var userSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson)
+                              ?? new Dictionary<string, object>();
 
-            // 🔥 MERGE DEFAULT + USER SETTINGS
+            // =========================================
+            // MERGE DEFAULT + USER SETTINGS
+            // =========================================
             foreach (var key in defaultSettings.Keys)
             {
                 if (!userSettings.ContainsKey(key))
+                {
                     userSettings[key] = defaultSettings[key];
+                }
             }
 
             return Ok(userSettings);
         }
+
 
         // =========================================
         // SAVE SETTINGS

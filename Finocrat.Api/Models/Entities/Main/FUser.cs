@@ -8,11 +8,8 @@
         public string UserPhone { get; set; }
         public string Email { get; set; }
         public bool IsActive { get; set; }
-        public Guid MarginId { get; set; }
         public string? Gender { get; set; }
-        public bool? IsRazorpayEnabled { get; set; } = false;
+        public bool? IsAdmin { get; set; } = false;
         public DateTime Created { get; set; }
-
-        public FMargin Margin { get; set; }
     }
 }

@@ -46,7 +46,8 @@ namespace Finocrat.Api.Controllers
             {
                 userId = "PM",
                 name = user.UserName,
-                userPhone = user.UserPhone
+                userPhone = user.UserPhone,
+                isAdmin = user.IsAdmin
             };
 
             return Ok(new
@@ -69,7 +70,8 @@ namespace Finocrat.Api.Controllers
                     u.UserPhone,
                     u.Email,
                     u.IsActive,
-                    u.Gender
+                    u.Gender,
+                    u.IsAdmin
                 })
                 .ToListAsync();
 
@@ -95,7 +97,8 @@ namespace Finocrat.Api.Controllers
                 Email = model.Email,
                 IsActive = model.IsActive,
                 Gender = model.Gender,
-                Created = DateTime.UtcNow
+                Created = DateTime.UtcNow,
+                IsAdmin = model.IsAdmin
             };
 
             _db.fUsers.Add(user);
@@ -121,6 +124,8 @@ namespace Finocrat.Api.Controllers
             user.UserPhone = model.UserPhone;
             user.Gender = model.Gender;
             user.IsActive = model.IsActive;
+            user.Gender = model.Gender;
+            user.IsAdmin = model.IsAdmin;
 
             if (!string.IsNullOrEmpty(model.Password))
                 user.Password = model.Password;
@@ -133,13 +138,6 @@ namespace Finocrat.Api.Controllers
                 message = "User Updated",
                 data = user.Id
             });
-        }
-
-        [HttpGet("margin")]
-        public async Task<IActionResult> GetMargins()
-        {
-            var data = await _db.fMargins.Where(t=>t.IsActive == true).ToListAsync();
-            return Ok(data);
         }
 
 

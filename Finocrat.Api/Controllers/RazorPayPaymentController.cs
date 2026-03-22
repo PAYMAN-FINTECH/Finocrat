@@ -3,9 +3,11 @@ using Finocrat.Api.Helpers;
 using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Razorpay.Api;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 
 namespace Finocrat.Api.Controllers
 {
@@ -29,14 +31,76 @@ namespace Finocrat.Api.Controllers
 
 
         [HttpGet("gateways")]
-        public IActionResult GetGateways()
-        
+        public async Task<IActionResult> GetGateways(string userPhone)
         {
-            return Ok(new[]
+            if (string.IsNullOrEmpty(userPhone))
+                return BadRequest("userPhone is required");
+
+            var data = await _db.fUserLookups
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            // ✅ DEFAULT SETTINGS
+            Dictionary<string, object> settings = new()
+    {
+        { "PayIn Enabled", true },
+        { "System PayIn Limit", 10000 },
+
+        { "REduction Enabled", true },
+        { "CEduction Enabled", true },
+        { "CC Enabled", true }
+    };
+
+            // ✅ MERGE DB SETTINGS
+            if (data != null)
             {
-        new { id = 1, name = "REducation" }
-    });
+                var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+
+                foreach (var key in dbSettings.Keys)
+                {
+                    settings[key] = dbSettings[key];
+                }
+            }
+
+            // 🔴 IF PAYIN DISABLED → RETURN EMPTY
+            bool payInEnabled = settings.ContainsKey("PayIn Enabled") &&
+                                Convert.ToBoolean(settings["PayIn Enabled"]);
+
+            if (!payInEnabled)
+            {
+                return Ok(new
+                {
+                    payInEnabled = false,
+                    payInLimit = 0,
+                    gateways = new List<object>()
+                });
+            }
+
+            // ✅ LIMIT
+            decimal payInLimit = settings.ContainsKey("System PayIn Limit")
+                ? Convert.ToDecimal(settings["System PayIn Limit"])
+                : 0;
+
+            var gateways = new List<object>();
+            int id = 1;
+
+            // ✅ ENABLED GATEWAYS
+            if (settings.ContainsKey("REduction Enabled") && Convert.ToBoolean(settings["REduction Enabled"]))
+                gateways.Add(new { id = id++, name = "REduction Enabled" });
+
+            if (settings.ContainsKey("CEduction Enabled") && Convert.ToBoolean(settings["CEduction Enabled"]))
+                gateways.Add(new { id = id++, name = "CEduction Enabled" });
+
+            if (settings.ContainsKey("CC Enabled") && Convert.ToBoolean(settings["CC Enabled"]))
+                gateways.Add(new { id = id++, name = "Credit Card" });
+
+            return Ok(new
+            {
+                payInEnabled = true,
+                payInLimit = payInLimit,
+                gateways = gateways
+            });
         }
+
 
 
         // CREATE ORDER
@@ -82,7 +146,12 @@ namespace Finocrat.Api.Controllers
 
             var userdetails = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
 
-            
+            var data =  _db.fUserLookups
+               .FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
+            var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+            decimal payInLimit = dbSettings.ContainsKey("PayIn Margin")
+                ? Convert.ToDecimal(dbSettings["PayIn Margin"])
+                : 0;
 
             if (generatedSignature == model.Signature)
             {
@@ -106,7 +175,7 @@ namespace Finocrat.Api.Controllers
                         PaymentId = model.PaymentId,
                         TaxNumber = model.OrderId,
                         Amount = model.Amount,
-                        PayInCommission = model.Amount / 100,
+                        PayInCommission = model.Amount * payInLimit / 100,
                         FCommission = model.Amount / 100,
                         Gateway = model.SelectedGateway,
                         Created = istNow

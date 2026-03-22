@@ -49,25 +49,91 @@ namespace Finocrat.Api.Migrations
                     b.ToTable("eduUsers");
                 });
 
-            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FMargin", b =>
+            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FAadharDetails", b =>
                 {
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("MarginName")
+                    b.Property<string>("AadharNo")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<decimal>("Percentage")
-                        .HasColumnType("decimal(18,2)");
+                    b.Property<string>("AadharRefId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Address")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Otp")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("Status")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.HasKey("Id");
 
-                    b.ToTable("fMargins");
+                    b.ToTable("fAadharDetails");
+                });
+
+            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FKycDetail", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("Created")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsAadharVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDocumentsUploaded")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsKycCompleted")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsPanVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("Updated")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("FKycDetails");
                 });
 
             modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FPayIn", b =>
@@ -226,11 +292,8 @@ namespace Finocrat.Api.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<bool?>("IsRazorpayEnabled")
+                    b.Property<bool?>("IsAdmin")
                         .HasColumnType("bit");
-
-                    b.Property<Guid>("MarginId")
-                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -246,9 +309,51 @@ namespace Finocrat.Api.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MarginId");
-
                     b.ToTable("fUsers");
+                });
+
+            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FUserDocuments", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<byte[]>("AadharBack")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<byte[]>("AadharFront")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<bool>("IsVerified")
+                        .HasColumnType("bit");
+
+                    b.Property<byte[]>("PanCard")
+                        .IsRequired()
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("PanCardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Phone")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("RejectionReason")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("UploadedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid?>("UserId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("fUserDocuments");
                 });
 
             modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FUserLookup", b =>
@@ -277,22 +382,6 @@ namespace Finocrat.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("fUserLookups");
-                });
-
-            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FUser", b =>
-                {
-                    b.HasOne("Finocrat.Api.Models.Entities.Main.FMargin", "Margin")
-                        .WithMany("Users")
-                        .HasForeignKey("MarginId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Margin");
-                });
-
-            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FMargin", b =>
-                {
-                    b.Navigation("Users");
                 });
 #pragma warning restore 612, 618
         }

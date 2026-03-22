@@ -142,19 +142,23 @@
 
       <!-- BUTTON -->
       <button type="submit"
-              class="primary-btn"
-              [disabled]="fundForm.invalid || model.amount > 99999 || isLoading">
+        class="primary-btn"
+        [disabled]="fundForm.invalid 
+                    || model.amount > payInLimit 
+                    || !payInEnabled
+                    || isLoading">
 
-        <span *ngIf="!isLoading">
-          Add Funds Securely
-        </span>
+  <span *ngIf="!isLoading">
+    Add Funds Securely
+  </span>
 
-        <span *ngIf="isLoading" class="btn-loader">
-          <span class="spinner"></span>
-          Processing...
-        </span>
+  <span *ngIf="isLoading" class="btn-loader">
+    <span class="spinner"></span>
+    Processing...
+  </span>
 
-      </button>
+</button>
+
 
     </form>
   </div>

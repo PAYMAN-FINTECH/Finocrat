@@ -11,5 +11,6 @@
         public Guid MarginId { get; set; }
         public string? Gender { get; set; }
         public bool? IsRazorpayEnabled { get; set; }
+        public bool? IsAdmin { get; set; } = false;
     }
 }
