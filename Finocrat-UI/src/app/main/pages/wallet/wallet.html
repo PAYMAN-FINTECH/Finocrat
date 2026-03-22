@@ -2,17 +2,42 @@
 
   <!-- BALANCE CARD -->
   <div class="balance-card">
-    <div class="balance-left">
-      <p class="balance-label">Available Balance</p>
-      <h1 class="balance-amount">
+
+  <!-- LEFT SIDE -->
+  <div class="balance-section">
+
+    <!-- WALLET -->
+    <div class="balance-item">
+      <p class="balance-label">Wallet Balance</p>
+      <h2 class="balance-amount">
         ₹ {{ walletBalance | number:'1.2-2' }}
-      </h1>
+      </h2>
     </div>
 
-    <button class="refresh-btn" (click)="refreshBalance()" [disabled]="isLoading">
-      ⟳
-    </button>
+    <!-- DIVIDER -->
+    <div class="divider"></div>
+
+    <!-- CREDIT CARD -->
+    <div class="balance-item">
+      <p class="balance-label">Credit Card Balance</p>
+      <h2 class="balance-amount">
+        ₹ {{ ccBalance | number:'1.2-2' }}
+      </h2>
+    </div>
+
   </div>
+
+  <!-- RIGHT SIDE BUTTON -->
+  <button class="refresh-btn"
+          (click)="refreshBalance()"
+          [disabled]="isLoading">
+
+    <span *ngIf="!isLoading">⟳</span>
+    <span *ngIf="isLoading" class="loader"></span>
+
+  </button>
+
+</div>
 
   <!-- ADD FUNDS -->
   <div class="fund-card">

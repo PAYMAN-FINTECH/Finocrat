@@ -101,8 +101,12 @@ export class CcBillPaymentComponent implements OnInit {
     this.selectedBiller = null;
   }
 
-  // 🔥 FETCH BILL (FIXED PAYLOAD)
   fetchBill() {
+
+  if (this.model.last4.length !== 4) {
+    this.toastr.error('Enter valid last 4 digits');
+    return;
+  }
 
   this.isLoading = true;
 
@@ -112,20 +116,19 @@ export class CcBillPaymentComponent implements OnInit {
     RegisteredMobile: this.model.cardMobile,
     CustomerMobile: this.userPhone,
     UserPhone: this.userPhone,
-    ServiceNumber: this.model.last4,   // 👈 IMPORTANT
-    Category: "Credit Card"            // 👈 IMPORTANT
+    ServiceNumber: this.model.last4,
+    Category: "Credit Card"
   };
-
-  console.log("Payload 👉", payload);
 
   this.ccService.fetchBill(payload).subscribe({
     next: (res: any) => {
-      if(res.success !== true) {
-        this.toastr.error('Failed to fetch bill!');
-       // alert("Fetch Failed ❌");
-        this.isLoading = false;
+      this.isLoading = false;
+
+      if (!res.success) {
+        this.toastr.error('Failed to fetch bill');
         return;
       }
+
       this.billDetails = res;
       this.model.amount = res.totalAmount;
 
@@ -134,16 +137,14 @@ export class CcBillPaymentComponent implements OnInit {
       this.model.param1 = res.param1;
       this.model.param2 = res.param2;
       this.model.enquiryReferenceId = res.enquiryReferenceId;
-      this.model.paymentMode = res.paymentMode || 'Cash';
-      this.isLoading = false;
     },
-    error: (err) => {
-      console.error("ERROR 👉", err);
+    error: () => {
       this.isLoading = false;
-      alert("Fetch failed");
+      this.toastr.error('Fetch failed');
     }
   });
 }
+
 
   processPayment() {
 

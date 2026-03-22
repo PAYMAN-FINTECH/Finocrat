@@ -7,7 +7,7 @@
       <span>Finocrat</span>
     </div>
 
-    <!-- NAV LINKS (DESKTOP) -->
+    <!-- NAV LINKS -->
     <nav class="nav-links" [class.open]="isMenuOpen" *ngIf="!isLoggedIn()">
       <a routerLink="/dashboard">Home</a>
       <a routerLink="/dashboard/about">About</a>
@@ -31,10 +31,22 @@
 
       <!-- PROFILE -->
       <div *ngIf="isLoggedIn()" class="profile">
-        <img src="assets/images/profile.png" class="avatar">
+
+        <!-- IMAGE -->
+        <img *ngIf="!imageError"
+             [src]="profileImage"
+             class="avatar"
+             (error)="onImageError()">
+
+        <!-- FALLBACK -->
+        <div *ngIf="imageError" class="avatar-fallback">
+          {{ username ? username.charAt(0) : '👤' }}
+        </div>
+
         <div class="profile-info">
           <strong>{{ username }}</strong>
         </div>
+
       </div>
 
     </div>

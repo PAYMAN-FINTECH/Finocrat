@@ -3,42 +3,109 @@
   <div class="logo">Finocrat</div>
 
   <ul class="menu">
-    <li routerLink="/app/finhome" routerLinkActive="active">Dashboard</li>
-    <li routerLink="/app/wallet" routerLinkActive="active">Wallet</li>
-    <li routerLink="/app/cc" routerLinkActive="active">Credit Cards</li>
-    <li routerLink="/app/services" routerLinkActive="active">Services</li>
 
+    <!-- DASHBOARD -->
+    <li routerLink="/app/finhome" routerLinkActive="active">
+      <div class="menu-left">
+        <lucide-icon [img]="LayoutDashboard"></lucide-icon>
+        <span>Dashboard</span>
+      </div>
+    </li>
+
+    <!-- WALLET -->
+    <li routerLink="/app/wallet" routerLinkActive="active">
+      <div class="menu-left">
+        <lucide-icon [img]="Wallet"></lucide-icon>
+        <span>Wallet</span>
+      </div>
+    </li>
+
+    <!-- BILL -->
+    <li routerLink="/app/cc" routerLinkActive="active">
+      <div class="menu-left">
+        <lucide-icon [img]="CreditCard"></lucide-icon>
+        <span>Bill Payments</span>
+      </div>
+    </li>
+
+    <!-- SERVICES -->
+    <li routerLink="/app/services" routerLinkActive="active">
+      <div class="menu-left">
+        <lucide-icon [img]="Layers"></lucide-icon>
+        <span>Services</span>
+      </div>
+    </li>
+
+    <!-- REPORTS -->
     <li (click)="toggleReports()" class="parent">
-      Reports
+      <div class="menu-left">
+        <lucide-icon [img]="BarChart3"></lucide-icon>
+        <span>Reports</span>
+      </div>
       <span class="arrow" [class.rotate]="reportsOpen">▾</span>
     </li>
+
     <ul *ngIf="reportsOpen" class="submenu">
-      <li routerLink="/app/payin-history" routerLinkActive="active">PayIn</li>
-      <li routerLink="/app/payout-history" routerLinkActive="active">PayOut</li>
+
+      <li routerLink="/app/payin-history" routerLinkActive="active">
+        <lucide-icon [img]="ArrowDownCircle"></lucide-icon>
+        <span>PayIn</span>
+      </li>
+
+      <li routerLink="/app/payout-history" routerLinkActive="active">
+        <lucide-icon [img]="ArrowUpCircle"></lucide-icon>
+        <span>PayOut</span>
+      </li>
+
     </ul>
 
-    <!-- <li (click)="toggleAdmin()" class="parent">
-      Admin
-      <span class="arrow" [class.rotate]="adminOpen">▾</span>
-    </li> -->
-    <!-- <ul  class="submenu">
-      <li routerLink="/app/admin-user-lookup" routerLinkActive="active">Test</li>
-      <li routerLink="/app/users" routerLinkActive="active">Users</li>
-    </ul> -->
+    <!-- 🔥 ADMIN -->
+    <!-- 🔥 ADMIN (ONLY FOR JURRA) -->
+<ng-container *ngIf="isAdmin">
 
-    <li routerLink="/app/profile" routerLinkActive="active">Profile</li>
+  <li (click)="toggleAdmin()" class="parent">
+    <div class="menu-left">
+      <lucide-icon [img]="Shield"></lucide-icon>
+      <span>Admin</span>
+    </div>
+    <span class="arrow" [class.rotate]="adminOpen">▾</span>
+  </li>
+
+  <ul *ngIf="adminOpen" class="submenu">
+
+    <li routerLink="/app/admin-user-lookup" routerLinkActive="active">
+      <lucide-icon [img]="User"></lucide-icon>
+      <span>Test</span>
+    </li>
+
+    <li routerLink="/app/users" routerLinkActive="active">
+      <lucide-icon [img]="Users"></lucide-icon>
+      <span>Users</span>
+    </li>
+
   </ul>
 
-  <!-- 🔥 PROFESSIONAL LOGOUT SECTION -->
+</ng-container>
+
+
+    <!-- PROFILE -->
+    <li routerLink="/app/profile" routerLinkActive="active">
+      <div class="menu-left">
+        <lucide-icon [img]="User"></lucide-icon>
+        <span>Profile</span>
+      </div>
+    </li>
+
+  </ul>
+
+  <!-- FOOTER -->
   <div class="sidebar-footer">
-    <!-- <div class="user-info">
-      <div class="avatar">J</div>
-      <div class="username">Jurra</div>
-    </div> -->
 
     <button class="logout-btn" (click)="logout()">
-      <span>🚪</span> Logout
+      <lucide-icon [img]="LogOut"></lucide-icon>
+      <span>Logout</span>
     </button>
+
   </div>
 
 </div>

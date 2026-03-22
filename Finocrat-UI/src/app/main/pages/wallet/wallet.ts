@@ -5,6 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { HomeService } from '../../../services/mainservices/home.service';
 import { Router } from '@angular/router';
+import { CreditcardService } from '../../../services/mainservices/creditcard.service';
 
 declare var Razorpay: any;
 
@@ -19,6 +20,7 @@ export class WalletComponent implements OnInit {
 
   gateways: any[] = [];
   walletBalance: number = 0;
+  ccBalance: number = 0;
   isLoading: boolean = false;
   showSuccessScreen: boolean = false;
 
@@ -39,7 +41,8 @@ export class WalletComponent implements OnInit {
     private tokenService: TokenService,
     private homeService: HomeService,
     private cd: ChangeDetectorRef,
-    private router: Router
+    private router: Router,
+    private ccService: CreditcardService
   ) {}
 
   ngOnInit(): void {
@@ -53,6 +56,7 @@ export class WalletComponent implements OnInit {
 
     this.loadGateways();
     this.loadWalletBalance();
+    this.loadCCBalance();
   }
 
   loadGateways(): void {
@@ -76,8 +80,23 @@ export class WalletComponent implements OnInit {
       });
   }
 
+  loadCCBalance(): void {
+
+    if (!this.userPhone) return;
+
+    this.ccService.getInstancepayWalletBalance()
+      .subscribe({
+        next: (res: any) => {
+          this.ccBalance = Number(res.balance) || 0;
+          setTimeout(() => this.cd.detectChanges());
+        },
+        error: () => this.ccBalance = 0
+      });
+  }
+
   refreshBalance(): void {
     this.loadWalletBalance();
+    this.loadCCBalance();
   }
 
   goToDashboard(): void {

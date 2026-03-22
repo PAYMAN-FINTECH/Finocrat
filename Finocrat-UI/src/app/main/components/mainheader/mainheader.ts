@@ -10,7 +10,7 @@ import { MainAuthService } from '../../../services/mainservices/mainauth.service
   imports: [CommonModule, RouterModule],
   templateUrl: './mainheader.html',
   styleUrls: ['./mainheader.css'],
-  encapsulation: ViewEncapsulation.None // IMPORTANT
+  encapsulation: ViewEncapsulation.None
 })
 export class MainheaderComponent implements OnInit {
 
@@ -18,22 +18,31 @@ export class MainheaderComponent implements OnInit {
   userId: string = '';
   isMenuOpen = false;
 
-  constructor(private tokenService: TokenService,private router: Router,private mainAuthService: MainAuthService) {}
+  // ✅ PROFILE IMAGE HANDLING
+  profileImage: string = 'assets/images/profile.png';
+  imageError: boolean = false;
+
+  constructor(
+    private tokenService: TokenService,
+    private router: Router,
+    private mainAuthService: MainAuthService
+  ) {}
 
   ngOnInit(): void {
     const user = this.tokenService.getUser();
     if (user) {
       this.username = user.name;
       this.userId = user.userId;
+
+      // optional dynamic image
+      if (user.profileImage) {
+        this.profileImage = user.profileImage;
+      }
     }
   }
 
   isLoggedIn(): boolean {
-     if (this.mainAuthService.isLoggedIn()) {
-      return true;
-    }else{
-      return false;
-    }
+    return this.mainAuthService.isLoggedIn();
   }
 
   toggleMenu() {
@@ -41,11 +50,15 @@ export class MainheaderComponent implements OnInit {
   }
 
   goHome() {
-    debugger;
     if (this.isLoggedIn()) {
-      this.router.navigate(['/app/finhome']); // ✅ logged in
+      this.router.navigate(['/app/finhome']);
     } else {
-      this.router.navigate(['/dashboard']); // ✅ not logged in
+      this.router.navigate(['/dashboard']);
     }
+  }
+
+  // ✅ IMAGE ERROR HANDLER
+  onImageError() {
+    this.imageError = true;
   }
 }

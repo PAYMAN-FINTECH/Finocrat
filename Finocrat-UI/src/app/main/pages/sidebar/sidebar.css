@@ -8,12 +8,14 @@
   flex-direction: column;
 }
 
+/* LOGO */
 .logo {
   font-size: 20px;
   font-weight: 600;
   margin-bottom: 25px;
 }
 
+/* MENU */
 .menu {
   list-style: none;
   padding: 0;
@@ -21,10 +23,11 @@
   flex: 1;
 }
 
+/* MENU ITEM */
 .menu li {
   padding: 12px 14px;
   cursor: pointer;
-  border-radius: 8px;
+  border-radius: 10px;
   margin-bottom: 6px;
   transition: 0.3s;
   display: flex;
@@ -32,11 +35,37 @@
   align-items: center;
 }
 
+/* LEFT SIDE (ICON + TEXT) */
+.menu-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ICON */
+lucide-icon {
+  width: 20px;
+  height: 20px;
+  stroke: #ffffff;
+}
+
+/* TEXT */
+.menu li span {
+  font-size: 14px;
+}
+
+/* HOVER + ACTIVE */
 .menu li:hover,
 .active {
   background: #0f5f6b;
 }
 
+/* ACTIVE ICON COLOR */
+.active lucide-icon {
+  stroke: #00e0ff;
+}
+
+/* SUBMENU */
 .submenu {
   padding-left: 15px;
 }
@@ -44,59 +73,66 @@
 .submenu li {
   background: rgba(255, 255, 255, 0.05);
   font-size: 14px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
 }
 
-/* Arrow */
+/* ARROW */
 .arrow {
   transition: 0.3s;
 }
+
 .rotate {
   transform: rotate(180deg);
 }
 
-/* 🔥 Footer Section */
+/* FOOTER */
 .sidebar-footer {
   border-top: 1px solid rgba(255,255,255,0.15);
   padding-top: 15px;
 }
 
-/* User Info */
-.user-info {
-  display: flex;
-  align-items: center;
-  margin-bottom: 12px;
-}
-
-.avatar {
-  width: 36px;
-  height: 36px;
-  background: #6c5ce7;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  margin-right: 10px;
-}
-
-.username {
-  font-size: 14px;
-  font-weight: 500;
-}
-
-/* Logout Button */
+/* LOGOUT */
 .logout-btn {
   width: 100%;
   padding: 10px;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   background: rgba(255,255,255,0.1);
   color: white;
   cursor: pointer;
   transition: 0.3s;
   font-weight: 500;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .logout-btn:hover {
   background: #e74c3c;
 }
+
+/* PARENT CLICK FEEL */
+.parent {
+  cursor: pointer;
+}
+
+/* SUBMENU ANIMATION (optional smooth feel) */
+.submenu {
+  padding-left: 15px;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+

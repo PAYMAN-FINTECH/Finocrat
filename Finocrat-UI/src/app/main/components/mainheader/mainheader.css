@@ -29,6 +29,29 @@
   cursor: pointer;
 }
 
+/* AVATAR IMAGE */
+.avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.4);
+}
+
+/* FALLBACK AVATAR */
+.avatar-fallback {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f9c74f, #f9844a);
+  color: #3a1b63;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
+}
+
 .logo img {
   height: 36px;
 }

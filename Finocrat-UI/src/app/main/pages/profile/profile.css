@@ -1,0 +1,101 @@
+.profile-page {
+  padding: 30px;
+  max-width: 500px;
+  margin: auto;
+}
+
+/* 🔥 HEADER CARD */
+.profile-header-card {
+  background: linear-gradient(135deg, #5f2c82, #49a09d);
+  color: white;
+  border-radius: 20px;
+  padding: 30px 20px;
+  text-align: center;
+  margin-bottom: 20px;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  font-size: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: auto;
+  margin-bottom: 10px;
+}
+
+/* 🔥 MAIN CARD */
+.profile-card {
+  background: white;
+  border-radius: 20px;
+  padding: 25px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+}
+
+/* SECTION TITLE */
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 15px;
+}
+
+/* FORM */
+.profile-form {
+  margin-top: 10px;
+}
+
+.input-group {
+  margin-bottom: 15px;
+}
+
+.input-group label {
+  font-size: 13px;
+  color: #555;
+  display: block;
+  margin-bottom: 5px;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 13px;
+  border-radius: 12px;
+  border: 1px solid #ddd;
+}
+
+/* ACTIONS */
+.actions {
+  margin-top: 20px;
+}
+
+.edit-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* BUTTON */
+.btn {
+  padding: 13px;
+  border-radius: 12px;
+  border: none;
+  width: 100%;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.primary {
+  background: linear-gradient(135deg, #5f2c82, #7b2cbf);
+  color: white;
+}
+
+.success {
+  background: linear-gradient(135deg, #16a34a, #22c55e);
+  color: white;
+}
+
+.cancel {
+  background: #e5e7eb;
+}

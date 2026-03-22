@@ -1,38 +1,76 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
-import { Router } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { LucideAngularModule } from 'lucide-angular';
+
+// ✅ Icons
+import {
+  LayoutDashboard,
+  Wallet,
+  CreditCard,
+  Layers,
+  BarChart3,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  User,
+  LogOut,
+  Shield,
+  Users
+} from 'lucide-angular';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
   imports: [
     CommonModule,
-    RouterModule   // 👉 VERY IMPORTANT
+    RouterModule,
+    LucideAngularModule
   ],
   templateUrl: './sidebar.html',
   styleUrls: ['./sidebar.css']
 })
 export class SidebarComponent {
-reportsOpen = false;
-adminOpen = false;
 
+  reportsOpen = false;
+  adminOpen = false; // 🔥 NEW
+  isAdmin = false; // 🔥 control flag
 
-constructor(private router: Router) {}
+  // icons
+  LayoutDashboard = LayoutDashboard;
+  Wallet = Wallet;
+  CreditCard = CreditCard;
+  Layers = Layers;
+  BarChart3 = BarChart3;
+  ArrowDownCircle = ArrowDownCircle;
+  ArrowUpCircle = ArrowUpCircle;
+  User = User;
+  LogOut = LogOut;
+  Shield = Shield;   // 🔥 NEW
+  Users = Users;     // 🔥 NEW
 
-toggleReports() {
-  this.reportsOpen = !this.reportsOpen;
-}
+  constructor(private router: Router) {}
 
-// toggleAdmin() {
-//   this.adminOpen = !this.adminOpen;
-// }
-logout() {
-  localStorage.removeItem('user');
-  localStorage.removeItem('token');   // if you are storing token
-  localStorage.removeItem('main_token');   // if you are storing token
-  sessionStorage.clear();             // only if really needed
+ ngOnInit() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
 
-  this.router.navigate(['/dashboard']);
-}
+    // ✅ ONLY SHOW FOR "jurra"
+    if (user?.name?.toLowerCase() === 'jurra') {
+      this.isAdmin = true;
+    }
+  }
+
+  toggleReports() {
+    this.reportsOpen = !this.reportsOpen;
+    if (this.reportsOpen) this.adminOpen = false;
+  }
+
+  toggleAdmin() {
+    this.adminOpen = !this.adminOpen;
+    if (this.adminOpen) this.reportsOpen = false;
+  }
+
+  logout() {
+    localStorage.clear();
+    this.router.navigate(['/dashboard']);
+  }
 }

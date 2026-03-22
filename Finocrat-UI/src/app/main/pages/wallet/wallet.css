@@ -9,34 +9,56 @@
 .balance-card {
   background: linear-gradient(135deg, #5f2c82, #49a09d);
   color: #fff;
-  border-radius: 16px;
-  padding: 30px;
+  border-radius: 20px;
+  padding: 25px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.15);
-  margin-bottom: 30px;
+  box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
 }
 
+/* FLEX LEFT SECTION */
+.balance-section {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+/* EACH ITEM */
+.balance-item {
+  display: flex;
+  flex-direction: column;
+}
+
+/* LABEL */
 .balance-label {
-  font-size: 14px;
-  opacity: 0.8;
-  margin-bottom: 8px;
+  font-size: 13px;
+  opacity: 0.85;
+  margin-bottom: 6px;
 }
 
+/* AMOUNT */
 .balance-amount {
-  font-size: 36px;
+  font-size: 28px;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
 }
 
+/* DIVIDER */
+.divider {
+  width: 1px;
+  height: 50px;
+  background: rgba(255,255,255,0.3);
+}
+
+/* REFRESH BUTTON */
 .refresh-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
   color: white;
   font-size: 20px;
-  width: 45px;
-  height: 45px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   cursor: pointer;
   transition: 0.3s ease;
@@ -45,6 +67,22 @@
 .refresh-btn:hover {
   background: rgba(255, 255, 255, 0.35);
 }
+
+/* LOADER */
+.loader {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #fff;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 
 /* ================= FUND CARD ================= */
 

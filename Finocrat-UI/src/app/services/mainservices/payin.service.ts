@@ -5,6 +5,7 @@ import { Injectable } from '@angular/core';
 export class PayInService {
 
   private api = 'https://thefinocrat.com/api/PayIn/history';
+  private payoutapi = 'https://thefinocrat.com/api/PayIn/payouthistory';
 
   constructor(private http: HttpClient) {}
 
@@ -38,7 +39,7 @@ getPayoutHistory(fromDate?: string, toDate?: string, userPhone?: string) {
     if (userPhone)
       params = params.set('userPhone', userPhone);
 
-    return this.http.get<any[]>(this.api, { params });
+    return this.http.get<any[]>(this.payoutapi, { params });
   }
 
 }

@@ -42,23 +42,29 @@
       <p>{{selectedBiller.billerName}}</p>
     </div>
 
-    <!-- INPUTS -->
+    <!-- FORM -->
     <div class="form">
 
-      <label>Last 4 digits</label>
-      <input [(ngModel)]="model.last4">
+      <div class="input-group">
+        <label>Last 4 digits</label>
+        <input [(ngModel)]="model.last4" maxlength="4">
+      </div>
 
-      <label>Card Holder Mobile</label>
-      <input [(ngModel)]="model.cardMobile">
+      <div class="input-group">
+        <label>Card Holder Mobile</label>
+        <input [(ngModel)]="model.cardMobile">
+      </div>
 
-      <label>Customer Mobile</label>
-      <input [value]="userPhone" readonly>
+      <div class="input-group">
+        <label>Customer Mobile</label>
+        <input [value]="userPhone" readonly>
+      </div>
 
     </div>
 
     <!-- FETCH -->
     <button class="btn primary"
-            [disabled]="!model.last4 || !model.cardMobile"
+            [disabled]="!model.last4 || !model.cardMobile || isLoading"
             *ngIf="!billDetails"
             (click)="fetchBill()">
 
@@ -67,22 +73,26 @@
     </button>
 
     <!-- AFTER FETCH -->
-    <div *ngIf="billDetails">
+    <div *ngIf="billDetails" class="after-fetch">
 
-      <label>Amount</label>
-      <input [(ngModel)]="model.amount">
+      <div class="input-group">
+        <label>Amount</label>
+        <input [(ngModel)]="model.amount" class="amount-input">
+      </div>
 
       <div class="bill-box">
         <h4>Bill Details</h4>
-        <p>Due Amount: ₹ {{billDetails.totalAmount}}</p>
-        <p>Due Date: {{billDetails.dueDate}}</p>
-        <p>Name: {{billDetails.consumerName}}</p>
+        <p><b>Due:</b> ₹ {{billDetails.totalAmount}}</p>
+        <p><b>Date:</b> {{billDetails.dueDate}}</p>
+        <p><b>Name:</b> {{billDetails.consumerName}}</p>
       </div>
 
-      <button class="btn success"
+      <!-- PAYMENT BUTTON -->
+      <button class="btn success sticky-btn"
+              [disabled]="isLoading"
               (click)="processPayment()">
 
-        {{isLoading ? 'Processing...' : 'Proceed'}}
+        {{isLoading ? 'Processing...' : 'Pay ₹ ' + model.amount}}
 
       </button>
 
@@ -92,19 +102,15 @@
 
 </div>
 
+
 <!-- SUCCESS SCREEN -->
 <div class="success-screen" *ngIf="showSuccessScreen">
 
   <div class="success-box">
-
     <div class="tick">✔</div>
-
     <h2>Payment Successful</h2>
-
     <p>₹ {{model.amount}} paid successfully</p>
-
-    <p class="small">Redirecting to home...</p>
-
+    <p class="small">Redirecting...</p>
   </div>
 
 </div>

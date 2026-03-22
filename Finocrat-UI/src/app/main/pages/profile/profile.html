@@ -1,0 +1,68 @@
+<div class="profile-page">
+
+  <!-- PROFILE HEADER CARD -->
+  <div class="profile-header-card">
+
+    <div class="avatar">
+      {{ user.name ? user.name.charAt(0) : '👤' }}
+    </div>
+
+    <h2>{{ user.name || 'User' }}</h2>
+    <p>{{ user.email }}</p>
+
+  </div>
+
+
+  <!-- DETAILS CARD -->
+  <div class="profile-card">
+
+    <h3 class="section-title">Personal Details</h3>
+
+    <div class="profile-form">
+
+      <div class="input-group">
+        <label>Full Name</label>
+        <input [(ngModel)]="user.name" [disabled]="!isEditing">
+      </div>
+
+      <div class="input-group">
+        <label>Email</label>
+        <input [(ngModel)]="user.email" [disabled]="!isEditing">
+      </div>
+
+      <div class="input-group">
+        <label>Mobile Number</label>
+        <input [(ngModel)]="user.userPhone" disabled>
+      </div>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="actions">
+
+      <button *ngIf="!isEditing"
+              class="btn primary"
+              (click)="enableEdit()">
+        Edit Profile
+      </button>
+
+      <div *ngIf="isEditing" class="edit-actions">
+
+        <button class="btn success"
+                (click)="saveProfile()"
+                [disabled]="isLoading">
+          {{ isLoading ? 'Saving...' : 'Save Changes' }}
+        </button>
+
+        <button class="btn cancel"
+                (click)="cancelEdit()">
+          Cancel
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

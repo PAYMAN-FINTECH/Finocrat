@@ -29,17 +29,25 @@ namespace Finocrat.Api.Data
             var transactions = await _context.fPayIns
                 .Where(x => x.UserPhone == userPhone && x.Status).ToListAsync();
 
+            var payOthers = await _context.fPayouts
+                .Where(x => x.UserPhone == userPhone && x.Status).ToListAsync();
+            // Combine PayIns and PayOuts
+
             if (!transactions.Any())
                 return 0;
 
             // Total Amount
             decimal totalAmount = transactions.Sum(x => x.Amount);
+            decimal totalPayOut = payOthers.Sum(x => x.Amount);
 
             // Total Commission
             decimal totalCommission = transactions.Sum(x => x.PayInCommission);
+            decimal totalPayOutCommission = payOthers.Sum(x => x.PaoutCommission);
+
+            decimal totalPayIn = totalPayOut + totalCommission + totalPayOutCommission;
 
             // Final Wallet Balance
-            decimal walletBalance = totalAmount - totalCommission;
+            decimal walletBalance = totalAmount - totalPayIn;
 
             return walletBalance;
         }
