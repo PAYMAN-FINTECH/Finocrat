@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 
@@ -6,27 +6,51 @@ import { Observable } from 'rxjs';
 export class HomeService {
 
   private api = 'https://thefinocrat.com/api/dashboard';
-  private fuserlookupapi = 'https://thefinocrat.com/api/FUserLookup';
+  private fuserlookupapi = 'https://localhost:7081/api/FUserLookup';
 
   constructor(private http: HttpClient) {}
 
-  getStats(payload: any) {
+  // ============================
+  // DASHBOARD
+  // ============================
+  getStats(payload: any): Observable<any> {
     return this.http.post<any>(this.api, payload);
   }
-   getWalletBalance(userPhone: string): Observable<any> {
-    return this.http.get<any>(
-      `${this.api}/wallet-balance`,
-      {
-        params: { userPhone: userPhone }
-      }
-    );
+
+  // ============================
+  // WALLET BALANCE
+  // ============================
+  getWalletBalance(userPhone: string): Observable<any> {
+    const params = new HttpParams().set('userPhone', userPhone);
+
+    return this.http.get<any>(`${this.api}/wallet-balance`, { params });
   }
 
-   getUserLookup(userPhone: string): Observable<any> {
+  // ============================
+  // 🔥 GET USER LIST (NEW)
+  // ============================
+  getUsers(): Observable<any> {
+    return this.http.get(`${this.fuserlookupapi}/users`);
+  }
+
+  // ============================
+  // USER LOOKUP
+  // ============================
+  getUserLookup(userPhone: string): Observable<any> {
     return this.http.get(`${this.fuserlookupapi}/${userPhone}`);
   }
 
+  // ============================
+  // SAVE USER LOOKUP
+  // ============================
   saveUserLookup(data: any): Observable<any> {
     return this.http.post(`${this.fuserlookupapi}`, data);
+  }
+
+  // ============================
+  // DELETE USER LOOKUP (OPTIONAL)
+  // ============================
+  deleteUserLookup(userId: string): Observable<any> {
+    return this.http.delete(`${this.fuserlookupapi}/${userId}`);
   }
 }

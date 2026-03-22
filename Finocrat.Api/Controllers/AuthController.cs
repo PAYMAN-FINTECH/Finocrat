@@ -57,11 +57,11 @@ namespace Finocrat.Api.Controllers
         }
 
         // GET ALL USERS
+        // GET ALL USERS
         [HttpGet("users")]
         public async Task<IActionResult> GetUsers()
         {
             var users = await _db.fUsers
-                .Include(x => x.Margin)
                 .Select(u => new
                 {
                     u.Id,
@@ -69,9 +69,7 @@ namespace Finocrat.Api.Controllers
                     u.UserPhone,
                     u.Email,
                     u.IsActive,
-                    u.Gender,
-                    u.IsRazorpayEnabled,
-                    MarginName = u.Margin.Percentage
+                    u.Gender
                 })
                 .ToListAsync();
 
@@ -92,13 +90,11 @@ namespace Finocrat.Api.Controllers
             {
                 Id = Guid.NewGuid(),
                 UserName = model.UserName,
-                Password = model.Password, // ⚠️ Hash in production
+                Password = model.Password,
                 UserPhone = model.UserPhone,
                 Email = model.Email,
                 IsActive = model.IsActive,
-                MarginId = model.MarginId,
                 Gender = model.Gender,
-                IsRazorpayEnabled = model.IsRazorpayEnabled,
                 Created = DateTime.UtcNow
             };
 
@@ -125,8 +121,6 @@ namespace Finocrat.Api.Controllers
             user.UserPhone = model.UserPhone;
             user.Gender = model.Gender;
             user.IsActive = model.IsActive;
-            user.MarginId = model.MarginId;
-            user.IsRazorpayEnabled = model.IsRazorpayEnabled;
 
             if (!string.IsNullOrEmpty(model.Password))
                 user.Password = model.Password;
@@ -136,10 +130,11 @@ namespace Finocrat.Api.Controllers
             return Ok(new
             {
                 success = true,
-                message = "Update Created",
+                message = "User Updated",
                 data = user.Id
             });
         }
+
         [HttpGet("margin")]
         public async Task<IActionResult> GetMargins()
         {

@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HomeService } from '../../../services/mainservices/home.service';
-import { TokenService } from '../../../services/mainservices/token.service';
 
 @Component({
   selector: 'app-admin-user-lookup',
@@ -16,128 +15,94 @@ export class AdminUserLookupComponent implements OnInit {
   settings: any = {};
   keys: string[] = [];
 
+  users: any[] = [];
+  selectedUserPhone = '';
+
   loading = false;
   message = '';
 
-  username: string = '';
-  userId: string = '';
-  userPhone: string = '';
-
-  // 🔹 ADD FEATURE PROPERTIES
   showAddSection = false;
-  newKey: string = '';
+  newKey = '';
   newValue: any = '';
-  newValueType: string = 'string'; // string | number | boolean
+  newValueType = 'string';
 
-  constructor(
-    private service: HomeService,
-    private tokenService: TokenService
-  ) {}
+  constructor(private service: HomeService) {}
 
   ngOnInit(): void {
-    const user = this.tokenService.getUser();
-
-    if (user) {
-      this.username = user.name;
-      this.userId = user.userId;
-      this.userPhone = user.userPhone;
-    }
-
-    this.loadSettings();
+    this.loadUsers();
   }
 
-  // =============================
-  // LOAD SETTINGS
-  // =============================
-  loadSettings() {
-    this.loading = true;
-
-    this.service.getUserLookup(this.userPhone).subscribe({
-      next: (res) => {
-        this.settings = res || {};
-        this.keys = Object.keys(this.settings);
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-      }
+  // ================= USERS =================
+  loadUsers() {
+    this.service.getUsers().subscribe({
+      next: (res: any) => this.users = res,
+      error: (err) => console.error(err)
     });
   }
 
-  // =============================
-  // SAVE SETTINGS
-  // =============================
+  // ================= USER CHANGE =================
+  onUserChange() {
+    if (!this.selectedUserPhone) return;
+    this.loadSettings();
+  }
+
+  // ================= LOAD SETTINGS =================
+  loadSettings() {
+    this.loading = true;
+
+    this.service.getUserLookup(this.selectedUserPhone).subscribe({
+      next: (res) => {
+        this.settings = res;
+        this.keys = Object.keys(this.settings);
+        this.loading = false;
+      },
+      error: () => this.loading = false
+    });
+  }
+
+  // ================= SAVE =================
   save() {
     this.loading = true;
 
-    const payload = {
-      userPhone: this.userPhone,
+    this.service.saveUserLookup({
+      userPhone: this.selectedUserPhone,
       settings: this.settings
-    };
-
-    this.service.saveUserLookup(payload).subscribe({
+    }).subscribe({
       next: () => {
         this.loading = false;
         this.message = 'Saved Successfully';
         setTimeout(() => this.message = '', 3000);
       },
-      error: () => {
-        this.loading = false;
-      }
+      error: () => this.loading = false
     });
   }
 
-  // =============================
-  // BOOLEAN CHECK
-  // =============================
-  isBoolean(value: any): boolean {
-    return typeof value === 'boolean';
+  // ================= UTIL =================
+  isBoolean(val: any) {
+    return typeof val === 'boolean';
   }
 
-  // =============================
-  // TOGGLE ADD SECTION
-  // =============================
   toggleAdd() {
     this.showAddSection = !this.showAddSection;
-    this.newKey = '';
-    this.newValue = '';
-    this.newValueType = 'string';
   }
 
-  // =============================
-  // ADD NEW SETTING
-  // =============================
   addSetting() {
 
-    if (!this.newKey || this.newKey.trim() === '') {
-      alert('Key is required');
-      return;
-    }
+    if (!this.newKey.trim()) return;
 
-    if (this.settings.hasOwnProperty(this.newKey)) {
-      alert('Key already exists');
-      return;
-    }
+    let val: any = this.newValue;
 
-    let finalValue: any;
+    if (this.newValueType === 'number')
+      val = Number(this.newValue);
 
-    switch (this.newValueType) {
-      case 'number':
-        finalValue = Number(this.newValue);
-        break;
+    if (this.newValueType === 'boolean')
+      val = this.newValue === true || this.newValue === 'true';
 
-      case 'boolean':
-        finalValue = this.newValue === true || this.newValue === 'true';
-        break;
-
-      default:
-        finalValue = this.newValue;
-    }
-
-    this.settings[this.newKey] = finalValue;
+    this.settings[this.newKey] = val;
     this.keys = Object.keys(this.settings);
 
+    this.newKey = '';
+    this.newValue = '';
     this.toggleAdd();
   }
-
 }

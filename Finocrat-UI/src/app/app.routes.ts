@@ -35,6 +35,7 @@ import { RefundPolicy } from './main/pages/refund-policy/refund-policy';
 import { TermsConditions } from './main/pages/terms-conditions/terms-conditions';
 import { PayoutHistoryComponent } from './main/pages/payout-history/payout-history';
 import { ProfileComponent } from './main/pages/profile/profile';
+import { KycComponent } from './main/pages/kyc/kyc';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -95,6 +96,7 @@ export const routes: Routes = [
     { path: 'wallet', component: WalletComponent },
     { path: 'cc', component: CcBillPaymentComponent },
     { path: 'admin-user-lookup', component: AdminUserLookupComponent },
+    { path: 'kyc' , component: KycComponent},
     { path: 'users', component: UsersComponent },
     { path: 'payin-history', component: PayInHistoryComponent },
     { path: 'payout-history', component: PayoutHistoryComponent },

@@ -1,16 +1,37 @@
 <div class="lookup-card">
 
+  <!-- HEADER -->
   <div class="header">
-    <h2>Admin User Lookup</h2>
-    <button class="btn primary" (click)="save()" [disabled]="loading">
-      <span *ngIf="!loading">Save</span>
-      <span *ngIf="loading" class="spinner-mini"></span>
+    <h2>Admin + User Configuration</h2>
+
+    <button class="btn primary"
+            (click)="save()"
+            [disabled]="loading || !selectedUserPhone">
+      Save
     </button>
   </div>
 
+  <!-- USER SELECT -->
+  <div class="user-select">
+    <label>Select User</label>
+
+    <select [(ngModel)]="selectedUserPhone"
+            (change)="onUserChange()">
+
+      <option value="">-- Select User --</option>
+
+      <option *ngFor="let u of users" [value]="u.userPhone">
+        {{ u.name }} ({{ u.userPhone }})
+      </option>
+
+    </select>
+  </div>
+
+  <!-- LOADER -->
   <div *ngIf="loading" class="loader">Loading...</div>
 
-  <div *ngIf="!loading">
+  <!-- SETTINGS -->
+  <div *ngIf="!loading && selectedUserPhone">
 
     <div class="setting-row" *ngFor="let key of keys">
 
@@ -29,26 +50,23 @@
 
     </div>
 
+    <!-- ADD -->
     <button class="btn secondary" (click)="toggleAdd()">
-      {{ showAddSection ? 'Cancel' : '+ Add Setting' }}
+      + Add Setting
     </button>
 
     <div *ngIf="showAddSection" class="add-section">
+      <input [(ngModel)]="newKey" placeholder="Key" />
 
-      <input type="text" placeholder="Key" [(ngModel)]="newKey" />
       <select [(ngModel)]="newValueType">
         <option value="string">String</option>
         <option value="number">Number</option>
         <option value="boolean">Boolean</option>
       </select>
 
-      <input *ngIf="newValueType !== 'boolean'"
-             type="text"
-             placeholder="Value"
-             [(ngModel)]="newValue" />
+      <input *ngIf="newValueType !== 'boolean'" [(ngModel)]="newValue" />
 
-      <select *ngIf="newValueType === 'boolean'"
-              [(ngModel)]="newValue">
+      <select *ngIf="newValueType === 'boolean'" [(ngModel)]="newValue">
         <option [ngValue]="true">True</option>
         <option [ngValue]="false">False</option>
       </select>
@@ -56,9 +74,11 @@
       <button class="btn primary" (click)="addSetting()">Add</button>
     </div>
 
+    <!-- SUCCESS -->
     <div *ngIf="message" class="toast">
       ✔ {{ message }}
     </div>
 
   </div>
+
 </div>

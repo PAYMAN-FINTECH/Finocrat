@@ -19,8 +19,7 @@ namespace Finocrat.Api.Controllers
         }
 
         // =========================================
-        // GET USER SETTINGS
-        // GET: api/FUserLookup/{userId}
+        // ✅ GET USER SETTINGS (MERGED ADMIN DEFAULT)
         // =========================================
         [HttpGet("{userPhone}")]
         public async Task<IActionResult> GetUserLookup(string userPhone)
@@ -28,27 +27,43 @@ namespace Finocrat.Api.Controllers
             var data = await _db.fUserLookups
                 .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
 
-            if (data == null)
+            Dictionary<string, object> defaultSettings = new()
             {
-                // Default structure
-                return Ok(new Dictionary<string, object>
-                {
-                    { "razorpay", false },
-                    { "payinAmount", 0 },
-                    { "moreMargin", 0 },
-                    { "hdfcMargin", 0 },
-                    { "corporateMargin", 0 }
-                });
+                // 🔥 ADMIN DEFAULT CONFIG
+                { "PayIn Enabled", true },
+                { "PayOut Enabled", true },
+                { "CC Enabled", true },
+
+                { "PayIn Limit", 10000 },
+                { "PayOut Limit", 5000 },
+                { "CC Limit", 2000 },
+
+                // 🔥 USER LEVEL CONFIG
+                { "Razorpay Enabled", false },
+                { "Cashfree Enabled", false },
+
+                { "PayIn Margin", 0 },
+                { "PayOut Margin", 0 },
+                { "CC Margin", 0 }
+            };
+
+            if (data == null)
+                return Ok(defaultSettings);
+
+            var userSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+
+            // 🔥 MERGE DEFAULT + USER SETTINGS
+            foreach (var key in defaultSettings.Keys)
+            {
+                if (!userSettings.ContainsKey(key))
+                    userSettings[key] = defaultSettings[key];
             }
 
-            var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
-
-            return Ok(settings);
+            return Ok(userSettings);
         }
 
         // =========================================
-        // INSERT OR UPDATE
-        // POST: api/FUserLookup
+        // SAVE SETTINGS
         // =========================================
         [HttpPost]
         public async Task<IActionResult> SaveUserLookup([FromBody] FUserLookupDto dto)
@@ -69,7 +84,7 @@ namespace Finocrat.Api.Controllers
                 var entity = new FUserLookup
                 {
                     Id = Guid.NewGuid(),
-                    UserId = userdetails != null ? userdetails.Id : Guid.Empty,
+                    UserId = userdetails?.Id ?? Guid.Empty,
                     UserPhone = dto.userPhone,
                     LookupJson = jsonData,
                     CreatedOn = DateTime.Now
@@ -89,22 +104,19 @@ namespace Finocrat.Api.Controllers
         }
 
         // =========================================
-        // DELETE
-        // DELETE: api/FUserLookup/{userId}
+        // USERS DROPDOWN
         // =========================================
-        [HttpDelete("{userId}")]
-        public async Task<IActionResult> Delete(Guid userId)
+        [HttpGet("users")]
+        public async Task<IActionResult> GetUsers()
         {
-            var data = await _db.fUserLookups
-                .FirstOrDefaultAsync(x => x.UserId == userId);
+            var users = await _db.fUsers
+                .Select(x => new
+                {
+                    name = x.UserName,
+                    userPhone = x.UserPhone
+                }).ToListAsync();
 
-            if (data == null)
-                return NotFound();
-
-            _db.fUserLookups.Remove(data);
-            await _db.SaveChangesAsync();
-
-            return Ok("Deleted Successfully");
+            return Ok(users);
         }
     }
 }

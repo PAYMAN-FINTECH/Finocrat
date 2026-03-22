@@ -12,68 +12,56 @@ import { HttpClient } from '@angular/common/http';
 })
 export class UsersComponent implements OnInit {
 
-  baseUrl = 'https://thefinocrat.com/api';
+  baseUrl = 'https://localhost:7081/api';
+
   users: any[] = [];
-  margins: any[] = [];
 
   showModal = false;
   editMode = false;
   selectedId: string | null = null;
 
   form!: FormGroup;
+  loading = false;
 
   constructor(private http: HttpClient, private fb: FormBuilder) {}
 
   ngOnInit() {
     this.initForm();
     this.loadUsers();
-    this.loadMargins();
   }
 
-  /* ---------------- FORM INIT ---------------- */
+  /* ================= INIT FORM ================= */
 
   initForm() {
     this.form = this.fb.group({
       userName: ['', Validators.required],
       password: [''],
       userPhone: ['', Validators.required],
-      email: ['', Validators.required],
+      email: ['', [Validators.required, Validators.email]],
       gender: [''],
-      marginId: ['', Validators.required],
-      isActive: [true],
-      isRazorpayEnabled: [false]
+      isActive: [true]
     });
   }
 
-  /* ---------------- LOAD USERS ---------------- */
+  /* ================= LOAD USERS ================= */
 
   loadUsers() {
+    this.loading = true;
+
     this.http.get<any[]>(`${this.baseUrl}/Auth/users`)
       .subscribe({
         next: (res) => {
-          this.users = res;
+          this.users = res || [];
+          this.loading = false;
         },
         error: (err) => {
           console.error('Load Users Error:', err);
+          this.loading = false;
         }
       });
   }
 
-  /* ---------------- LOAD MARGINS ---------------- */
-
-  loadMargins() {
-    this.http.get<any[]>(`${this.baseUrl}/Auth/margin`)
-      .subscribe({
-        next: (res) => {
-          this.margins = res;
-        },
-        error: (err) => {
-          console.error('Load Margins Error:', err);
-        }
-      });
-  }
-
-  /* ---------------- OPEN ADD ---------------- */
+  /* ================= OPEN ADD ================= */
 
   openAdd() {
     this.editMode = false;
@@ -85,15 +73,13 @@ export class UsersComponent implements OnInit {
       userPhone: '',
       email: '',
       gender: '',
-      marginId: '',
-      isActive: true,
-      isRazorpayEnabled: false
+      isActive: true
     });
 
     this.showModal = true;
   }
 
-  /* ---------------- OPEN EDIT ---------------- */
+  /* ================= OPEN EDIT ================= */
 
   openEdit(user: any) {
     this.editMode = true;
@@ -105,18 +91,22 @@ export class UsersComponent implements OnInit {
       userPhone: user.userPhone,
       email: user.email,
       gender: user.gender,
-      marginId: user.marginId,
-      isActive: user.isActive,
-      isRazorpayEnabled: user.isRazorpayEnabled
+      isActive: user.isActive
     });
 
     this.showModal = true;
   }
 
-  /* ---------------- SAVE ---------------- */
+  /* ================= SAVE ================= */
 
   save() {
-    if (this.form.invalid) return;
+
+    if (this.form.invalid) {
+      this.form.markAllAsTouched();
+      return;
+    }
+
+    this.loading = true;
 
     const request = this.editMode
       ? this.http.put(`${this.baseUrl}/Auth/${this.selectedId}`, this.form.value)
@@ -124,13 +114,14 @@ export class UsersComponent implements OnInit {
 
     request.subscribe({
       next: () => {
-        debugger;
-        this.loadUsers();       // refresh table
-        this.showModal = false; // close popup
+        this.loadUsers();
+        this.showModal = false;
+        this.loading = false;
       },
       error: (err) => {
         console.error('Save Error:', err);
-        alert('Something went wrong. Please check console.');
+        this.loading = false;
+        alert('Something went wrong');
       }
     });
   }
