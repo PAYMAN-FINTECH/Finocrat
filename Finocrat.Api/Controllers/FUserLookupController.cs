@@ -36,7 +36,7 @@ namespace Finocrat.Api.Controllers
             Dictionary<string, object> defaultSettings = new();
 
             // ✅ ADMIN CONFIG
-            if (userDetails.IsAdmin == true)
+            if (userDetails.IsAdmin == true && userDetails.UserName == "Admin")
             {
                 defaultSettings.Add("System PayIn", false);
                 defaultSettings.Add("System PayOut", false);
