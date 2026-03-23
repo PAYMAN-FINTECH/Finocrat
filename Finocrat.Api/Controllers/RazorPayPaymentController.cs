@@ -30,6 +30,9 @@ namespace Finocrat.Api.Controllers
         }
 
 
+        // =========================================
+        // ✅ GET GATEWAYS + LIMIT
+        // =========================================
         [HttpGet("gateways")]
         public async Task<IActionResult> GetGateways(string userPhone)
         {
@@ -41,29 +44,29 @@ namespace Finocrat.Api.Controllers
 
             // ✅ DEFAULT SETTINGS
             Dictionary<string, object> settings = new()
-    {
-        { "PayIn Enabled", true },
-        { "System PayIn Limit", 10000 },
-
-        { "REduction Enabled", true },
-        { "CEduction Enabled", true },
-        { "CC Enabled", true }
-    };
-
-            // ✅ MERGE DB SETTINGS
-            if (data != null)
             {
-                var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+                { "PayIn Enabled", true },
+                { "System PayIn Limit", 10000 },
+
+                { "REduction Enabled", true },
+                { "CEducation Enabled", false },
+                { "CC Enabled", true }
+            };
+
+            // ✅ FIXED DESERIALIZATION
+            if (data != null && !string.IsNullOrEmpty(data.LookupJson))
+            {
+                var dbSettings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(data.LookupJson);
 
                 foreach (var key in dbSettings.Keys)
                 {
-                    settings[key] = dbSettings[key];
+                    settings[key] = ConvertJsonElement(dbSettings[key]);
                 }
             }
 
-            // 🔴 IF PAYIN DISABLED → RETURN EMPTY
+            // ✅ CHECK PAYIN ENABLE
             bool payInEnabled = settings.ContainsKey("PayIn Enabled") &&
-                                Convert.ToBoolean(settings["PayIn Enabled"]);
+                                (bool)settings["PayIn Enabled"];
 
             if (!payInEnabled)
             {
@@ -76,21 +79,37 @@ namespace Finocrat.Api.Controllers
             }
 
             // ✅ LIMIT
-            decimal payInLimit = settings.ContainsKey("System PayIn Limit")
-                ? Convert.ToDecimal(settings["System PayIn Limit"])
-                : 0;
+            decimal payInLimit = 0;
 
+            var adminData = await _db.fUserLookups
+                .FirstOrDefaultAsync(x => x.UserPhone == "Admin");
+
+            if (adminData != null && !string.IsNullOrEmpty(adminData.LookupJson))
+            {
+                var adminSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(adminData.LookupJson);
+
+                if (adminSettings.ContainsKey("System PayIn Limit"))
+                {
+                    payInLimit = ConvertToDecimal(adminSettings["System PayIn Limit"]);
+                }
+            }
+            else
+            {
+                // fallback
+                payInLimit = ConvertToDecimal(settings["System PayIn Limit"]);
+            }
+
+            // ✅ GATEWAYS
             var gateways = new List<object>();
             int id = 1;
 
-            // ✅ ENABLED GATEWAYS
-            if (settings.ContainsKey("REduction Enabled") && Convert.ToBoolean(settings["REduction Enabled"]))
-                gateways.Add(new { id = id++, name = "REduction Enabled" });
+            if (settings.ContainsKey("REduction Enabled") && (bool)settings["REduction Enabled"])
+                gateways.Add(new { id = id++, name = "REduction" });
 
-            if (settings.ContainsKey("CEduction Enabled") && Convert.ToBoolean(settings["CEduction Enabled"]))
-                gateways.Add(new { id = id++, name = "CEduction Enabled" });
+            if (settings.ContainsKey("CEducation Enabled") && (bool)settings["CEducation Enabled"])
+                gateways.Add(new { id = id++, name = "CEducation" });
 
-            if (settings.ContainsKey("CC Enabled") && Convert.ToBoolean(settings["CC Enabled"]))
+            if (settings.ContainsKey("CC Enabled") && (bool)settings["CC Enabled"])
                 gateways.Add(new { id = id++, name = "Credit Card" });
 
             return Ok(new
@@ -101,6 +120,72 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        // =========================================
+        // ✅ HELPER: FIX JSON VALUE TYPES
+        // =========================================
+        private object ConvertJsonElement(JsonElement je)
+        {
+            switch (je.ValueKind)
+            {
+                case JsonValueKind.String:
+                    return je.GetString();
+
+                case JsonValueKind.Number:
+                    if (je.TryGetInt32(out int i)) return i;
+                    if (je.TryGetDecimal(out decimal d)) return d;
+                    return je.GetDouble();
+
+                case JsonValueKind.True:
+                    return true;
+
+                case JsonValueKind.False:
+                    return false;
+
+                default:
+                    return null;
+            }
+        }
+        // =========================================
+        // ✅ HELPERS (IMPORTANT)
+        // =========================================
+
+        private bool ConvertToBool(object value)
+        {
+            if (value == null) return false;
+
+            if (value is bool b)
+                return b;
+
+            if (value is JsonElement je)
+            {
+                if (je.ValueKind == JsonValueKind.True) return true;
+                if (je.ValueKind == JsonValueKind.False) return false;
+
+                if (je.ValueKind == JsonValueKind.String)
+                    return je.GetString()?.ToLower() == "true";
+            }
+
+            return value.ToString().ToLower() == "true";
+        }
+
+        private decimal ConvertToDecimal(object value)
+        {
+            if (value == null) return 0;
+
+            if (value is decimal d)
+                return d;
+
+            if (value is JsonElement je)
+            {
+                if (je.ValueKind == JsonValueKind.Number)
+                    return je.GetDecimal();
+
+                if (je.ValueKind == JsonValueKind.String)
+                    return decimal.Parse(je.GetString());
+            }
+
+            return Convert.ToDecimal(value);
+        }
 
 
         // CREATE ORDER
