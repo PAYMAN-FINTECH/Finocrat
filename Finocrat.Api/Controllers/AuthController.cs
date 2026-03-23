@@ -19,12 +19,14 @@ namespace Finocrat.Api.Controllers
         private readonly FinocratDbContext _db;
         private readonly JwtHelper _jwt;
         private readonly IConfiguration _config;
+        private readonly DataUtils _dataUtils;
 
-        public AuthController(FinocratDbContext db, JwtHelper jwt, IConfiguration configuration)
+        public AuthController(FinocratDbContext db, JwtHelper jwt, IConfiguration configuration, DataUtils dataUtils)
         {
             _db = db;
             _jwt = jwt;
             _config = configuration;
+            _dataUtils = dataUtils;
         }
 
 
@@ -32,7 +34,7 @@ namespace Finocrat.Api.Controllers
         public IActionResult Login([FromBody] LoginRequestDTO request)
         {
             var user = _db.fUsers
-                .FirstOrDefault(x => x.UserName == request.UserId && x.IsActive);
+                .FirstOrDefault(x => (x.UserName == request.UserId || x.UserPhone == request.UserId)  && x.IsActive);
 
             if (user == null || user.Password != request.Password)
             {
@@ -109,8 +111,8 @@ namespace Finocrat.Api.Controllers
             await _db.SaveChangesAsync();
 
             string subject = "Welcome to Finocrat 🎉";
-            string body = Body(user);
-            await SendEmailAsync(user.Email, subject, body);
+            string body = await _dataUtils.Body(user);
+            await _dataUtils.SendEmailAsync(user.Email, subject, body);
 
             return Ok(new
             {
@@ -120,97 +122,7 @@ namespace Finocrat.Api.Controllers
             });
         }
 
-        public async Task SendEmailAsync(string toEmail, string subject, string body)
-        {
-            var fromEmail = _config["EmailSettings:Email"];
-            var password = _config["EmailSettings:Password"];
-
-            var smtp = new SmtpClient("smtp.gmail.com", 587)
-            {
-                Credentials = new NetworkCredential(fromEmail, password),
-                EnableSsl = true
-            };
-
-            var mail = new MailMessage(fromEmail, toEmail, subject, body)
-            {
-                IsBodyHtml = true
-            };
-
-            await smtp.SendMailAsync(mail);
-        }
-
-        public string Body(FUser fUser)
-        {
-            string body = $@"
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset='UTF-8'>
-</head>
-<body style='margin:0;padding:0;background:#f4f6f9;font-family:Arial,sans-serif;'>
-
-  <table width='100%' cellpadding='0' cellspacing='0'>
-    <tr>
-      <td align='center'>
-
-        <table width='600' style='background:#ffffff;border-radius:10px;overflow:hidden;margin-top:20px;'>
-
-          <!-- HEADER -->
-          <tr>
-            <td style='background:#2563eb;color:white;padding:20px;text-align:center;'>
-              <h2 style='margin:0;'>Finocrat</h2>
-              <p style='margin:0;font-size:12px;'>Secure Payment Solutions</p>
-            </td>
-          </tr>
-
-          <!-- BODY -->
-          <tr>
-            <td style='padding:25px;'>
-
-              <h3 style='margin-top:0;'>Welcome {fUser.UserName} 👋</h3>
-
-              <p>Your account has been successfully created.</p>
-
-              <div style='background:#f1f5f9;padding:15px;border-radius:8px;margin:15px 0;'>
-                <p style='margin:5px 0;'><b>📱 Phone:</b> {fUser.UserPhone}</p>
-                <p style='margin:5px 0;'><b>🔑 Password:</b> {fUser.Password}</p>
-              </div>
-
-              <p style='color:#dc2626;'><b>⚠️ Important:</b> Please change your password after login.</p>
-
-              <!-- BUTTON -->
-              <div style='text-align:center;margin-top:25px;'>
-                <a href='https://thefinocrat.com/'
-                   style='background:#2563eb;color:white;padding:12px 25px;
-                          text-decoration:none;border-radius:6px;font-weight:bold;'>
-                   Login Now
-                </a>
-              </div>
-
-            </td>
-          </tr>
-
-          <!-- FOOTER -->
-          <tr>
-            <td style='background:#f9fafb;padding:15px;text-align:center;font-size:12px;color:#666;'>
-              <p style='margin:0;'>© 2026 Finocrat. All rights reserved.</p>
-              <p style='margin:5px 0;'>Support: support@finocrat.com</p>
-            </td>
-          </tr>
-
-        </table>
-
-      </td>
-    </tr>
-  </table>
-
-</body>
-</html>
-";
-            return body;
-
-        }
-
+       
         // UPDATE USER
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateUser(Guid id, UserDto model)
