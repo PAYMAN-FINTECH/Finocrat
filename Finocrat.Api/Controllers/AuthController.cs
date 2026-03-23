@@ -151,6 +151,96 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        [HttpPost("forgot-password/send-otp")]
+        public async Task<IActionResult> SendOtp([FromBody] ForgotPasswordRequest req)
+        {
+            var user = await _db.fUsers
+                .FirstOrDefaultAsync(x => x.UserPhone == req.UserId || x.Email == req.UserId);
+
+            if (user == null)
+                return BadRequest("User not found");
+
+            // 🔢 Generate OTP
+            var otp = new Random().Next(100000, 999999).ToString();
+
+            // Save OTP (you can creae table or store temp)
+            user.ResetOtp = otp;
+            user.OtpExpiry = DateTime.UtcNow.AddMinutes(5);
+
+            await _db.SaveChangesAsync();
+
+            // 📧 Send Email
+            string subject = "Reset Password OTP - Finocrat";
+
+            string body = $@"
+    <div style='font-family:Arial'>
+        <h3>Password Reset Request</h3>
+        <p>Your OTP is:</p>
+        <h2 style='color:#2563eb'>{otp}</h2>
+        <p>This OTP will expire in 5 minutes.</p>
+    </div>";
+
+            await _dataUtils.SendEmailAsync(user.Email, subject, body);
+
+            return Ok(new { success = true, message = "OTP sent to email" });
+        }
+
+
+        [HttpPost("forgot-password/verify-otp")]
+        public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest req)
+        {
+            var user = await _db.fUsers
+                .FirstOrDefaultAsync(x => x.UserPhone == req.UserId || x.Email == req.UserId);
+
+            if (user == null)
+                return BadRequest("User not found");
+
+            if (user.ResetOtp != req.Otp)
+                return BadRequest("Invalid OTP");
+
+            if (user.OtpExpiry < DateTime.UtcNow)
+                return BadRequest("OTP expired");
+
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("forgot-password/reset")]
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest req)
+        {
+            var user = await _db.fUsers
+                .FirstOrDefaultAsync(x => x.UserPhone == req.UserId || x.Email == req.UserId);
+
+            if (user == null)
+                return BadRequest("User not found");
+
+            user.Password = req.NewPassword; // ⚠️ hash in production
+            user.ResetOtp = null;
+
+            await _db.SaveChangesAsync();
+
+            return Ok(new { success = true, message = "Password updated" });
+        }
+
+
+
 
     }
+
+    public class ForgotPasswordRequest
+    {
+        public string UserId { get; set; }
+    }
+
+    public class VerifyOtpRequest
+    {
+        public string UserId { get; set; }
+        public string Otp { get; set; }
+    }
+
+    public class ResetPasswordRequest
+    {
+        public string UserId { get; set; }
+        public string NewPassword { get; set; }
+    }
+
 }

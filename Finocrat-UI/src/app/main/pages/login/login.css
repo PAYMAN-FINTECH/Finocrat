@@ -13,6 +13,9 @@
   display: flex;
   align-items: flex-end;
   padding: 40px;
+
+  z-index: 1;              /* ✅ FIX */
+  pointer-events: none;    /* ✅ prevents blocking clicks */
 }
 
 .overlay-text {
@@ -31,6 +34,9 @@
   align-items: center;
   justify-content: center;
   padding: 20px;
+
+  position: relative;  /* ✅ FIX */
+  z-index: 2;          /* ✅ ensures clickable */
 }
 
 /* CARD */
@@ -109,6 +115,11 @@ input:focus {
   color: #0f5d63;
   font-size: 13px;
   text-decoration: none;
+  cursor: pointer; /* ✅ clickable */
+}
+
+.forgot a:hover {
+  text-decoration: underline;
 }
 
 /* BUTTON */
@@ -120,6 +131,7 @@ button {
   border-radius: 30px;
   border: none;
   font-size: 16px;
+  cursor: pointer;
 }
 
 button:disabled {

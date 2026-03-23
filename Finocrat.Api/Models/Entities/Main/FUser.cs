@@ -11,5 +11,7 @@
         public string? Gender { get; set; }
         public bool? IsAdmin { get; set; } = false;
         public DateTime Created { get; set; }
+        public string? ResetOtp { get; set; }
+        public DateTime? OtpExpiry { get; set; }
     }
 }

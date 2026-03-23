@@ -36,6 +36,7 @@ import { TermsConditions } from './main/pages/terms-conditions/terms-conditions'
 import { PayoutHistoryComponent } from './main/pages/payout-history/payout-history';
 import { ProfileComponent } from './main/pages/profile/profile';
 import { KycComponent } from './main/pages/kyc/kyc';
+import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-password';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -75,7 +76,8 @@ export const routes: Routes = [
     { path: 'login', component: MainLoginComponent },
     { path: 'about', component: AboutUsComponent },
     { path: 'contact', component: ContactUsComponent },
-    { path: 'services', component: ServicesComponent }
+    { path: 'services', component: ServicesComponent },
+    { path: 'forgot-password', component: ForgotPasswordComponent}
   ]
 },
 
@@ -100,7 +102,9 @@ export const routes: Routes = [
     { path: 'users', component: UsersComponent },
     { path: 'payin-history', component: PayInHistoryComponent },
     { path: 'payout-history', component: PayoutHistoryComponent },
-    { path: 'profile', component: ProfileComponent}
+    { path: 'profile', component: ProfileComponent},
+
+
   ]
 },
 
