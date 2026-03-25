@@ -54,4 +54,10 @@ export class HomeService {
   deleteUserLookup(userId: string): Observable<any> {
     return this.http.delete(`${this.baseUrl}/FUserLookup/${userId}`);
   }
+
+  getDashboard(from: string, to: string) {
+    return this.http.get<any>(
+      `${this.api}/admin-dash?from=${from}&to=${to}`
+    );
+  }
 }

@@ -29,7 +29,7 @@ namespace Finocrat.Api.Controllers
             _dataUtils = dataUtils;
         }
 
-
+       
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginRequestDTO request)
         {
@@ -47,13 +47,16 @@ namespace Finocrat.Api.Controllers
 
             var token = _jwt.GenerateJwtMain(user, expiry);
 
+            var iskyc = _db.FKycDetails.FirstOrDefault(k => k.Phone == user.UserPhone);
+
             // ✅ Send only required user details to frontend
             var userDto = new
             {
                 userId = "PM",
                 name = user.UserName,
                 userPhone = user.UserPhone,
-                isAdmin = user.IsAdmin
+                isAdmin = user.IsAdmin,
+                iskyc = true//iskyc?.IsKycCompleted
             };
 
             return Ok(new

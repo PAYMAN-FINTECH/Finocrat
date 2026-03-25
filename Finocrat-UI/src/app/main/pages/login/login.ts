@@ -71,13 +71,20 @@ export class MainLoginComponent implements OnInit {
     this.authService.login(this.loginForm.value).subscribe({
       next: (res) => {
 
+        if(res.user?.iskyc === false || res.user?.iskyc === null || res.user?.iskyc === undefined) {
+          this.router.navigate(['/app/kyc']);
+          this.toastr.info('Please complete your KYC to access all features');
+          return;
+        }
+
         this.authService.saveSession(res.token);
 
         this.tokenService.saveToken(res.token, {
           name: res.user?.name ?? '',
           userId: res.user?.userId ?? '',
           userPhone: res.user?.userPhone ?? '',
-          isAdmin: res.user?.isAdmin ?? false
+          isAdmin: res.user?.isAdmin ?? false,
+          isKyc: res.user?.isKyc ?? false
         });
 
         this.toastr.success('Login successful!');

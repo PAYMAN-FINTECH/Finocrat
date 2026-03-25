@@ -37,6 +37,7 @@ import { PayoutHistoryComponent } from './main/pages/payout-history/payout-histo
 import { ProfileComponent } from './main/pages/profile/profile';
 import { KycComponent } from './main/pages/kyc/kyc';
 import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-password';
+import { AdminDashboardComponent } from './main/pages/admin-dashboard/admin-dashboard';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -103,6 +104,7 @@ export const routes: Routes = [
     { path: 'payin-history', component: PayInHistoryComponent },
     { path: 'payout-history', component: PayoutHistoryComponent },
     { path: 'profile', component: ProfileComponent},
+    { path: 'admin-dash', component: AdminDashboardComponent}
 
 
   ]

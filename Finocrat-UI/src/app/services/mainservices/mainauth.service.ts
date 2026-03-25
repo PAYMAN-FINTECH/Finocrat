@@ -1,11 +1,14 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { environment } from '../../../environments/environment.prod';
 
 @Injectable({ providedIn: 'root' })
 export class MainAuthService {
 
-  private api = 'https://thefinocrat.com/api/auth/login';
+   private baseUrl = environment.apiUrl
+
+  private api =   `${this.baseUrl}/Auth/login`;
   private tokenKey = 'main_token';
 
   constructor(
@@ -17,6 +20,7 @@ export class MainAuthService {
   login(data: any) {
     return this.http.post<any>(this.api, data);
   }
+  
 
   // 🔹 SAVE TOKEN (Always localStorage for multi-tab support)
   saveSession(token: string) {

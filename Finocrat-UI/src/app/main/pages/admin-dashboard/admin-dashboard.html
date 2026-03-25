@@ -1,0 +1,152 @@
+<div class="admin-container">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <input type="date" [(ngModel)]="fromDate">
+    <input type="date" [(ngModel)]="toDate">
+
+    <button (click)="loadData()">Filter</button>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader">Loading...</div>
+
+  <!-- ERROR -->
+  <div *ngIf="errorMsg" class="error">
+    {{ errorMsg }}
+  </div>
+
+  <!-- DASHBOARD -->
+  <div *ngIf="!loading">
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards">
+
+      <div class="card">
+        <h3>PayIn</h3>
+        <p>{{ data?.payInCount }}</p>
+      </div>
+
+      <div class="card">
+        <h3>PayOut</h3>
+        <p>{{ data?.payOutCount }}</p>
+      </div>
+
+      <div class="card">
+        <h3>Users</h3>
+        <p>{{ data?.users?.length }}</p>
+      </div>
+
+    </div>
+
+    <!-- ================= ACCORDION ================= -->
+
+    <!-- USERS -->
+    <div class="accordion-item">
+
+      <div class="accordion-header" (click)="toggle('users')">
+        <h3>👥 Users & Balances</h3>
+        <span>{{ active === 'users' ? '-' : '+' }}</span>
+      </div>
+
+      <div class="accordion-body" *ngIf="active === 'users'">
+
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Phone</th>
+              <th>Balance</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let u of data?.users">
+              <td>{{ u.name }}</td>
+              <td>{{ u.phone }}</td>
+              <td>₹ {{ u.balance }}</td>
+            </tr>
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+
+    <!-- PAYIN -->
+    <div class="accordion-item">
+
+      <div class="accordion-header" (click)="toggle('payin')">
+        <h3>💰 PayIn Transactions</h3>
+        <span>{{ active === 'payin' ? '-' : '+' }}</span>
+      </div>
+
+      <div class="accordion-body" *ngIf="active === 'payin'">
+
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of data?.payIns">
+              <td>{{ p.userPhone }}</td>
+              <td>₹ {{ p.amount }}</td>
+              <td>
+                <span class="status success" *ngIf="p.status">Success</span>
+                <span class="status failed" *ngIf="!p.status">Failed</span>
+              </td>
+              <td>{{ p.created | date:'short' }}</td>
+            </tr>
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+
+    <!-- PAYOUT -->
+    <div class="accordion-item">
+
+      <div class="accordion-header" (click)="toggle('payout')">
+        <h3>🏦 PayOut Transactions</h3>
+        <span>{{ active === 'payout' ? '-' : '+' }}</span>
+      </div>
+
+      <div class="accordion-body" *ngIf="active === 'payout'">
+
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+
+          <tbody>
+            <tr *ngFor="let p of data?.payOuts">
+              <td>{{ p.userPhone }}</td>
+              <td>₹ {{ p.amount }}</td>
+              <td>
+                <span class="status success" *ngIf="p.status">Success</span>
+                <span class="status failed" *ngIf="!p.status">Failed</span>
+              </td>
+              <td>{{ p.created | date:'short' }}</td>
+            </tr>
+          </tbody>
+
+        </table>
+
+      </div>
+    </div>
+
+  </div>
+
+</div>
