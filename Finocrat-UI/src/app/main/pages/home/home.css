@@ -84,3 +84,46 @@
 .stat-card.danger {
   border-left: 6px solid #ef4444;
 }
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .dashboard-container {
+    padding: 16px;
+  }
+
+  .dashboard-header {
+    gap: 12px;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .filter-bar select,
+  .filter-bar input {
+    width: 100%;
+    padding: 12px 10px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+
+  .filter-bar button {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+  }
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-card h3 {
+    font-size: 24px;
+  }
+}

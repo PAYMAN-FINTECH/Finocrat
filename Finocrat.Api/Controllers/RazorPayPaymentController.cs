@@ -42,15 +42,26 @@ namespace Finocrat.Api.Controllers
             var data = await _db.fUserLookups
                 .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
 
+            if(data == null)
+            {
+                return Ok(new
+                {
+                    payInEnabled = false,
+                    payInLimit = 0,
+                    gateways = new List<object>()
+                });
+
+            }
+
             // ✅ DEFAULT SETTINGS
             Dictionary<string, object> settings = new()
             {
-                { "PayIn Enabled", true },
+                { "PayIn Enabled", false },
                 { "System PayIn Limit", 10000 },
 
-                { "REduction Enabled", true },
+                { "REduction Enabled", false },
                 { "CEducation Enabled", false },
-                { "CC Enabled", true }
+                { "CC Enabled", false }
             };
 
             // ✅ FIXED DESERIALIZATION

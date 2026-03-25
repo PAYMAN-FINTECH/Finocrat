@@ -170,3 +170,54 @@ tbody tr:hover {
   padding: 30px;
   color: #888;
 }
+
+/* TABLE WRAPPER FOR MOBILE SCROLL */
+.table-wrapper {
+  overflow-x: auto;
+}
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  .page-wrapper {
+    padding: 20px;
+  }
+
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .filter-row {
+    flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
+  }
+
+  .filter-row input {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px; /* Prevent zoom on iOS */
+  }
+
+  .filter-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-primary, .btn-outline {
+    flex: 1;
+    padding: 12px;
+    font-size: 16px;
+  }
+
+  th, td {
+    padding: 10px 12px;
+    font-size: 14px;
+  }
+}

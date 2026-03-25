@@ -57,7 +57,8 @@
   <!-- TABLE CARD -->
   <div class="table-card">
 
-    <table>
+    <div class="table-wrapper">
+      <table>
       <thead>
         <tr>
           <th>#</th>
@@ -88,7 +89,8 @@
           <td>{{ item.created | date:'medium' }}</td>
         </tr>
       </tbody>
-    </table>
+      </table>
+    </div>
 
     <div *ngIf="history.length === 0" class="no-data">
       No records found

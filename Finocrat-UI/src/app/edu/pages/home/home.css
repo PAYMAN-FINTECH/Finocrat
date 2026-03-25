@@ -159,3 +159,46 @@
 .features span {
   font-size: 40px;
 }
+
+/* MOBILE RESPONSIVENESS */
+@media (max-width: 768px) {
+  .hero {
+    padding: 40px 20px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .hero h1 {
+    font-size: 32px;
+  }
+
+  .hero-image img {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .section {
+    padding: 40px 20px;
+  }
+
+  .course-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .features {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  .features span {
+    font-size: 30px;
+  }
+}
