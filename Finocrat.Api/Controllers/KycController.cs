@@ -81,7 +81,12 @@ namespace Finocrat.Api.Controllers
                     Phone = request.Phone,
                     AadharNo = request.AdharNumber,
                     AadharRefId = refId,
-                    Created = DateTime.Now
+                    Otp = "",
+                    Name = "",
+                    Address = "",
+                    Status = false,
+                    Created = DateTime.Now,
+                    Updated = DateTime.Now
                 });
             }
             else
