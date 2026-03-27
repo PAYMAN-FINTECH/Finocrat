@@ -1,44 +1,206 @@
-<div class="kyc-container">
+<div class="kyc-wrapper">
+  
+  <!-- Progress Steps -->
+  <div class="progress-steps">
+    <div class="step" [class.active]="step >= 1" [class.completed]="step > 1">
+      <div class="step-number">1</div>
+      <div class="step-label">Aadhaar</div>
+    </div>
+    <div class="step-line" [class.active]="step > 1"></div>
+    
+    <div class="step" [class.active]="step >= 2" [class.completed]="step > 2">
+      <div class="step-number">2</div>
+      <div class="step-label">Verify OTP</div>
+    </div>
+    <div class="step-line" [class.active]="step > 2"></div>
+    
+    <div class="step" [class.active]="step >= 3" [class.completed]="step > 3">
+      <div class="step-number">3</div>
+      <div class="step-label">Documents</div>
+    </div>
+    <div class="step-line" [class.active]="step > 3"></div>
+    
+    <div class="step" [class.active]="step >= 4">
+      <div class="step-number">4</div>
+      <div class="step-label">Complete</div>
+    </div>
+  </div>
 
   <div class="kyc-card">
-
-    <h2>KYC Verification</h2>
-
-    <!-- STEP 1 -->
-    <div *ngIf="step === 1">
-      <input [(ngModel)]="aadhaar" placeholder="Enter Aadhaar">
-      <button (click)="sendOtp()">Send OTP</button>
+    
+    <!-- STEP 1 - Aadhaar -->
+    <div *ngIf="step === 1" class="step-content">
+      <div class="step-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M3 6H21V18H3V6Z" stroke="#5f2c82" stroke-width="1.5"/>
+          <path d="M7 12H10" stroke="#5f2c82" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h2>Aadhaar Verification</h2>
+      <p>Enter your 12-digit Aadhaar number to begin KYC</p>
+      
+      <div class="input-group">
+        <label>Aadhaar Number</label>
+        <div class="input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M3 6H21V18H3V6Z" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <input type="text" 
+                 [(ngModel)]="aadhaar" 
+                 maxlength="12"
+                 placeholder="XXXX XXXX XXXX"
+                 pattern="[0-9]*"
+                 inputmode="numeric">
+        </div>
+        <small class="hint">Enter the 12-digit number on your Aadhaar card</small>
+      </div>
+      
+      <button class="btn-primary" 
+              (click)="sendOtp()" 
+              [disabled]="aadhaar.length !== 12 || loading">
+        <span *ngIf="!loading">Send OTP</span>
+        <span *ngIf="loading" class="loader"></span>
+      </button>
     </div>
 
-    <!-- STEP 2 -->
-    <div *ngIf="step === 2">
-      <input [(ngModel)]="otp" placeholder="Enter OTP">
-      <button (click)="verifyOtp()">Verify OTP</button>
+    <!-- STEP 2 - OTP Verification -->
+    <div *ngIf="step === 2" class="step-content">
+      <div class="step-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M12 6V12L15 15" stroke="#5f2c82" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="9" stroke="#5f2c82" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h2>Verify OTP</h2>
+      <p>Enter the 6-digit OTP sent to your registered mobile</p>
+      
+      <div class="input-group">
+        <label>OTP Code</label>
+        <div class="input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M12 6V12L15 15" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <input type="text" 
+                 [(ngModel)]="otp" 
+                 maxlength="6"
+                 placeholder="Enter 6-digit OTP"
+                 pattern="[0-9]*"
+                 inputmode="numeric">
+        </div>
+        <small class="hint">Didn't receive OTP? <span (click)="sendOtp()">Resend</span></small>
+      </div>
+      
+      <button class="btn-primary" 
+              (click)="verifyOtp()" 
+              [disabled]="otp.length !== 6 || loading">
+        <span *ngIf="!loading">Verify OTP</span>
+        <span *ngIf="loading" class="loader"></span>
+      </button>
+      
+      <button class="btn-back" (click)="step = 1">Back</button>
     </div>
 
-    <!-- STEP 3 -->
-    <div *ngIf="step === 3">
-
-      <input [(ngModel)]="pan" placeholder="Enter PAN">
-      <button (click)="verifyPan()">Verify PAN</button>
-
-      <label>Aadhaar Front</label>
-      <input type="file" (change)="onFileChange($event,'front')">
-
-      <label>Aadhaar Back</label>
-      <input type="file" (change)="onFileChange($event,'back')">
-
-      <label>PAN Card</label>
-      <input type="file" (change)="onFileChange($event,'pan')">
-
-      <button (click)="submitKyc()">Submit</button>
+    <!-- STEP 3 - Document Upload -->
+    <div *ngIf="step === 3" class="step-content">
+      <div class="step-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none">
+          <path d="M4 4H20V20H4V4Z" stroke="#5f2c82" stroke-width="1.5"/>
+          <path d="M8 7H16M8 11H12" stroke="#5f2c82" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <h2>Document Verification</h2>
+      <p>Upload your documents for verification</p>
+      
+      <!-- PAN Card Number -->
+      <div class="input-group">
+        <label>PAN Card Number</label>
+        <div class="input-wrapper">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+            <path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <input type="text" 
+                 [(ngModel)]="pan" 
+                 placeholder="ABCDE1234F"
+                 maxlength="10"
+                 [disabled]="loading">
+        </div>
+      </div>
+      
+      <!-- Verify PAN Button -->
+      <button class="btn-secondary" 
+              (click)="verifyPan()" 
+              [disabled]="!pan || pan.length !== 10 || loading">
+        <span *ngIf="!loading">Verify PAN</span>
+        <span *ngIf="loading" class="loader"></span>
+      </button>
+      
+      <!-- Aadhaar Front -->
+      <div class="upload-group">
+        <label>Aadhaar Card (Front)</label>
+        <div class="upload-area" (click)="openFileSelector('frontInput')">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4V12M12 12L8 8M12 12L16 8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span *ngIf="!aadhaarFront">Upload Aadhaar Front</span>
+          <span *ngIf="aadhaarFront">{{ aadhaarFront.name }}</span>
+          <small>JPG, PNG or PDF (Max 5MB)</small>
+        </div>
+        <input #frontInput type="file" (change)="onFileChange($event, 'front')" accept="image/*,application/pdf" style="display: none;">
+      </div>
+      
+      <!-- Aadhaar Back -->
+      <div class="upload-group">
+        <label>Aadhaar Card (Back)</label>
+        <div class="upload-area" (click)="openFileSelector('backInput')">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4V12M12 12L8 8M12 12L16 8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span *ngIf="!aadhaarBack">Upload Aadhaar Back</span>
+          <span *ngIf="aadhaarBack">{{ aadhaarBack.name }}</span>
+          <small>JPG, PNG or PDF (Max 5MB)</small>
+        </div>
+        <input #backInput type="file" (change)="onFileChange($event, 'back')" accept="image/*,application/pdf" style="display: none;">
+      </div>
+      
+      <!-- PAN Card Upload -->
+      <div class="upload-group">
+        <label>PAN Card</label>
+        <div class="upload-area" (click)="openFileSelector('panInput')">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none">
+            <path d="M12 4V12M12 12L8 8M12 12L16 8" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M4 16L8 12L12 16L16 12L20 16" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <span *ngIf="!panFile">Upload PAN Card</span>
+          <span *ngIf="panFile">{{ panFile.name }}</span>
+          <small>JPG, PNG or PDF (Max 5MB)</small>
+        </div>
+        <input #panInput type="file" (change)="onFileChange($event, 'pan')" accept="image/*,application/pdf" style="display: none;">
+      </div>
+      
+      <button class="btn-primary" 
+              (click)="uploadDocs()" 
+              [disabled]="!pan || !aadhaarFront || !aadhaarBack || !panFile || loading">
+        <span *ngIf="!loading">Submit KYC</span>
+        <span *ngIf="loading" class="loader"></span>
+      </button>
+      
+      <button class="btn-back" (click)="step = 2">Back</button>
     </div>
 
-    <!-- SUCCESS -->
-    <div *ngIf="step === 4">
-      <h3>✅ KYC Submitted</h3>
+    <!-- STEP 4 - Success -->
+    <div *ngIf="step === 4" class="step-content success">
+      <div class="success-icon">
+        <svg width="80" height="80" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="10" fill="#22c55e"/>
+          <path d="M8 12L11 15L16 9" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <h2>KYC Submitted Successfully!</h2>
+      <p>Your documents are being verified. You will be notified once verified.</p>
+      <button class="btn-primary" (click)="goToDashboard()">Go to Dashboard</button>
     </div>
 
   </div>
-
 </div>

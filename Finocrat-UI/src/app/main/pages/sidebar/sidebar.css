@@ -1,18 +1,130 @@
+/* SIDEBAR CONTAINER */
 .sidebar-container {
   background: #0b3b44;
   color: white;
-  width: 240px;
-  padding: 18px;
-  height: 100vh;
+  width: 100%;
+  padding: 20px 16px;
+  height: 100%;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* LOGO */
+/* COLLAPSED STATE */
+.sidebar-container.collapsed {
+  width: 80px;
+  padding: 20px 12px;
+}
+
+.sidebar-container.collapsed .logo-text,
+.sidebar-container.collapsed .menu-text,
+.sidebar-container.collapsed .arrow {
+  display: none;
+}
+
+.sidebar-container.collapsed .menu-left {
+  justify-content: center;
+  gap: 0;
+}
+
+.sidebar-container.collapsed .menu li {
+  justify-content: center;
+}
+
+.sidebar-container.collapsed .submenu {
+  display: none;
+}
+
+.sidebar-container.collapsed .logout-btn {
+  justify-content: center;
+}
+
+.sidebar-container.collapsed .logout-btn .menu-text {
+  display: none;
+}
+
+/* Custom Scrollbar */
+.sidebar-container::-webkit-scrollbar {
+  width: 3px;
+}
+
+.sidebar-container::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+
+.sidebar-container::-webkit-scrollbar-thumb {
+  background: #f9c74f;
+  border-radius: 3px;
+}
+
+/* SIDEBAR HEADER */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  flex-shrink: 0;
+}
+
 .logo {
-  font-size: 20px;
-  font-weight: 600;
-  margin-bottom: 25px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.logo:hover {
+  transform: translateY(-1px);
+}
+
+.logo-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #f9c74f, #ffd166);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 16px;
+  color: #0b3b44;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #ffffff, #e0e7ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  white-space: nowrap;
+}
+
+/* COLLAPSE BUTTON */
+.collapse-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: white;
+  flex-shrink: 0;
+}
+
+.collapse-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* MENU */
@@ -21,76 +133,124 @@
   padding: 0;
   margin: 0;
   flex: 1;
+  overflow-y: auto;
 }
 
 /* MENU ITEM */
 .menu li {
-  padding: 12px 14px;
+  padding: 10px 12px;
   cursor: pointer;
   border-radius: 10px;
-  margin-bottom: 6px;
-  transition: 0.3s;
+  margin-bottom: 4px;
+  transition: all 0.2s ease;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
-/* LEFT SIDE (ICON + TEXT) */
 .menu-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
+  transition: all 0.2s ease;
 }
 
-/* ICON */
 lucide-icon {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   stroke: #ffffff;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
 }
 
-/* TEXT */
-.menu li span {
-  font-size: 14px;
+.menu-text {
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
-/* HOVER + ACTIVE */
-.menu li:hover,
+.menu li:hover {
+  background: rgba(15, 95, 107, 0.8);
+  transform: translateX(4px);
+}
+
+.sidebar-container.collapsed .menu li:hover {
+  transform: translateX(0);
+  justify-content: center;
+}
+
 .active {
   background: #0f5f6b;
+  position: relative;
 }
 
-/* ACTIVE ICON COLOR */
+.active::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 24px;
+  background: #f9c74f;
+  border-radius: 2px;
+}
+
+.sidebar-container.collapsed .active::before {
+  left: -12px;
+}
+
 .active lucide-icon {
-  stroke: #00e0ff;
+  stroke: #f9c74f;
 }
 
 /* SUBMENU */
 .submenu {
-  padding-left: 15px;
+  padding-left: 28px;
+  list-style: none;
+  margin-top: 2px;
+  margin-bottom: 4px;
+  animation: slideDown 0.2s ease;
 }
 
 .submenu li {
   background: rgba(255, 255, 255, 0.05);
-  font-size: 14px;
+  font-size: 12px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
+  padding: 8px 12px;
+  margin-bottom: 2px;
+}
+
+.submenu li:hover {
+  background: rgba(15, 95, 107, 0.6);
+  transform: translateX(4px);
+}
+
+.submenu li lucide-icon {
+  width: 14px;
+  height: 14px;
 }
 
 /* ARROW */
 .arrow {
-  transition: 0.3s;
+  transition: transform 0.3s ease;
+  font-size: 10px;
+  opacity: 0.7;
+  margin-left: 6px;
 }
 
 .rotate {
   transform: rotate(180deg);
 }
 
-/* FOOTER */
+/* FOOTER - Logout stays at bottom */
 .sidebar-footer {
-  border-top: 1px solid rgba(255,255,255,0.15);
-  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  padding-top: 16px;
+  margin-top: 8px;
+  flex-shrink: 0;
 }
 
 /* LOGOUT */
@@ -99,33 +259,52 @@ lucide-icon {
   padding: 10px;
   border: none;
   border-radius: 10px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.08);
   color: white;
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s ease;
   font-weight: 500;
-
   display: flex;
   align-items: center;
   gap: 10px;
+  font-size: 13px;
 }
 
 .logout-btn:hover {
   background: #e74c3c;
+  transform: translateY(-1px);
 }
 
-/* PARENT CLICK FEEL */
-.parent {
-  cursor: pointer;
+.logout-btn:active {
+  transform: translateY(0);
 }
 
-/* SUBMENU ANIMATION (optional smooth feel) */
-.submenu {
-  padding-left: 15px;
-  animation: fadeIn 0.2s ease;
+/* TOOLTIP FOR COLLAPSED STATE */
+.sidebar-container.collapsed .menu li,
+.sidebar-container.collapsed .logout-btn {
+  position: relative;
 }
 
-@keyframes fadeIn {
+.sidebar-container.collapsed .menu li:hover::after,
+.sidebar-container.collapsed .logout-btn:hover::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  left: 60px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #0f5f6b;
+  color: white;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  white-space: nowrap;
+  z-index: 1000;
+  pointer-events: none;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* ANIMATIONS */
+@keyframes slideDown {
   from {
     opacity: 0;
     transform: translateY(-5px);
@@ -136,3 +315,42 @@ lucide-icon {
   }
 }
 
+.parent {
+  cursor: pointer;
+}
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar-container {
+    padding: 16px;
+  }
+  
+  .sidebar-container.collapsed {
+    width: 100%;
+    padding: 16px;
+  }
+  
+  .sidebar-container.collapsed .logo-text,
+  .sidebar-container.collapsed .menu-text,
+  .sidebar-container.collapsed .arrow {
+    display: block;
+  }
+  
+  .sidebar-container.collapsed .menu-left {
+    justify-content: flex-start;
+    gap: 10px;
+  }
+  
+  .sidebar-container.collapsed .logout-btn {
+    justify-content: flex-start;
+  }
+  
+  .sidebar-container.collapsed .logout-btn .menu-text {
+    display: inline;
+  }
+  
+  .sidebar-container.collapsed .menu li:hover::after,
+  .sidebar-container.collapsed .logout-btn:hover::after {
+    display: none;
+  }
+}

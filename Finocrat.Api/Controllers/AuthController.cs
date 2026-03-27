@@ -47,7 +47,7 @@ namespace Finocrat.Api.Controllers
 
             var token = _jwt.GenerateJwtMain(user, expiry);
 
-            var iskyc = _db.FKycDetails.FirstOrDefault(k => k.Phone == user.UserPhone);
+            var iskyc = _db.fAadharDetails.FirstOrDefault(k => k.Phone == user.UserPhone);
 
             // ✅ Send only required user details to frontend
             var userDto = new
@@ -56,7 +56,7 @@ namespace Finocrat.Api.Controllers
                 name = user.UserName,
                 userPhone = user.UserPhone,
                 isAdmin = user.IsAdmin,
-                iskyc = true//iskyc?.IsKycCompleted
+                iskyc = iskyc?.IsKycCompleted
             };
 
             return Ok(new

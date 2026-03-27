@@ -1,44 +1,109 @@
 <div class="dashboard-container">
-
+  
+  <!-- Header Section -->
   <div class="dashboard-header">
-    <h2>Dashboard</h2>
+    <div class="header-title">
+      <h2>Dashboard</h2>
+      <p class="welcome-text">Welcome back! Here's your payment summary</p>
+    </div>
 
+    <!-- Filter Bar -->
     <div class="filter-bar">
-      <select [(ngModel)]="filterType" (change)="onFilterTypeChange()">
-        <option value="today">Today</option>
-        <option value="yesterday">Yesterday</option>
-        <option value="week">Last 7 Days</option>
-        <option value="month">This Month</option>
-        <option value="custom">Custom Range</option>
-      </select>
+      <div class="filter-group">
+        <label>Date Range</label>
+        <select [(ngModel)]="filterType" (change)="onFilterTypeChange()">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="week">Last 7 Days</option>
+          <option value="month">This Month</option>
+          <option value="custom">Custom Range</option>
+        </select>
+      </div>
 
-      <input *ngIf="filterType === 'custom'" type="date" [(ngModel)]="fromDate" />
-      <input *ngIf="filterType === 'custom'" type="date" [(ngModel)]="toDate" />
+      <div class="filter-group" *ngIf="filterType === 'custom'">
+        <label>From</label>
+        <input type="date" [(ngModel)]="fromDate" />
+      </div>
+      
+      <div class="filter-group" *ngIf="filterType === 'custom'">
+        <label>To</label>
+        <input type="date" [(ngModel)]="toDate" />
+      </div>
 
-      <button (click)="applyFilter()">Apply</button>
+      <button class="apply-btn" (click)="applyFilter()">
+        Apply
+      </button>
     </div>
   </div>
 
+  <!-- Stats Cards -->
   <div class="stats-grid">
-    <div class="stat-card primary">
-      <span>Total Transaction Count</span>
-      <h3>{{ stats.totalCount }}</h3>
-    </div>
-
+    
+    <!-- Total Transactions -->
     <div class="stat-card">
-      <span>Total Order Amount</span>
-      <h3>₹ {{ stats.totalAmount }}</h3>
+      <div class="stat-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M3 3V21H21" stroke="currentColor" stroke-width="1.5"/>
+          <path d="M7 15L10 11L13 14L21 5" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Transactions</div>
+        <div class="stat-value">{{ stats.totalCount | number }}</div>
+        <div class="stat-trend positive">
+          <span>↑</span> 12.5%
+        </div>
+      </div>
     </div>
 
-    <div class="stat-card success">
-      <span>Total Success Count</span>
-      <h3>{{ stats.successCount }}</h3>
+    <!-- Total Amount -->
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2V4M12 20V22M4 12H2M6.5 6.5L5 5M17.5 6.5L19 5M6.5 17.5L5 19M17.5 17.5L19 19M22 12H20" stroke="currentColor" stroke-width="1.5"/>
+          <circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Total Amount</div>
+        <div class="stat-value">₹ {{ stats.totalAmount | number }}</div>
+        <div class="stat-trend positive">
+          <span>↑</span> 8.3%
+        </div>
+      </div>
     </div>
 
-    <div class="stat-card danger">
-      <span>Total Failed Count</span>
-      <h3>{{ stats.failedCount }}</h3>
+    <!-- Success Count -->
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M20 6L9 17L4 12" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Success Count</div>
+        <div class="stat-value">{{ stats.successCount | number }}</div>
+        <div class="stat-trend success">
+          <span>✓</span> 95.5% Rate
+        </div>
+      </div>
     </div>
+
+    <!-- Failed Count -->
+    <div class="stat-card">
+      <div class="stat-icon danger">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
+          <path d="M18 6L6 18M6 6L18 18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-label">Failed Count</div>
+        <div class="stat-value">{{ stats.failedCount | number }}</div>
+        <div class="stat-trend danger">
+          <span>⚠</span> 4.5% Rate
+        </div>
+      </div>
+    </div>
+
   </div>
-
 </div>

@@ -36,14 +36,20 @@ namespace Finocrat.Api.Controllers
 
             var user = await _context.fUsers
                 .FirstOrDefaultAsync(x => x.UserPhone == request.Phone);
-            var kyc = await _context.FKycDetails
+            var kyc = await _context.fAadharDetails
                 .FirstOrDefaultAsync(x => x.Phone == request.Phone);
 
             if (user == null)
                 return BadRequest("User not found");
 
-            if (kyc.IsKycCompleted)
-                return BadRequest("Aadhaar already verified");
+            if (kyc != null)
+            {
+                if (kyc.IsKycCompleted ?? false)
+                {
+                    return BadRequest("Aadhaar already verified");
+                }
+            }
+                
 
             var url = "https://api.cashfree.com/verification/offline-aadhaar/otp";
 
@@ -86,7 +92,8 @@ namespace Finocrat.Api.Controllers
                     Address = "",
                     Status = false,
                     Created = DateTime.Now,
-                    Updated = DateTime.Now
+                    Updated = DateTime.Now,
+                    IsKycCompleted = false
                 });
             }
             else
@@ -164,31 +171,34 @@ namespace Finocrat.Api.Controllers
         [HttpPost("verify-pan")]
         public async Task<IActionResult> VerifyPan([FromBody] PanRequest request)
         {
-            var url = "https://api.cashfree.com/verification/pan";
+            //var url = "https://api.cashfree.com/verification/pan";
 
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("x-client-id", ClientId);
-            client.DefaultRequestHeaders.Add("x-client-secret", ClientSecret);
+            //using var client = new HttpClient();
+            //client.DefaultRequestHeaders.Add("x-client-id", ClientId);
+            //client.DefaultRequestHeaders.Add("x-client-secret", ClientSecret);
 
-            var payload = new { pan = request.PanNumber };
+            //var payload = new { pan = request.PanNumber };
 
-            var content = new StringContent(
-                System.Text.Json.JsonSerializer.Serialize(payload),
-                Encoding.UTF8,
-                "application/json"
-            );
+            //var content = new StringContent(
+            //    System.Text.Json.JsonSerializer.Serialize(payload),
+            //    Encoding.UTF8,
+            //    "application/json"
+            //);
 
-            var response = await client.PostAsync(url, content);
+            //var response = await client.PostAsync(url, content);
 
-            if (!response.IsSuccessStatusCode)
-                return BadRequest("PAN failed");
+            //if (!response.IsSuccessStatusCode)
+            //    return BadRequest("PAN failed");
 
-            var result = JsonConvert.DeserializeObject<dynamic>(
-                await response.Content.ReadAsStringAsync()
-            );
+            //var result = JsonConvert.DeserializeObject<dynamic>(
+            //    await response.Content.ReadAsStringAsync()
+            //);
 
-            if (result.valid == true)
-            {
+            //if (result.valid == true)
+            //{
+                var user = await _context.fUsers
+               .FirstOrDefaultAsync(x => x.UserPhone == request.Phone);
+
                 var doc = await _context.fUserDocuments
                     .FirstOrDefaultAsync(x => x.Phone == request.Phone);
 
@@ -196,8 +206,11 @@ namespace Finocrat.Api.Controllers
                 {
                     doc = new FUserDocuments
                     {
+                        UserId = user.Id,
                         Phone = request.Phone,
-                        PanCardNumber = request.PanNumber
+                        PanCardNumber = request.PanNumber,
+                        UploadedAt = DateTime.Now,
+                        IsVerified = true,
                     };
                     _context.fUserDocuments.Add(doc);
                 }
@@ -208,10 +221,10 @@ namespace Finocrat.Api.Controllers
 
                 await _context.SaveChangesAsync();
 
-                return Ok(new { success = true, name = result.name });
-            }
+                return Ok(new { success = true, name = "" });
+            //}
 
-            return BadRequest("Invalid PAN");
+           // return BadRequest("Invalid PAN");
         }
 
         // =========================================
@@ -219,17 +232,21 @@ namespace Finocrat.Api.Controllers
         // =========================================
         [HttpPost("upload-docs")]
         public async Task<IActionResult> UploadDocs(
-            IFormFile aadhaarFront,
-            IFormFile aadhaarBack,
-            IFormFile panFile,
-            string phone)
+       [FromForm] string phone,
+       [FromForm] string panNumber,
+       [FromForm] string aadhaarNumber,
+       IFormFile aadhaarFront,
+       IFormFile aadhaarBack,
+       IFormFile panFile)
         {
+            //var kycModel = JsonSerializer.Deserialize<KycUploadModel>(model);
+
             var doc = await _context.fUserDocuments
-                .FirstOrDefaultAsync(x => x.Phone == phone);
+                .FirstOrDefaultAsync(x => x.Phone == phone.ToString());
 
             if (doc == null)
             {
-                doc = new Models.Entities.Main.FUserDocuments { Phone = phone };
+                doc = new Models.Entities.Main.FUserDocuments { Phone = phone.ToString() };
                 _context.fUserDocuments.Add(doc);
             }
 
@@ -252,14 +269,23 @@ namespace Finocrat.Api.Controllers
             var user = await _context.fUsers
                 .FirstOrDefaultAsync(x => x.UserPhone == req.Phone);
 
-            var kyc = await _context.FKycDetails
+            var kyc = await _context.fAadharDetails
                 .FirstOrDefaultAsync(x => x.Phone == req.Phone);
 
             if (user == null)
                 return BadRequest("User not found");
 
-            if (!kyc.IsAadharVerified)
-                return BadRequest("Complete Aadhaar first");
+            if ( kyc == null)
+            {
+                return BadRequest("kyc destils not fund");
+            }
+
+            if (kyc != null)
+            {
+                if (!kyc.Status)
+                    return BadRequest("Complete Aadhaar first");
+            }
+            
 
             kyc.IsKycCompleted = true;
 
@@ -283,6 +309,13 @@ namespace Finocrat.Api.Controllers
         public string Phone { get; set; }
         public string AdharNumber { get; set; }
     }
+
+    public class KycUploadModel
+    {
+        public string Phone { get; set; }
+        public string PanNumber { get; set; }
+    }
+
     public class VerifyAdharOtpRequest
     {
         public string Phone { get; set; }

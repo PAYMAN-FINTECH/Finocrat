@@ -1,6 +1,35 @@
-<div class="app-layout">
-  <app-sidebar></app-sidebar>
-  <div class="app-content">
-    <router-outlet></router-outlet>
+<div class="app-wrapper">
+  <div class="main-layout">
+    
+    <!-- Mobile Menu Toggle Button -->
+    <button class="mobile-menu-toggle" (click)="toggleMobileSidebar()">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+        <path d="M3 12H21M3 6H21M3 18H21" stroke="currentColor" stroke-width="2"/>
+      </svg>
+    </button>
+
+    <!-- Sidebar -->
+    <app-sidebar 
+      class="sidebar" 
+      [class.mobile-open]="isMobileSidebarOpen"
+      (linkClicked)="closeMobileSidebar()">
+    </app-sidebar>
+    
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" *ngIf="isMobileSidebarOpen" (click)="closeMobileSidebar()"></div>
+    
+    <div class="content-area">
+      <!-- Mobile Header -->
+      <div class="mobile-header">
+        <div class="mobile-logo">Finocrat</div>
+        <div class="mobile-user" (click)="toggleMobileSidebar()">
+          <div class="user-avatar">{{ username.charAt(0) || 'U' }}</div>
+        </div>
+      </div>
+      
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </div>
   </div>
 </div>

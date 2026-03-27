@@ -1,146 +1,364 @@
-/* HEADER */
+/* HEADER - Premium Fintech Style with Purple Theme */
+/* HEADER - Premium Fintech Style with Purple Theme */
 .navbar {
-  background-color: #5b2d8b;
-  padding: 14px 20px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-  position: sticky;
-  top: 0;
+  background: linear-gradient(135deg, #5b2d8b 0%, #4a2370 100%);
+  padding: 0 32px;
+  height: 72px;
+  box-shadow: 0 4px 20px rgba(91, 45, 139, 0.2);
+  position: relative; /* Changed from sticky to relative */
   z-index: 1000;
   width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
+
+/* Rest of your header CSS remains the same */
 
 /* INNER CONTAINER */
 .nav-container {
   width: 100%;
-  max-width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  height: 100%;
 }
 
-/* LOGO */
+/* LOGO - Premium Fintech */
 .logo {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 600;
+  gap: 12px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
 }
 
-/* AVATAR IMAGE */
-.avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.4);
-}
-
-/* FALLBACK AVATAR */
-.avatar-fallback {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #f9c74f, #f9844a);
-  color: #3a1b63;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 600;
-  font-size: 14px;
+.logo:hover {
+  transform: translateY(-1px);
 }
 
 .logo img {
   height: 36px;
+  /* REMOVED: filter: brightness(0) invert(1); - This was making logo white */
+  transition: transform 0.2s ease;
 }
 
-/* NAV LINKS */
+.logo:hover img {
+  transform: scale(1.02);
+}
+
+.logo span {
+  color: #ffffff;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.3px;
+  background: linear-gradient(135deg, #ffffff 0%, #f0e6ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* NAV LINKS - Modern Style */
 .nav-links {
   display: flex;
-  gap: 28px;
+  gap: 8px;
+  align-items: center;
 }
 
 .nav-links a {
-  color: #fff;
+  color: rgba(255, 255, 255, 0.9);
   text-decoration: none;
   font-weight: 500;
+  font-size: 15px;
+  padding: 8px 16px;
+  border-radius: 40px;
+  transition: all 0.2s ease;
+  letter-spacing: -0.2px;
+  position: relative;
 }
 
 .nav-links a:hover {
-  text-decoration: underline;
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: translateY(-1px);
 }
 
-/* CTA BUTTON */
+.nav-links a::before {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #f9c74f, #ffd166);
+  transition: width 0.3s ease;
+  border-radius: 2px;
+}
+
+.nav-links a:hover::before {
+  width: calc(100% - 32px);
+}
+
+/* CTA BUTTON - Premium Gold */
 .cta-btn {
-  background: #f9c74f;
-  color: #3a1b63;
+  background: linear-gradient(135deg, #f9c74f 0%, #ffd166 100%);
+  color: #5b2d8b;
   border: none;
-  padding: 10px 20px;
-  border-radius: 24px;
-  font-weight: 600;
+  padding: 10px 24px;
+  border-radius: 40px;
+  font-weight: 700;
+  font-size: 14px;
   cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(249, 199, 79, 0.3);
+  letter-spacing: 0.3px;
 }
 
 .cta-btn:hover {
-  background: #ffd166;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(249, 199, 79, 0.4);
+  background: linear-gradient(135deg, #ffd166 0%, #f9c74f 100%);
 }
 
-/* PROFILE */
+.cta-btn:active {
+  transform: translateY(0);
+}
+
+/* PROFILE - Modern Card Style */
 .profile {
   display: flex;
   align-items: center;
-  gap: 10px;
-  color: #fff;
+  gap: 12px;
+  color: #ffffff;
+  padding: 6px 12px 6px 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
+.profile:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+  border-color: rgba(249, 199, 79, 0.3);
+}
+
+/* AVATAR IMAGE */
 .avatar {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(249, 199, 79, 0.5);
+  transition: all 0.2s ease;
 }
 
-.profile-info small {
-  font-size: 12px;
-  opacity: 0.9;
+.profile:hover .avatar {
+  border-color: #f9c74f;
 }
 
-/* HAMBURGER */
+/* FALLBACK AVATAR */
+.avatar-fallback {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #f9c74f, #ffd166);
+  color: #5b2d8b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  border: 2px solid rgba(249, 199, 79, 0.5);
+  transition: all 0.2s ease;
+}
+
+.profile-info strong {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.2px;
+}
+
+/* HAMBURGER - Animated */
 .hamburger {
   display: none;
-  color: white;
-  font-size: 26px;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 24px;
+  height: 20px;
   cursor: pointer;
+  transition: all 0.3s ease;
 }
 
-/* MOBILE */
-@media (max-width: 768px) {
+.hamburger span {
+  width: 100%;
+  height: 2px;
+  background: #ffffff;
+  border-radius: 2px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-  .hamburger {
-    display: block;
+.hamburger:hover span {
+  background: #f9c74f;
+}
+
+/* HAMBURGER OPEN STATE */
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(7px, -7px);
+}
+
+/* MOBILE & TABLET RESPONSIVENESS */
+@media (max-width: 1024px) {
+  .navbar {
+    padding: 0 24px;
   }
+  
+  .nav-links a {
+    padding: 6px 12px;
+    font-size: 14px;
+  }
+}
 
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 20px;
+    height: 64px;
+  }
+  
+  .logo span {
+    font-size: 18px;
+  }
+  
+  .logo img {
+    height: 32px;
+  }
+  
+  .hamburger {
+    display: flex;
+  }
+  
   .nav-links {
     position: fixed;
     top: 64px;
     left: 0;
+    right: 0;
     width: 100%;
-    background: #5b2d8b;
+    background: linear-gradient(135deg, #5b2d8b 0%, #4a2370 100%);
+    backdrop-filter: blur(20px);
     flex-direction: column;
     align-items: center;
-    padding: 20px 0;
-    gap: 16px;
+    padding: 24px 20px;
+    gap: 12px;
     display: none;
+    box-shadow: 0 20px 30px -10px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    animation: slideDown 0.3s ease;
   }
-
+  
   .nav-links.open {
     display: flex;
   }
-
+  
+  .nav-links a {
+    width: 100%;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 16px;
+    border-radius: 12px;
+  }
+  
+  .nav-links a::before {
+    display: none;
+  }
+  
   .nav-actions {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 16px;
   }
+  
+  .cta-btn {
+    padding: 8px 20px;
+    font-size: 13px;
+  }
+  
+  .profile {
+    padding: 4px 10px 4px 4px;
+  }
+  
+  .avatar, .avatar-fallback {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .profile-info strong {
+    font-size: 13px;
+  }
+}
+
+@media (max-width: 480px) {
+  .navbar {
+    padding: 0 16px;
+  }
+  
+  .logo span {
+    font-size: 16px;
+  }
+  
+  .logo img {
+    height: 28px;
+  }
+  
+  .cta-btn {
+    padding: 6px 16px;
+    font-size: 12px;
+  }
+  
+  .profile-info {
+    display: none;
+  }
+  
+  .profile {
+    padding: 4px;
+  }
+  
+  .nav-links {
+    top: 60px;
+    padding: 20px 16px;
+  }
+  
+  .nav-links a {
+    padding: 10px 16px;
+    font-size: 15px;
+  }
+}
+
+/* Animation */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Smooth transitions for all interactive elements */
+.nav-links a, .cta-btn, .profile, .logo, .hamburger span {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }

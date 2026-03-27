@@ -1,28 +1,368 @@
-.kyc-container {
+/* Wrapper */
+.kyc-wrapper {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #faf8ff 100%);
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  height: 100vh;
-  background: #eef2f7;
+  justify-content: center;
+  padding: 40px 20px;
 }
 
+/* Progress Steps */
+.progress-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 40px;
+  flex-wrap: wrap;
+  gap: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #e2e8f0;
+  color: #64748b;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 16px;
+  transition: all 0.3s ease;
+}
+
+.step.active .step-number {
+  background: linear-gradient(135deg, #5f2c82, #49a09d);
+  color: white;
+  box-shadow: 0 4px 12px rgba(95, 44, 130, 0.3);
+}
+
+.step.completed .step-number {
+  background: #22c55e;
+  color: white;
+  position: relative;
+}
+
+.step.completed .step-number::after {
+  content: '✓';
+  position: absolute;
+  font-size: 20px;
+}
+
+.step-label {
+  font-size: 12px;
+  margin-top: 8px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.step.active .step-label {
+  color: #5f2c82;
+  font-weight: 600;
+}
+
+.step-line {
+  width: 60px;
+  height: 2px;
+  background: #e2e8f0;
+  margin: 0 8px;
+  transition: all 0.3s ease;
+}
+
+.step-line.active {
+  background: linear-gradient(90deg, #5f2c82, #49a09d);
+}
+
+/* KYC Card */
 .kyc-card {
   background: white;
-  padding: 30px;
-  width: 400px;
-  border-radius: 12px;
-}
-
-input {
+  border-radius: 28px;
+  padding: 40px;
   width: 100%;
-  padding: 10px;
-  margin-bottom: 10px;
+  max-width: 500px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  border: 1px solid #eef2ff;
+  animation: fadeInUp 0.4s ease;
 }
 
-button {
+/* Step Content */
+.step-content {
+  text-align: center;
+}
+
+.step-icon {
+  margin-bottom: 24px;
+}
+
+.step-content h2 {
+  font-size: 24px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 8px 0;
+}
+
+.step-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0 0 32px 0;
+}
+
+/* Input Groups */
+.input-group {
+  margin-bottom: 24px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 12px 16px;
+  transition: all 0.2s ease;
+  background: white;
+}
+
+.input-wrapper:focus-within {
+  border-color: #5f2c82;
+  box-shadow: 0 0 0 3px rgba(95, 44, 130, 0.1);
+}
+
+.input-wrapper svg {
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.input-wrapper input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-size: 14px;
+  background: transparent;
+}
+
+.hint {
+  display: block;
+  font-size: 11px;
+  color: #94a3b8;
+  margin-top: 8px;
+}
+
+.hint span {
+  color: #5f2c82;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Upload Groups */
+.upload-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.upload-group label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 8px;
+}
+
+.upload-area {
+  border: 2px dashed #e2e8f0;
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #faf8ff;
+}
+
+.upload-area:hover {
+  border-color: #5f2c82;
+  background: rgba(95, 44, 130, 0.05);
+}
+
+.upload-area svg {
+  color: #5f2c82;
+  margin-bottom: 8px;
+}
+
+.upload-area span {
+  display: block;
+  font-size: 13px;
+  color: #334155;
+  margin: 8px 0 4px;
+}
+
+.upload-area small {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* Buttons */
+.btn-primary {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #5f2c82, #49a09d);
+  color: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(95, 44, 130, 0.3);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
   width: 100%;
   padding: 12px;
-  background: #2563eb;
-  color: white;
-  border: none;
+  border: 1px solid #5f2c82;
+  border-radius: 14px;
+  background: white;
+  color: #5f2c82;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 24px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: rgba(95, 44, 130, 0.05);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-back {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  background: white;
+  color: #64748b;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 12px;
+}
+
+.btn-back:hover {
+  background: #f8fafc;
+}
+
+/* Loader */
+.loader {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid white;
+  border-top: 2px solid transparent;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Success State */
+.success-icon {
+  margin-bottom: 24px;
+}
+
+.success-icon svg {
+  width: 80px;
+  height: 80px;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .kyc-wrapper {
+    padding: 20px;
+  }
+  
+  .step-line {
+    width: 40px;
+  }
+  
+  .step-number {
+    width: 36px;
+    height: 36px;
+    font-size: 14px;
+  }
+  
+  .kyc-card {
+    padding: 28px 24px;
+  }
+  
+  .step-content h2 {
+    font-size: 22px;
+  }
+}
+
+@media (max-width: 480px) {
+  .step-line {
+    width: 20px;
+  }
+  
+  .step-number {
+    width: 32px;
+    height: 32px;
+    font-size: 12px;
+  }
+  
+  .kyc-card {
+    padding: 24px 20px;
+  }
+  
+  .step-content h2 {
+    font-size: 20px;
+  }
 }

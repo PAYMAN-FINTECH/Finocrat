@@ -100,6 +100,11 @@ export class CcBillPaymentComponent implements OnInit {
   closePopup() {
     this.selectedBiller = null;
   }
+  closeSuccess() {
+    this.showSuccessScreen = false;
+    this.closePopup();
+    this.router.navigate(['/app/finhome']);
+  }
 
   fetchBill() {
 

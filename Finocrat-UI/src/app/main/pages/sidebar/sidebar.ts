@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { LucideAngularModule } from 'lucide-angular';
 
-// ✅ Icons
+// Icons
 import {
   LayoutDashboard,
   Wallet,
@@ -32,11 +32,14 @@ import { TokenService } from '../../../services/mainservices/token.service';
 })
 export class SidebarComponent {
 
+  @Output() linkClicked = new EventEmitter<void>();
+  
   reportsOpen = false;
-  adminOpen = false; // 🔥 NEW
-  isAdmin = false; // 🔥 control flag
+  adminOpen = false;
+  isAdmin = false;
+  isCollapsed = false;
 
-  // icons
+  // Icons
   LayoutDashboard = LayoutDashboard;
   Wallet = Wallet;
   CreditCard = CreditCard;
@@ -46,31 +49,56 @@ export class SidebarComponent {
   ArrowUpCircle = ArrowUpCircle;
   User = User;
   LogOut = LogOut;
-  Shield = Shield;   // 🔥 NEW
-  Users = Users;     // 🔥 NEW
+  Shield = Shield;
+  Users = Users;
 
   constructor(private router: Router, private tokenService: TokenService) {}
 
- ngOnInit() {
-
-  const user = this.tokenService.getUser();
+  ngOnInit() {
+    const user = this.tokenService.getUser();
     if (user) {
-      this.isAdmin = user.isAdmin || false; 
+      this.isAdmin = user.isAdmin || false;
+    }
+    
+    // Load collapse state from localStorage
+    const savedState = localStorage.getItem('sidebarCollapsed');
+    if (savedState !== null) {
+      this.isCollapsed = savedState === 'true';
+    }
+  }
+
+  toggleSidebar() {
+    this.isCollapsed = !this.isCollapsed;
+    localStorage.setItem('sidebarCollapsed', String(this.isCollapsed));
+    
+    // Close submenus when collapsing
+    if (this.isCollapsed) {
+      this.reportsOpen = false;
+      this.adminOpen = false;
     }
   }
 
   toggleReports() {
-    this.reportsOpen = !this.reportsOpen;
-    if (this.reportsOpen) this.adminOpen = false;
+    if (!this.isCollapsed) {
+      this.reportsOpen = !this.reportsOpen;
+      if (this.reportsOpen) this.adminOpen = false;
+    }
   }
 
   toggleAdmin() {
-    this.adminOpen = !this.adminOpen;
-    if (this.adminOpen) this.reportsOpen = false;
+    if (!this.isCollapsed) {
+      this.adminOpen = !this.adminOpen;
+      if (this.adminOpen) this.reportsOpen = false;
+    }
+  }
+
+  onLinkClick() {
+    this.linkClicked.emit();
   }
 
   logout() {
     localStorage.clear();
+    this.linkClicked.emit();
     this.router.navigate(['/dashboard']);
   }
 }

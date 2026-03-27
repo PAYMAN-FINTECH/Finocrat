@@ -1,139 +1,350 @@
+/* FOOTER - Premium Fintech Style with Purple Theme */
 .fintech-footer {
-  background: #f8fafc;
+  background: linear-gradient(135deg, #ffffff 0%, #faf8ff 100%);
   color: #334155;
   padding-top: 70px;
-  border-top: 1px solid #e2e8f0;
-  font-family: 'Inter', sans-serif;
+  border-top: 1px solid rgba(91, 45, 139, 0.15);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  position: relative;
+  overflow: hidden;
+}
+
+.fintech-footer::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #5b2d8b, #f9c74f, #5b2d8b);
+}
+
+.container {
+  max-width: 1280px;
+  margin: auto;
+  padding: 0 24px;
 }
 
 .footer-top {
   display: grid;
   grid-template-columns: 2fr 1fr 1.5fr;
   gap: 60px;
-  padding-bottom: 50px;
+  padding-bottom: 60px;
+  position: relative;
+  z-index: 1;
 }
 
+/* Brand Section */
 .footer-brand h3 {
   margin: 0;
-  font-size: 22px;
+  font-size: 24px;
+  font-weight: 700;
   color: #0f172a;
+  letter-spacing: -0.3px;
 }
 
 .footer-brand span {
-  font-size: 14px;
+  font-size: 13px;
   color: #64748b;
+  font-weight: 500;
 }
 
 .brand-row {
   display: flex;
   align-items: center;
   gap: 14px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 
 .logo-box {
-  width: 44px;
-  height: 44px;
-  background: #16a34a;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #5b2d8b 0%, #4a2370 100%);
   color: white;
-  border-radius: 10px;
-  display: grid;
-  place-items: center;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-weight: 700;
   font-size: 20px;
+  box-shadow: 0 6px 14px rgba(91, 45, 139, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.logo-box:hover {
+  transform: scale(1.05);
 }
 
 .brand-desc {
   font-size: 15px;
   line-height: 1.7;
-  margin-bottom: 24px;
+  margin-bottom: 28px;
   max-width: 420px;
+  color: #475569;
 }
 
-.newsletter-title {
-  margin-bottom: 10px;
-  font-size: 16px;
-  color: #0f172a;
-}
-
-.newsletter {
+/* Trust Badges */
+.trust-badge {
   display: flex;
-  max-width: 360px;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-top: 24px;
 }
 
-.newsletter input {
-  flex: 1;
-  padding: 12px 14px;
-  border-radius: 10px;
-  border: 1px solid #e2e8f0;
-  outline: none;
+.badge-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(91, 45, 139, 0.05);
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #5b2d8b;
+  border: 1px solid rgba(91, 45, 139, 0.15);
+  transition: all 0.2s ease;
 }
 
-.newsletter button {
-  margin-left: 10px;
-  background: #16a34a;
-  color: white;
-  border: none;
-  border-radius: 10px;
-  width: 48px;
-  font-size: 20px;
-  cursor: pointer;
+.badge-item:hover {
+  background: rgba(91, 45, 139, 0.1);
+  transform: translateY(-2px);
 }
 
-/* Links */
+/* Links Section */
 .footer-links h4,
 .footer-contact h4 {
   font-size: 16px;
+  font-weight: 700;
   color: #0f172a;
-  margin-bottom: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: -0.2px;
+}
+
+.footer-links h4 svg,
+.footer-contact h4 svg {
+  width: 18px;
+  height: 18px;
 }
 
 .footer-links a {
-  display: block;
-  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
   font-size: 14px;
-  color: #475569;
+  color: #5b6b8c;
   cursor: pointer;
-  transition: 0.2s;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.footer-links a svg {
+  opacity: 0;
+  transition: all 0.2s ease;
 }
 
 .footer-links a:hover {
-  color: #16a34a;
-  transform: translateX(4px);
+  color: #5b2d8b;
+  transform: translateX(6px);
 }
 
-/* Contact */
+.footer-links a:hover svg {
+  opacity: 1;
+  transform: translateX(2px);
+}
+
+/* Contact Section */
 .footer-contact p {
   font-size: 14px;
-  margin-bottom: 10px;
-}
-
-.footer-contact .address {
-  margin-top: 14px;
-  line-height: 1.6;
-  color: #475569;
-}
-
-/* Bottom */
-.footer-bottom {
-  border-top: 1px solid #e2e8f0;
-  padding: 20px 0;
+  margin-bottom: 14px;
   display: flex;
-  justify-content: space-between;
-  font-size: 13px;
+  align-items: flex-start;
+  gap: 12px;
+  color: #5b6b8c;
+  line-height: 1.5;
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.contact-item svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.address {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(91, 45, 139, 0.1);
+  line-height: 1.6;
   color: #64748b;
 }
 
-/* Responsive */
-@media (max-width: 900px) {
+.address svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+/* Footer Bottom */
+.footer-bottom {
+  border-top: 1px solid rgba(91, 45, 139, 0.1);
+  padding: 24px 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  color: #64748b;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.footer-bottom-right {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.made-in {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe8e0 100%);
+  padding: 6px 14px;
+  border-radius: 40px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #ff6b6b;
+}
+
+.made-in svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .footer-top {
+    gap: 40px;
+  }
+  
+  .brand-desc {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .fintech-footer {
+    padding-top: 50px;
+  }
+  
   .footer-top {
     grid-template-columns: 1fr;
     gap: 40px;
+    padding-bottom: 40px;
   }
-
-  .footer-bottom {
-    flex-direction: column;
-    gap: 10px;
+  
+  .footer-brand {
     text-align: center;
   }
+  
+  .brand-row {
+    justify-content: center;
+  }
+  
+  .brand-desc {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  
+  .trust-badge {
+    justify-content: center;
+  }
+  
+  .footer-links h4,
+  .footer-contact h4 {
+    justify-content: center;
+  }
+  
+  .footer-links a {
+    justify-content: center;
+  }
+  
+  .footer-contact p {
+    justify-content: flex-start;
+    text-align: left;
+  }
+  
+  .address {
+    text-align: left;
+  }
+  
+  .footer-bottom {
+    flex-direction: column;
+    gap: 16px;
+    text-align: center;
+    padding: 20px 24px;
+  }
+  
+  .footer-bottom-right {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 20px;
+  }
+  
+  .logo-box {
+    width: 42px;
+    height: 42px;
+  }
+  
+  .footer-brand h3 {
+    font-size: 20px;
+  }
+  
+  .brand-desc {
+    font-size: 14px;
+  }
+  
+  .trust-badge {
+    gap: 12px;
+  }
+  
+  .badge-item {
+    padding: 6px 12px;
+    font-size: 11px;
+  }
+  
+  .footer-contact p {
+    font-size: 13px;
+  }
+  
+  .address {
+    font-size: 13px;
+  }
+  
+  .footer-bottom {
+    font-size: 12px;
+  }
+}
+
+/* Hover Animations */
+.footer-links a, .badge-item, .logo-box {
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Smooth Scroll */
+html {
+  scroll-behavior: smooth;
 }

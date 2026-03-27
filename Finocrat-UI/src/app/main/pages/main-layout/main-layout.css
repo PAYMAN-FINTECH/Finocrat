@@ -1,57 +1,208 @@
-.main-layout{
-  display:flex;
-  width:100vw;
-  height:100vh;
-  overflow:hidden;
-}
-
-.app-layout {
+/* App Wrapper */
+.app-wrapper {
   display: flex;
-  height: calc(100vh - 64px); /* header height */
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
 }
 
-.app-content {
+/* MAIN LAYOUT - No Scroll */
+.main-layout {
+  display: flex;
   flex: 1;
-  overflow-y: auto; /* ✅ content scrolls here */
   background: #f7f9fc;
+  position: relative;
+  overflow: hidden;
+  min-height: 0;
 }
 
-
-.sidebar{
-  width:240px;
-  min-height:100vh;
+/* SIDEBAR - Desktop */
+.sidebar {
+  width: 260px;
+  flex-shrink: 0;
+  background: #0b3b44;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.08);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
-.content-area{
-  flex:1;
-  display:flex;
-  flex-direction:column;
-  background:#f5f5f5;
+/* CONTENT AREA */
+.content-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(135deg, #f8fafc 0%, #faf8ff 100%);
+  overflow: hidden;
+  height: 100%;
 }
 
-.page-content{
-  padding:20px;
-  overflow-y:auto;
-  height:calc(100vh - 70px);
+/* PAGE CONTENT */
+.page-content {
+  flex: 1;
+  padding: 20px 24px;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
-/* -------- MOBILE RESPONSIVE -------- */
+/* Custom Scrollbar - Minimal */
+.page-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.page-content::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 4px;
+}
+
+.page-content::-webkit-scrollbar-thumb {
+  background: #0b3b44;
+  border-radius: 4px;
+}
+
+/* Mobile Menu Toggle - Hidden on desktop */
+.mobile-menu-toggle {
+  display: none;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+.mobile-header {
+  display: none;
+}
+
+/* Content Area Top Border */
+.content-area::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, #0b3b44, #f9c74f, #0b3b44);
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ============================================ */
+/* MOBILE RESPONSIVE */
+/* ============================================ */
 @media (max-width: 768px) {
-
-  .main-layout{
-    flex-direction:column;
+  .app-wrapper {
+    height: 100vh;
+    overflow: hidden;
   }
 
-  .sidebar{
-    width:100%;
-    height:auto;
+  /* Sidebar becomes slide-out */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 1001;
+    height: 100vh;
+    width: 280px;
+  }
+  
+  .sidebar.mobile-open {
+    transform: translateX(0);
   }
 
-  .content-area{
-    width:100%;
+  /* Mobile Menu Toggle Button */
+  .mobile-menu-toggle {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #0b3b44, #0f5f6b);
+    border: none;
+    color: white;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    z-index: 1002;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   }
 
-  .page-content{
-    padding:10px;
+  /* Sidebar Overlay */
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    cursor: pointer;
+  }
+
+  /* Mobile Header */
+  .mobile-header {
+    display: flex;
+    background: white;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e2e8f0;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+  }
+
+  .mobile-logo {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0b3b44;
+  }
+
+  .mobile-user {
+    cursor: pointer;
+  }
+
+  .user-avatar {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #0b3b44, #0f5f6b);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+  }
+
+  /* Content Area on mobile */
+  .content-area {
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .page-content {
+    padding: 16px;
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-content {
+    padding: 12px;
+  }
+  
+  .mobile-header {
+    padding: 10px 12px;
+  }
+  
+  .mobile-menu-toggle {
+    width: 44px;
+    height: 44px;
+    bottom: 16px;
+    right: 16px;
   }
 }
