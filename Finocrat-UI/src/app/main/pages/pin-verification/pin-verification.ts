@@ -1,9 +1,11 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { HomeService } from '../../../services/mainservices/home.service';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-pin-verification',
   standalone: true,
+  imports: [CommonModule],   // ✅ ADD THI
   templateUrl: './pin-verification.html',
   styleUrls: ['./pin-verification.css']
 })
