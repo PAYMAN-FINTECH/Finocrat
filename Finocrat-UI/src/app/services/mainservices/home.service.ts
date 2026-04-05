@@ -60,4 +60,12 @@ export class HomeService {
       `${this.api}/admin-dash?from=${from}&to=${to}`
     );
   }
+
+  getAllUsers() {
+    return this.http.get(`${this.api}/GetUsers`);
+  }
+
+  addFailedAmount(data: any) {
+    return this.http.post(`${this.api}/AddFailedAmount`, data);
+  }
 }

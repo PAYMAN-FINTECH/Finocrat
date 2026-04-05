@@ -61,7 +61,7 @@ namespace Finocrat.Api.Controllers
 
                 { "REduction Enabled", false },
                 { "CEducation Enabled", false },
-                { "CC Enabled", false }
+               // { "CC Enabled", false }
             };
 
             // ✅ FIXED DESERIALIZATION
@@ -120,8 +120,8 @@ namespace Finocrat.Api.Controllers
             if (settings.ContainsKey("CEducation Enabled") && (bool)settings["CEducation Enabled"])
                 gateways.Add(new { id = id++, name = "CEducation" });
 
-            if (settings.ContainsKey("CC Enabled") && (bool)settings["CC Enabled"])
-                gateways.Add(new { id = id++, name = "Credit Card" });
+            //if (settings.ContainsKey("CC Enabled") && (bool)settings["CC Enabled"])
+            //    gateways.Add(new { id = id++, name = "Credit Card" });
 
             return Ok(new
             {
@@ -242,12 +242,25 @@ namespace Finocrat.Api.Controllers
 
             var userdetails = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
 
+
             var data =  _db.fUserLookups
                .FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
             var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
-            decimal payInLimit = dbSettings.ContainsKey("PayIn Margin")
-                ? Convert.ToDecimal(dbSettings["PayIn Margin"])
-                : 0;
+
+            decimal payInLimit = 0;
+
+            if (dbSettings.ContainsKey("PayIn Margin"))
+            {
+                var value = dbSettings["PayIn Margin"];
+
+                if (value is JsonElement element)
+                {
+                    if (element.ValueKind == JsonValueKind.String)
+                        payInLimit = decimal.Parse(element.GetString());
+                    else if (element.ValueKind == JsonValueKind.Number)
+                        payInLimit = element.GetDecimal();
+                }
+            }
 
             if (generatedSignature == model.Signature)
             {

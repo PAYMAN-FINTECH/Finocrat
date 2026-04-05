@@ -1,7 +1,10 @@
 ﻿using Finocrat.Api.Data;
+using Finocrat.Api.Models.DTOs.MainDtos;
+using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Finocrat.Api.Controllers
@@ -205,6 +208,128 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        // ✅ GET USERS (DROPDOWN)
+        [HttpGet("GetUsers")]
+        public IActionResult GetUsers()
+        {
+
+            var users = _db.fUsers
+                .Where(x => x.IsActive)
+                .Select(x => new AddFailedUserDto
+                {
+                    UserId = x.Id.ToString(),
+                    Name = x.UserName ,
+                    Mobile = x.UserPhone
+                })
+                .ToList();
+            
+
+            return Ok(users);
+        }
+
+        // ✅ ADD FAILED AMOUNT
+        [HttpPost("AddFailedAmount")]
+        public IActionResult AddFailedAmount([FromBody] FailedAmountRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Invalid request");
+
+                if (string.IsNullOrEmpty(request.UserId) || request.Amount <= 0)
+                    return BadRequest("Required fields missing");
+
+                var user = _db.fUsers.FirstOrDefault(x => x.Id.ToString() == request.UserId);
+                if (user == null)
+                    return NotFound("User not found");
+
+                var data = _db.fUserLookups
+            .FirstOrDefault(x => x.UserPhone == user.UserPhone);
+                var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+
+
+                if (request.Mode == "PayIn")
+                {
+                    decimal payInLimit = 0;
+
+                    if (dbSettings.ContainsKey("PayIn Margin"))
+                    {
+                        var value = dbSettings["PayIn Margin"];
+
+                        if (value is JsonElement element)
+                        {
+                            if (element.ValueKind == JsonValueKind.String)
+                                payInLimit = decimal.Parse(element.GetString());
+                            else if (element.ValueKind == JsonValueKind.Number)
+                                payInLimit = element.GetDecimal();
+                        }
+                    }
+
+                    var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                    var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
+
+                    var payIns = new FPayIn
+                    {
+                        UserId = user.Id,
+                        UserPhone = user.UserPhone,
+                        UserEmail = user.Email,
+                        CardHolderName = "",
+                        CardHolderPhone = "",
+                        CardHolderEmail = "",
+                        CardHolderCardNumber = "",
+                        Result = "captured",
+                        CardBrand =  "",
+                        BankName =  "",// razorPayCard["sub_type"]
+                        CardType =  "",
+                        Status = true,
+                        CardNo =  "",
+                        PaymentId = request.RefId,
+                        TaxNumber = request.OrderId,
+                        Amount = request.Amount,
+                        PayInCommission = request.Amount * payInLimit / 100,
+                        FCommission = request.Amount / 100,
+                        Gateway = "REduction",
+                        Created = istNow
+                    };
+
+                    var res = _dataUtils.InsertAsync(payIns);
+
+                }
+
+
+
+
+                // 🔥 BUSINESS LOGIC
+                // You can store in DB OR update wallet
+
+                // Example:
+                var transactionId = Guid.NewGuid().ToString();
+
+                // TODO:
+                // 1. Insert into FailedTransactions table
+                // 2. Credit/Debit wallet based on Mode
+                // 3. Maintain audit log
+
+                var response = new
+                {
+                    success = true,
+                    message = "Amount adjusted successfully",
+                    transactionId = transactionId
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
     }
     public class DashboardFilter
     {
@@ -219,5 +344,20 @@ namespace Finocrat.Api.Controllers
         public string Name { get; set; }
         public string Phone { get; set; }
         public decimal Balance { get; set; }
+    }
+
+    public class FailedAmountRequest
+    {
+        public string UserId { get; set; }
+        public string Mode { get; set; }   // PayIn / PayOut / CC
+        public decimal Amount { get; set; }
+        public string OrderId { get; set; }
+        public string RefId { get; set; }
+    }
+    public class AddFailedUserDto
+    {
+        public string UserId { get; set; }
+        public string Name { get; set; }
+        public string Mobile { get; set; }
     }
 }

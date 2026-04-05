@@ -38,6 +38,7 @@ import { ProfileComponent } from './main/pages/profile/profile';
 import { KycComponent } from './main/pages/kyc/kyc';
 import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-password';
 import { AdminDashboardComponent } from './main/pages/admin-dashboard/admin-dashboard';
+import { FailedAmountComponent } from './main/pages/failed-amount/failed-amount';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -98,6 +99,7 @@ export const routes: Routes = [
   children: [
     { path: 'finhome', component: FinhomeComponent },
     { path: 'wallet', component: WalletComponent },
+    { path: 'failed', component: FailedAmountComponent },
     { path: 'cc', component: CcBillPaymentComponent },
     { path: 'admin-user-lookup', component: AdminUserLookupComponent },
     { path: 'users', component: UsersComponent },

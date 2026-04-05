@@ -1,0 +1,44 @@
+<div class="container">
+
+  <h2>Failed Amount Adjustment</h2>
+
+  <div class="form-card">
+
+    <!-- USER -->
+    <label>Select User</label>
+    <select [(ngModel)]="model.userId">
+      <option value="">Select User</option>
+      <option *ngFor="let u of users" [value]="u.userId">
+        {{u.name}} ({{u.mobile}})
+      </option>
+    </select>
+
+    <!-- MODE -->
+    <label>Transaction Type</label>
+    <select [(ngModel)]="model.mode">
+      <option value="">Select</option>
+      <option *ngFor="let m of modes" [value]="m.value">
+        {{m.name}}
+      </option>
+    </select>
+
+    <!-- AMOUNT -->
+    <label>Amount</label>
+    <input type="number" [(ngModel)]="model.amount">
+
+    <!-- ORDER ID -->
+    <label>Order ID</label>
+    <input type="text" [(ngModel)]="model.orderId">
+
+    <!-- REF ID -->
+    <label>Reference ID</label>
+    <input type="text" [(ngModel)]="model.refId">
+
+    <!-- BUTTON -->
+    <button (click)="submit()" [disabled]="isLoading">
+      {{isLoading ? 'Processing...' : 'Submit'}}
+    </button>
+
+  </div>
+
+</div>
