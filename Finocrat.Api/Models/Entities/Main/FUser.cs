@@ -13,5 +13,6 @@
         public DateTime Created { get; set; }
         public string? ResetOtp { get; set; }
         public DateTime? OtpExpiry { get; set; }
+        public string? Pin { get; set; }
     }
 }

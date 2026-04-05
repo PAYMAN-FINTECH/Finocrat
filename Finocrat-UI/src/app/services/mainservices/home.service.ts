@@ -68,4 +68,18 @@ export class HomeService {
   addFailedAmount(data: any) {
     return this.http.post(`${this.api}/AddFailedAmount`, data);
   }
+
+  setPin(data: any) {
+    return this.http.post(`${this.api}/SetPin`, data);
+  }
+
+  verifyPin(data: any) {
+    return this.http.post(`${this.api}/VerifyPin`, data);
+  }
+
+  changePin(data: any) {
+    return this.http.post(`${this.api}/ChangePin`, data);
+  }
+
+
 }

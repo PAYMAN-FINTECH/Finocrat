@@ -1,0 +1,19 @@
+<div class="overlay">
+
+  <div class="card">
+
+    <h3>Enter UPI PIN</h3>
+
+    <div class="dots">
+      <span *ngFor="let i of [0,1,2,3]" [class.fill]="pin.length>i"></span>
+    </div>
+
+    <input type="password" maxlength="4" (input)="onInput($event)" autofocus>
+
+    <p class="error" *ngIf="error">{{error}}</p>
+
+    <button (click)="onClose.emit()">Cancel</button>
+
+  </div>
+
+</div>

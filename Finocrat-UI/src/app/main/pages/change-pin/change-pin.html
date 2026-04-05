@@ -1,0 +1,16 @@
+<div class="page">
+
+  <h2>Change UPI PIN</h2>
+
+  <input type="password" maxlength="4" [(ngModel)]="oldPin" placeholder="Old PIN">
+  <input type="password" maxlength="4" [(ngModel)]="newPin" placeholder="New PIN">
+  <input type="password" maxlength="4" [(ngModel)]="confirmPin" placeholder="Confirm PIN">
+
+  <button (click)="changePin()" [disabled]="isLoading">
+    {{isLoading ? 'Updating...' : 'Update PIN'}}
+  </button>
+
+  <p class="error" *ngIf="errorMsg">{{errorMsg}}</p>
+  <p class="success" *ngIf="successMsg">{{successMsg}}</p>
+
+</div>

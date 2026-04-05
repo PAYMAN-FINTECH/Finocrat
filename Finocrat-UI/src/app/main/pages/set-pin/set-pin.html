@@ -1,0 +1,15 @@
+<div class="page">
+
+  <h2>Create UPI PIN</h2>
+
+  <input type="password" maxlength="4" [(ngModel)]="pin" placeholder="Enter PIN">
+  <input type="password" maxlength="4" [(ngModel)]="confirmPin" placeholder="Confirm PIN">
+
+  <button (click)="setPin()" [disabled]="isLoading">
+    {{isLoading ? 'Setting...' : 'Set PIN'}}
+  </button>
+
+  <p class="error" *ngIf="errorMsg">{{errorMsg}}</p>
+  <p class="success" *ngIf="successMsg">{{successMsg}}</p>
+
+</div>

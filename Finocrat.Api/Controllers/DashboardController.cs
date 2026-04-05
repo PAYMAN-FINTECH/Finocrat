@@ -330,6 +330,65 @@ namespace Finocrat.Api.Controllers
             }
         }
 
+        // ✅ SET PIN
+        [HttpPost("SetPin")]
+        public IActionResult SetPin([FromBody] SetPinRequest request)
+        {
+            var user = _db.fUsers.FirstOrDefault(x => x.UserPhone == request.UserPhone);
+
+            if (user == null)
+                return BadRequest(new { success = false, message = "User not found" });
+
+            if (!string.IsNullOrEmpty(user.Pin))
+                return BadRequest(new { success = false, message = "PIN already set" });
+
+            user.Pin = request.Pin;
+
+            _db.SaveChanges();
+
+            return Ok(new { success = true, message = "PIN set successfully" });
+        }
+
+
+        // ✅ VERIFY PIN
+        [HttpPost("VerifyPin")]
+        public IActionResult VerifyPin([FromBody] SetPinRequest request)
+        {
+            var user = _db.fUsers.FirstOrDefault(x => x.UserPhone == request.UserPhone);
+
+            if (user == null)
+                return BadRequest(new { success = false, message = "User not found" });
+
+            if (user.Pin != request.Pin)
+                return BadRequest(new { success = false, message = "Invalid PIN" });
+
+            return Ok(new { success = true, message = "PIN verified" });
+        }
+
+
+        // ✅ CHANGE PIN
+        [HttpPost("ChangePin")]
+        public IActionResult ChangePin([FromBody] ChangePinRequest request)
+        {
+            var user = _db.fUsers.FirstOrDefault(x => x.UserPhone == request.UserPhone);
+
+            if (user == null)
+                return BadRequest(new { success = false, message = "User not found" });
+
+            if (user.Pin != request.OldPin)
+                return BadRequest(new { success = false, message = "Old PIN incorrect" });
+
+            if (request.OldPin == request.NewPin)
+                return BadRequest(new { success = false, message = "New PIN must be different" });
+
+            user.Pin = request.NewPin;
+
+            _db.SaveChanges();
+
+            return Ok(new { success = true, message = "PIN changed successfully" });
+        }
+
+
     }
     public class DashboardFilter
     {
@@ -359,5 +418,24 @@ namespace Finocrat.Api.Controllers
         public string UserId { get; set; }
         public string Name { get; set; }
         public string Mobile { get; set; }
+    }
+
+    public class SetPinRequest
+    {
+        public string UserPhone { get; set; }
+        public string Pin { get; set; }
+    }
+
+    public class PinRequest
+    {
+        public string UserPhone { get; set; }
+        public string Pin { get; set; }
+    }
+
+    public class ChangePinRequest
+    {
+        public string UserPhone { get; set; }
+        public string OldPin { get; set; }
+        public string NewPin { get; set; }
     }
 }

@@ -1,0 +1,39 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.6);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.card {
+  width: 90%;
+  max-width: 320px;
+  background: white;
+  padding: 25px;
+  border-radius: 20px;
+  text-align:center;
+}
+
+.dots span {
+  width: 14px;
+  height: 14px;
+  border: 2px solid #333;
+  border-radius: 50%;
+  margin: 6px;
+  display:inline-block;
+}
+
+.fill {
+  background:#333;
+}
+
+input {
+  opacity: 0;
+  position: absolute;
+}
+
+.error {
+  color:red;
+}
