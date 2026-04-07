@@ -15,11 +15,11 @@ namespace Finocrat.Api.Controllers
     [ApiController]
     public class RazorPayPaymentController : ControllerBase
     {
-        //private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
-        //private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
+        private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
+        private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
 
-        private const string RAZORPAY_KEY = "rzp_live_SAywFmrElCuSJH";
-        private const string RAZORPAY_SECRET = "oQmy8qIa09hGxop7d05f3Pex";
+        //private const string RAZORPAY_KEY = "rzp_live_SAywFmrElCuSJH";
+        //private const string RAZORPAY_SECRET = "oQmy8qIa09hGxop7d05f3Pex";
 
         private readonly FinocratDbContext _db;
         private readonly DataUtils _dataUtils;

@@ -4,14 +4,19 @@
   <div class="profile-header-card">
 
     <div class="avatar">
-      {{ user.name ? user.name.charAt(0) : '👤' }}
+      {{ user.name ? user.name.charAt(0).toUpperCase() : '👤' }}
     </div>
 
     <h2>{{ user.name || 'User' }}</h2>
-    <p>{{ user.email }}</p>
+    <p>{{ user.email || 'No email set' }}</p>
+    
+    <!-- KYC Status Badge -->
+    <div class="kyc-status" [class.verified]="user.isKyc" [class.pending]="!user.isKyc">
+      <span *ngIf="user.isKyc">✅ KYC Verified</span>
+      <span *ngIf="!user.isKyc">⚠️ KYC Pending</span>
+    </div>
 
   </div>
-
 
   <!-- DETAILS CARD -->
   <div class="profile-card">
@@ -22,28 +27,29 @@
 
       <div class="input-group">
         <label>Full Name</label>
-        <input [(ngModel)]="user.name" [disabled]="!isEditing">
+        <input [(ngModel)]="user.name" [disabled]="!isEditing" placeholder="Enter your name">
       </div>
 
       <div class="input-group">
-        <label>Email</label>
-        <input [(ngModel)]="user.email" [disabled]="!isEditing">
+        <label>Email Address</label>
+        <input [(ngModel)]="user.email" [disabled]="!isEditing" placeholder="Enter your email" type="email">
       </div>
 
       <div class="input-group">
         <label>Mobile Number</label>
-        <input [(ngModel)]="user.userPhone" disabled>
+        <input [(ngModel)]="user.userPhone" disabled class="disabled-input">
+        <small class="note">Mobile number cannot be changed</small>
       </div>
 
     </div>
 
-    <!-- ACTIONS -->
+    <!-- EDIT ACTIONS -->
     <div class="actions">
 
       <button *ngIf="!isEditing"
               class="btn primary"
               (click)="enableEdit()">
-        Edit Profile
+        ✏️ Edit Profile
       </button>
 
       <div *ngIf="isEditing" class="edit-actions">
@@ -51,15 +57,34 @@
         <button class="btn success"
                 (click)="saveProfile()"
                 [disabled]="isLoading">
-          {{ isLoading ? 'Saving...' : 'Save Changes' }}
+          {{ isLoading ? '💾 Saving...' : '💾 Save Changes' }}
         </button>
 
         <button class="btn cancel"
                 (click)="cancelEdit()">
-          Cancel
+          ❌ Cancel
         </button>
 
       </div>
+
+    </div>
+
+  </div>
+
+  <!-- ADDITIONAL ACTIONS CARD -->
+  <div class="profile-card actions-card">
+
+    <h3 class="section-title">Security Settings</h3>
+
+    <div class="security-actions">
+
+      <button class="btn secondary" (click)="goToChangePin()">
+        🔒 Change PIN
+      </button>
+
+      <button class="btn danger" (click)="logout()">
+        🚪 Logout
+      </button>
 
     </div>
 

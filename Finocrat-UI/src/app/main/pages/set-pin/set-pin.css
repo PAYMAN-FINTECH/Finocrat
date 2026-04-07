@@ -1,26 +1,230 @@
-.page {
+.set-pin-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   padding: 20px;
-  max-width: 400px;
-  margin: auto;
 }
 
-input {
+.set-pin-card {
+  background: white;
+  border-radius: 24px;
+  padding: 40px;
   width: 100%;
-  padding: 14px;
-  margin-bottom: 12px;
+  max-width: 450px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.5s ease;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.lock-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.header h2 {
+  margin: 0 0 10px;
+  color: #333;
+  font-size: 28px;
+}
+
+.header p {
+  margin: 0;
+  color: #666;
+  font-size: 14px;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #555;
+  font-size: 14px;
+}
+
+.password-input-wrapper {
+  position: relative;
+}
+
+.form-control {
+  width: 100%;
+  padding: 14px 45px 14px 15px;
+  border: 2px solid #e0e0e0;
   border-radius: 12px;
-  border: 1px solid #ccc;
+  font-size: 16px;
+  letter-spacing: 4px;
+  font-family: monospace;
+  transition: all 0.3s ease;
 }
 
-button {
-  width: 100%;
-  padding: 14px;
+.form-control:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-control.ng-invalid.ng-touched {
+  border-color: #dc2626;
+}
+
+.toggle-pin {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
   border: none;
-  border-radius: 12px;
-  background: #0f2d4d;
-  color: white;
+  cursor: pointer;
+  font-size: 18px;
+  padding: 5px;
+  color: #999;
+  transition: color 0.2s ease;
+}
+
+.toggle-pin:hover {
+  color: #667eea;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+/* PIN Strength Indicator */
+.pin-strength {
+  margin-top: 10px;
+  padding: 10px;
+  background: #f0fdf4;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.strength-bar {
+  width: 20px;
+  height: 20px;
+  background: #22c55e;
+  border-radius: 50%;
+}
+
+.strength-text {
+  color: #16a34a;
+  font-size: 12px;
   font-weight: 600;
 }
 
-.error { color: red; }
-.success { color: green; }
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Skip Button */
+.skip-btn {
+  width: 100%;
+  padding: 12px;
+  background: none;
+  color: #999;
+  border: none;
+  font-size: 14px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: color 0.2s ease;
+}
+
+.skip-btn:hover {
+  color: #667eea;
+}
+
+/* Number keypad hint */
+.pin-hint {
+  text-align: center;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #e0e0e0;
+  color: #999;
+  font-size: 12px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .set-pin-card {
+    padding: 30px 20px;
+  }
+  
+  .header h2 {
+    font-size: 24px;
+  }
+  
+  .form-control {
+    padding: 12px 40px 12px 12px;
+    font-size: 14px;
+  }
+}
+
+/* Loading state */
+.submit-btn:disabled {
+  position: relative;
+}
+
+/* Animation for form */
+form {
+  animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}

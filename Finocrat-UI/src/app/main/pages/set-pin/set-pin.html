@@ -1,15 +1,71 @@
-<div class="page">
-
-  <h2>Create UPI PIN</h2>
-
-  <input type="password" maxlength="4" [(ngModel)]="pin" placeholder="Enter PIN">
-  <input type="password" maxlength="4" [(ngModel)]="confirmPin" placeholder="Confirm PIN">
-
-  <button (click)="setPin()" [disabled]="isLoading">
-    {{isLoading ? 'Setting...' : 'Set PIN'}}
-  </button>
-
-  <p class="error" *ngIf="errorMsg">{{errorMsg}}</p>
-  <p class="success" *ngIf="successMsg">{{successMsg}}</p>
-
+<div class="set-pin-container">
+  <div class="set-pin-card">
+    
+    <div class="header">
+      <div class="lock-icon">🔐</div>
+      <h2>Set Your PIN</h2>
+      <p>Create a 4-digit PIN to secure your account</p>
+    </div>
+    
+    <form [formGroup]="pinForm" (ngSubmit)="onSubmit()">
+      
+      <div class="form-group">
+        <label>Enter PIN</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showPin ? 'text' : 'password'"
+            formControlName="pin"
+            maxlength="4"
+            placeholder="Enter 4-digit PIN"
+            class="form-control"
+            inputmode="numeric"
+            pattern="\d*"
+            autofocus
+          >
+          <button type="button" class="toggle-pin" (click)="togglePin()">
+            {{ showPin ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <div class="error" *ngIf="pinForm.get('pin')?.touched && pinForm.get('pin')?.invalid">
+          ⚠️ Please enter a valid 4-digit PIN
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label>Confirm PIN</label>
+        <div class="password-input-wrapper">
+          <input 
+            [type]="showConfirmPin ? 'text' : 'password'"
+            formControlName="confirmPin"
+            maxlength="4"
+            placeholder="Confirm your PIN"
+            class="form-control"
+            inputmode="numeric"
+            pattern="\d*"
+          >
+          <button type="button" class="toggle-pin" (click)="toggleConfirmPin()">
+            {{ showConfirmPin ? '🙈' : '👁️' }}
+          </button>
+        </div>
+        <div class="error" *ngIf="pinForm.errors?.['mismatch'] && pinForm.get('confirmPin')?.touched">
+          ⚠️ PINs do not match
+        </div>
+      </div>
+      
+      <!-- PIN strength indicator -->
+      <div class="pin-strength" *ngIf="pinForm.get('pin')?.value?.length === 4">
+        <div class="strength-bar"></div>
+        <span class="strength-text">✓ Strong PIN</span>
+      </div>
+      
+      <button type="submit" class="submit-btn" [disabled]="pinForm.invalid || isLoading">
+        {{ isLoading ? '⏳ Setting PIN...' : '✅ Set PIN' }}
+      </button>
+      
+      <button type="button" class="skip-btn" (click)="skipForNow()">
+        Skip for now
+      </button>
+      
+    </form>
+  </div>
 </div>

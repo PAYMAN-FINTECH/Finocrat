@@ -1,16 +1,78 @@
-<div class="page">
+<div class="change-pin-container">
+  <div class="change-pin-card">
+    
+    <div class="header">
+      <h2>🔐 Change PIN</h2>
+      <p>Update your 4-digit security PIN</p>
+    </div>
 
-  <h2>Change UPI PIN</h2>
+    <div class="form-group">
+      <label>Current PIN</label>
+      <div class="password-wrapper">
+        <input 
+          [type]="showOldPin ? 'text' : 'password'"
+          [(ngModel)]="oldPin"
+          maxlength="4"
+          placeholder="Enter current PIN"
+          inputmode="numeric"
+          pattern="\d*"
+        >
+        <button type="button" class="toggle-btn" (click)="toggleOldPin()">
+          {{ showOldPin ? '🙈' : '👁️' }}
+        </button>
+      </div>
+    </div>
 
-  <input type="password" maxlength="4" [(ngModel)]="oldPin" placeholder="Old PIN">
-  <input type="password" maxlength="4" [(ngModel)]="newPin" placeholder="New PIN">
-  <input type="password" maxlength="4" [(ngModel)]="confirmPin" placeholder="Confirm PIN">
+    <div class="form-group">
+      <label>New PIN</label>
+      <div class="password-wrapper">
+        <input 
+          [type]="showNewPin ? 'text' : 'password'"
+          [(ngModel)]="newPin"
+          maxlength="4"
+          placeholder="Enter new PIN"
+          inputmode="numeric"
+          pattern="\d*"
+        >
+        <button type="button" class="toggle-btn" (click)="toggleNewPin()">
+          {{ showNewPin ? '🙈' : '👁️' }}
+        </button>
+      </div>
+    </div>
 
-  <button (click)="changePin()" [disabled]="isLoading">
-    {{isLoading ? 'Updating...' : 'Update PIN'}}
-  </button>
+    <div class="form-group">
+      <label>Confirm New PIN</label>
+      <div class="password-wrapper">
+        <input 
+          [type]="showConfirmPin ? 'text' : 'password'"
+          [(ngModel)]="confirmPin"
+          maxlength="4"
+          placeholder="Confirm new PIN"
+          inputmode="numeric"
+          pattern="\d*"
+        >
+        <button type="button" class="toggle-btn" (click)="toggleConfirmPin()">
+          {{ showConfirmPin ? '🙈' : '👁️' }}
+        </button>
+      </div>
+    </div>
 
-  <p class="error" *ngIf="errorMsg">{{errorMsg}}</p>
-  <p class="success" *ngIf="successMsg">{{successMsg}}</p>
+    <div class="error-message" *ngIf="error">
+      ⚠️ {{ error }}
+    </div>
 
+    <div class="button-group">
+      <button class="btn-primary" (click)="changePin()" [disabled]="isLoading">
+        {{ isLoading ? 'Updating...' : 'Update PIN' }}
+      </button>
+      <button class="btn-secondary" (click)="cancel()">
+        Cancel
+      </button>
+    </div>
+
+    <div class="pin-hint">
+      <small>PIN must be a 4-digit number</small>
+    </div>
+
+  </div>
 </div>

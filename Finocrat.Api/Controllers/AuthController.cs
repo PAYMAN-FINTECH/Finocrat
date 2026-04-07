@@ -57,6 +57,7 @@ namespace Finocrat.Api.Controllers
                 userPhone = user.UserPhone,
                 isAdmin = user.IsAdmin,
                 iskyc = iskyc?.IsKycCompleted,
+                email = user.Email,
                 pin = user.Pin
             };
 

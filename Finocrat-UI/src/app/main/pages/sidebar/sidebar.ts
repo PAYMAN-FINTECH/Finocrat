@@ -18,6 +18,7 @@ import {
   Users
 } from 'lucide-angular';
 import { TokenService } from '../../../services/mainservices/token.service';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-sidebar',
@@ -52,7 +53,7 @@ export class SidebarComponent {
   Shield = Shield;
   Users = Users;
 
-  constructor(private router: Router, private tokenService: TokenService) {}
+  constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,) {}
 
   ngOnInit() {
     const user = this.tokenService.getUser();
@@ -96,9 +97,11 @@ export class SidebarComponent {
     this.linkClicked.emit();
   }
 
+  // Logout
   logout() {
-    localStorage.clear();
-    this.linkClicked.emit();
-    this.router.navigate(['/dashboard']);
+    this.tokenService.clear();
+    sessionStorage.clear();
+    this.router.navigate(['/dashboard/login']);
+    this.toastr.success('Logged out successfully');
   }
 }

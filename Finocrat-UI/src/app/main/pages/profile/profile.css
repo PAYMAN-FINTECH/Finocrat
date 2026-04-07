@@ -1,18 +1,20 @@
 .profile-page {
   padding: 30px;
-  max-width: 500px;
+  max-width: 600px;
   margin: auto;
+  min-height: 100vh;
+  background: #f5f7fb;
 }
 
-/* 🔥 HEADER CARD */
+/* HEADER CARD */
 .profile-header-card {
-  background: linear-gradient(135deg, #5f2c82, #49a09d);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border-radius: 20px;
   padding: 30px 20px;
   text-align: center;
   margin-bottom: 20px;
-  box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
 }
 
 .avatar {
@@ -20,27 +22,62 @@
   height: 80px;
   border-radius: 50%;
   background: rgba(255,255,255,0.2);
-  font-size: 30px;
+  font-size: 36px;
+  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: auto;
-  margin-bottom: 10px;
+  margin: 0 auto 15px;
 }
 
-/* 🔥 MAIN CARD */
+.profile-header-card h2 {
+  margin: 10px 0 5px;
+  font-size: 24px;
+}
+
+.profile-header-card p {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+/* KYC Status */
+.kyc-status {
+  display: inline-block;
+  padding: 5px 15px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 10px;
+}
+
+.kyc-status.verified {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+}
+
+.kyc-status.pending {
+  background: rgba(245, 158, 11, 0.2);
+  color: #f59e0b;
+}
+
+/* MAIN CARD */
 .profile-card {
   background: white;
   border-radius: 20px;
   padding: 25px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+  margin-bottom: 20px;
 }
 
 /* SECTION TITLE */
 .section-title {
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
+  color: #333;
+  border-left: 4px solid #667eea;
+  padding-left: 12px;
 }
 
 /* FORM */
@@ -49,26 +86,52 @@
 }
 
 .input-group {
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 .input-group label {
   font-size: 13px;
+  font-weight: 600;
   color: #555;
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: 8px;
 }
 
 .input-group input {
   width: 100%;
-  padding: 13px;
+  padding: 12px 15px;
   border-radius: 12px;
-  border: 1px solid #ddd;
+  border: 1px solid #e0e0e0;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group input:disabled {
+  background: #f5f5f5;
+  color: #666;
+}
+
+.disabled-input {
+  background: #f5f5f5;
+  cursor: not-allowed;
+}
+
+.note {
+  font-size: 11px;
+  color: #999;
+  margin-top: 5px;
+  display: block;
 }
 
 /* ACTIONS */
 .actions {
-  margin-top: 20px;
+  margin-top: 25px;
 }
 
 .edit-actions {
@@ -76,26 +139,70 @@
   gap: 10px;
 }
 
-/* BUTTON */
+/* BUTTONS */
 .btn {
-  padding: 13px;
+  padding: 12px 20px;
   border-radius: 12px;
   border: none;
-  width: 100%;
   font-weight: 600;
   cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .primary {
-  background: linear-gradient(135deg, #5f2c82, #7b2cbf);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
+  width: 100%;
 }
 
 .success {
   background: linear-gradient(135deg, #16a34a, #22c55e);
   color: white;
+  flex: 1;
 }
 
 .cancel {
   background: #e5e7eb;
+  color: #333;
+  flex: 1;
+}
+
+/* Security Actions */
+.security-actions {
+  display: flex;
+  gap: 15px;
+  flex-direction: column;
+}
+
+.secondary {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  width: 100%;
+}
+
+.danger {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: white;
+  width: 100%;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .profile-page {
+    padding: 15px;
+  }
+  
+  .edit-actions {
+    flex-direction: column;
+  }
 }

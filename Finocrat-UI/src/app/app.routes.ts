@@ -22,6 +22,7 @@ import { ServicesComponent } from './main/pages/services/services';
 import { MainLoginComponent } from './main/pages/login/login';
 import { AuthGuard } from './services/mainservices/auth.guard';
 import { LoginGuard } from './services/mainservices/login.auth.guard';
+import { PinGuard } from './services/mainservices/pin.guard';
 import { MainLayout } from './main/pages/main-layout/main-layout';
 import { FinhomeComponent } from './main/pages/home/home';
 import { WalletComponent } from './main/pages/wallet/wallet';
@@ -39,6 +40,10 @@ import { KycComponent } from './main/pages/kyc/kyc';
 import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-password';
 import { AdminDashboardComponent } from './main/pages/admin-dashboard/admin-dashboard';
 import { FailedAmountComponent } from './main/pages/failed-amount/failed-amount';
+import { PinVerificationComponent } from './main/pages/pin-verification/pin-verification';
+import { SetPinComponent } from './main/pages/set-pin/set-pin';
+import { ChangePinComponent } from './main/pages/change-pin/change-pin';
+import { VerifyPinPageComponent } from './main/pages/verify-pin-page/verify-pin-page';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -53,7 +58,6 @@ export const routes: Routes = [
     children: [
       { path: '', component: HomeComponent },
       { path: 'about', component: AboutComponent },
-      
       { path: 'contact', component: ContactComponent },
       { path: 'terms', component: TermsComponent },
       { path: 'privacy', component: PrivacyComponent },
@@ -67,50 +71,45 @@ export const routes: Routes = [
     ]
   },
 
- // MAIN APP ROUTES
-{
-  path: 'dashboard',
-  children: [
-    { path: '', component: DashboradComponent },
-    { path: 'privacy-policy', component: PrivacyPolicy },
-    { path: 'refund-policy', component: RefundPolicy },
-    { path: 'terms-conditions', component: TermsConditions },
-    { path: 'login', component: MainLoginComponent },
-    { path: 'kyc' , component: KycComponent},
-    { path: 'about', component: AboutUsComponent },
-    { path: 'contact', component: ContactUsComponent },
-    { path: 'services', component: ServicesComponent },
-    { path: 'forgot-password', component: ForgotPasswordComponent}
-  ]
-},
+  // MAIN APP ROUTES (Public & Pre-login)
+  {
+    path: 'dashboard',
+    children: [
+      { path: '', component: DashboradComponent },
+      { path: 'privacy-policy', component: PrivacyPolicy },
+      { path: 'refund-policy', component: RefundPolicy },
+      { path: 'terms-conditions', component: TermsConditions },
+      { path: 'login', component: MainLoginComponent, canActivate: [LoginGuard] },
+      { path: 'kyc', component: KycComponent },
+      { path: 'about', component: AboutUsComponent },
+      { path: 'contact', component: ContactUsComponent },
+      { path: 'services', component: ServicesComponent },
+      { path: 'forgot-password', component: ForgotPasswordComponent },
+      // PIN Routes
+      { path: 'set-pin', component: SetPinComponent, canActivate: [AuthGuard] },
+      { path: 'verify-pin', component: VerifyPinPageComponent },
+    ]
+  },
 
-// // Separate login route
-// { 
-//   path: 'dashboard/login', 
-//   component: MainLoginComponent, 
-//   canActivate: [LoginGuard] 
-// },
-
-// --------- AUTHENTICATED APP (WITH SIDEBAR) ----------
-{
-  path: 'app',
-  component: MainLayout,      // <-- SIDEBAR + HEADER WRAPPER
-  canActivate: [AuthGuard],
-  children: [
-    { path: 'finhome', component: FinhomeComponent },
-    { path: 'wallet', component: WalletComponent },
-    { path: 'failed', component: FailedAmountComponent },
-    { path: 'cc', component: CcBillPaymentComponent },
-    { path: 'admin-user-lookup', component: AdminUserLookupComponent },
-    { path: 'users', component: UsersComponent },
-    { path: 'payin-history', component: PayInHistoryComponent },
-    { path: 'payout-history', component: PayoutHistoryComponent },
-    { path: 'profile', component: ProfileComponent},
-    { path: 'admin-dash', component: AdminDashboardComponent}
-
-
-  ]
-},
+  // AUTHENTICATED APP (WITH SIDEBAR) - Requires PIN verification
+  {
+    path: 'app',
+    component: MainLayout,
+    canActivate: [AuthGuard, PinGuard],
+    children: [
+      { path: 'finhome', component: FinhomeComponent },
+      { path: 'wallet', component: WalletComponent },
+      { path: 'failed', component: FailedAmountComponent },
+      { path: 'cc', component: CcBillPaymentComponent },
+      { path: 'admin-user-lookup', component: AdminUserLookupComponent },
+      { path: 'users', component: UsersComponent },
+      { path: 'payin-history', component: PayInHistoryComponent },
+      { path: 'payout-history', component: PayoutHistoryComponent },
+      { path: 'profile', component: ProfileComponent },
+      { path: 'change-pin', component: ChangePinComponent },  // Add this
+      { path: 'admin-dash', component: AdminDashboardComponent }
+    ]
+  },
 
   // FALLBACK
   { path: '**', redirectTo: '' }

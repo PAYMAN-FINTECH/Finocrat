@@ -1,8 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { ToastrService } from 'ngx-toastr';
+import { HomeService } from '../../../services/mainservices/home.service';
 
 @Component({
   selector: 'app-profile',
@@ -16,25 +18,38 @@ export class ProfileComponent implements OnInit {
   user: any = {
     name: '',
     email: '',
-    userPhone: ''
+    userPhone: '',
+    isKyc: false
   };
 
   isEditing = false;
   isLoading = false;
+  originalUser: any = {};
 
   constructor(
     private tokenService: TokenService,
-    private toastr: ToastrService
+    private toastr: ToastrService,
+    private router: Router,
+    private homeService: HomeService
   ) {}
 
   ngOnInit(): void {
+    this.loadUserData();
+  }
+
+  loadUserData() {
     const data = this.tokenService.getUser();
+    console.log('Profile - User data:', data);
+    
     if (data) {
       this.user = {
         name: data.name || '',
         email: data.email || '',
-        userPhone: data.userPhone || ''
+        userPhone: data.userPhone || '',
+        isKyc: data.isKyc || false
       };
+      // Store original data for cancel
+      this.originalUser = { ...this.user };
     }
   }
 
@@ -43,22 +58,66 @@ export class ProfileComponent implements OnInit {
   }
 
   cancelEdit() {
+    this.user = { ...this.originalUser };
     this.isEditing = false;
-    this.ngOnInit(); // reload original data
   }
 
   saveProfile() {
+    if (!this.user.name || !this.user.email) {
+      this.toastr.warning('Please fill all required fields');
+      return;
+    }
+
     this.isLoading = true;
 
-    // 👉 simulate API (replace with real API)
-    setTimeout(() => {
-      this.isLoading = false;
-      this.isEditing = false;
+    // Prepare payload for API
+    const payload = {
+      UserPhone: this.user.userPhone,
+      Name: this.user.name,
+      Email: this.user.email
+    };
 
-      // update local storage
-      localStorage.setItem('user', JSON.stringify(this.user));
+    // Call API to update profile
+    this.homeService.updateProfile(payload).subscribe({
+      next: (response) => {
+        console.log('Profile updated:', response);
+        
+        // Update local storage with new data
+        const currentUser = this.tokenService.getUser();
+        const updatedUser = {
+          ...currentUser,
+          name: this.user.name,
+          email: this.user.email
+        };
+        
+        // Save updated user to localStorage
+        const token = this.tokenService.getToken();
+        this.tokenService.saveToken(token!, updatedUser);
+        
+        this.isLoading = false;
+        this.isEditing = false;
+        this.originalUser = { ...this.user };
+        
+        this.toastr.success('Profile updated successfully');
+      },
+      error: (err) => {
+        console.error('Profile update error:', err);
+        this.isLoading = false;
+        this.toastr.error(err.error?.message || 'Failed to update profile');
+      }
+    });
+  }
 
-      this.toastr.success('Profile updated successfully');
-    }, 1000);
+  // Navigate to Change PIN page
+  goToChangePin() {
+    this.router.navigate(['/app/change-pin']);
+  }
+
+  // Logout
+  logout() {
+    this.tokenService.clear();
+    sessionStorage.clear();
+    this.router.navigate(['/dashboard/login']);
+    this.toastr.success('Logged out successfully');
   }
 }

@@ -81,5 +81,10 @@ export class HomeService {
     return this.http.post(`${this.api}/ChangePin`, data);
   }
 
+  // services/mainservices/home.service.ts
+updateProfile(payload: any): Observable<any> {
+  return this.http.post(`${this.api}/update-profile`, payload);
+}
+
 
 }

@@ -1,15 +1,20 @@
-<!-- EDU HEADER -->
-<edu-header *ngIf="isEdu"></edu-header>
+<div [class.app-blur]="showGlobalPin" class="app-container">
 
-<!-- MAIN HEADER -->
-<app-mainheader *ngIf="!isEdu"></app-mainheader>
+  <edu-header *ngIf="isEdu"></edu-header>
 
-<!-- ROUTER CONTENT -->
-<router-outlet></router-outlet>
+  <app-mainheader *ngIf="!isEdu"></app-mainheader>
 
-<!-- EDU FOOTER -->
-<edu-footer *ngIf="isEdu"></edu-footer>
+  <router-outlet></router-outlet>
 
-<!-- MAIN FOOTER -->
-<app-mainfooter *ngIf="!isEdu && !showFooter"></app-mainfooter>
-<app-loader></app-loader>
+  <edu-footer *ngIf="isEdu"></edu-footer>
+
+  <app-mainfooter *ngIf="!isEdu && !showFooter"></app-mainfooter>
+
+  <app-loader></app-loader>
+
+</div>
+
+<app-pin-verification
+  *ngIf="showGlobalPin"
+  (success)="unlockApp()">
+</app-pin-verification>

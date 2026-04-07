@@ -1,19 +1,46 @@
-<div class="overlay">
-
-  <div class="card">
-
-    <h3>Enter UPI PIN</h3>
-
-    <div class="dots">
-      <span *ngFor="let i of [0,1,2,3]" [class.fill]="pin.length>i"></span>
+<div class="pin-overlay">
+  <div class="pin-card">
+    <div class="pin-header">
+      <h3>Enter PIN</h3>
+      <p>Please enter your 4-digit PIN to continue</p>
     </div>
 
-    <input type="password" maxlength="4" (input)="onInput($event)" autofocus>
+    <div class="pin-dots">
+      <span *ngFor="let dot of [1,2,3,4]; let i = index"
+            class="pin-dot"
+            [class.filled]="i < pin.length">
+      </span>
+    </div>
 
-    <p class="error" *ngIf="error">{{error}}</p>
+    <input 
+      #pinInput 
+      type="tel" 
+      maxlength="4" 
+      inputmode="numeric"
+      pattern="\d*"
+      class="pin-input-hidden"
+      (input)="onInput($event)" 
+      autofocus
+    />
 
-    <button (click)="onClose.emit()">Cancel</button>
+    <div class="pin-keypad" *ngIf="!isLoading">
+      <button *ngFor="let num of [1,2,3,4,5,6,7,8,9,0]" 
+              class="pin-key"
+              (click)="onInput({target: {value: pin + num}})">
+        {{num}}
+      </button>
+      <!-- <button class="pin-key delete" (click)="pin = pin.slice(0, -1); pinInput.nativeElement.value = pin">
+        ⌫
+      </button> -->
+    </div>
 
+    <div class="pin-error" *ngIf="error">
+      {{error}}
+    </div>
+
+    <div class="pin-loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <span>Verifying...</span>
+    </div>
   </div>
-
 </div>
