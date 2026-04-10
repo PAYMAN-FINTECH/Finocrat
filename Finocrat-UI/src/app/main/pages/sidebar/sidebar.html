@@ -68,39 +68,56 @@
       </li>
     </ul>
 
-    <!-- ADMIN -->
-    <ng-container *ngIf="isAdmin">
-      <li (click)="toggleAdmin()" class="parent">
-        <div class="menu-left">
-          <lucide-icon [img]="Shield"></lucide-icon>
-          <span class="menu-text">Admin</span>
-        </div>
-        <span class="arrow" [class.rotate]="adminOpen" *ngIf="!isCollapsed">▾</span>
-      </li>
+   <!-- ADMIN -->
+<ng-container *ngIf="isAdmin">
+  <li (click)="toggleAdmin()" class="parent">
+    <div class="menu-left">
+      <lucide-icon [img]="Shield"></lucide-icon>
+      <span class="menu-text">Admin</span>
+    </div>
+    <span class="arrow" [class.rotate]="adminOpen" *ngIf="!isCollapsed">▾</span>
+  </li>
 
-      <ul *ngIf="adminOpen && !isCollapsed" class="submenu">
-        <li routerLink="/app/admin-user-lookup" routerLinkActive="active" (click)="onLinkClick()">
-          <lucide-icon [img]="User"></lucide-icon>
-          <span>Admin User Lookup</span>
-        </li>
-        <li routerLink="/app/users" routerLinkActive="active" (click)="onLinkClick()">
-          <lucide-icon [img]="Users"></lucide-icon>
-          <span>Users</span>
-        </li>
-        <li routerLink="/app/kyc" routerLinkActive="active" (click)="onLinkClick()">
-          <lucide-icon [img]="Users"></lucide-icon>
-          <span>KYC</span>
-        </li>
-        <li routerLink="/app/admin-dash" routerLinkActive="active" (click)="onLinkClick()">
-          <lucide-icon [img]="User"></lucide-icon>
-          <span>Admin Dashboard</span>
-        </li>
-        <li routerLink="/app/failed" routerLinkActive="active" (click)="onLinkClick()">
-          <lucide-icon [img]="User"></lucide-icon>
-          <span>Failed Amount</span>
-        </li>
-      </ul>
-    </ng-container>
+  <ul *ngIf="adminOpen && !isCollapsed" class="submenu">
+
+    <!-- USER LOOKUP -->
+    <li routerLink="/app/admin-user-lookup" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="Search"></lucide-icon>
+      <span>Admin User Lookup</span>
+    </li>
+
+    <!-- USERS -->
+    <li routerLink="/app/users" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="Users"></lucide-icon>
+      <span>Users</span>
+    </li>
+
+    <!-- KYC -->
+    <!-- <li routerLink="/app/kyc" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="BadgeCheck"></lucide-icon>
+      <span>KYC</span>
+    </li> -->
+
+    <!-- DASHBOARD -->
+    <li routerLink="/app/admin-dash" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="BarChart3"></lucide-icon>
+      <span>Admin Dashboard</span>
+    </li>
+
+    <!-- PASSBOOK -->
+    <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="BookText"></lucide-icon>
+      <span>Passbook</span>
+    </li>
+
+    <!-- FAILED -->
+    <li routerLink="/app/failed" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="AlertCircle"></lucide-icon>
+      <span>Failed Amount</span>
+    </li>
+
+  </ul>
+</ng-container>
 
     <!-- PROFILE - Add click handler -->
     <li routerLink="/app/profile" routerLinkActive="active" (click)="onLinkClick()">

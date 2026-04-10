@@ -6,6 +6,8 @@ export class PayInService {
 
   private api = 'https://thefinocrat.com/api/PayIn/history';
   private payoutapi = 'https://thefinocrat.com/api/PayIn/payouthistory';
+  private passbookapi = 'https://thefinocrat.com/api/PayIn';
+  
 
   constructor(private http: HttpClient) {}
 
@@ -41,5 +43,11 @@ getPayoutHistory(fromDate?: string, toDate?: string, userPhone?: string) {
 
     return this.http.get<any[]>(this.payoutapi, { params });
   }
+
+  getPassbook(mobile: string, fromDate?: string, toDate?: string) {
+  return this.http.get<any[]>(
+    `${this.passbookapi}/GetPassbook?mobile=${mobile}&fromDate=${fromDate || ''}&toDate=${toDate || ''}`
+  );
+}
 
 }

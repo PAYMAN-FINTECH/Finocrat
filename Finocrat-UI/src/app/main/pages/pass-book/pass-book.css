@@ -1,0 +1,66 @@
+.container {
+  padding: 15px;
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+h2 {
+  margin-bottom: 10px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.filters input, .filters button {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+}
+
+.date-header {
+  font-weight: bold;
+  margin: 15px 0 5px;
+  color: #666;
+}
+
+.txn-card {
+  background: #fff;
+  padding: 12px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.left .name {
+  font-weight: 600;
+}
+
+.left .sub {
+  font-size: 12px;
+  color: #777;
+}
+
+.amount {
+  font-weight: bold;
+}
+
+.credit {
+  color: green;
+}
+
+.debit {
+  color: red;
+}
+
+.balance {
+  font-size: 12px;
+  color: #666;
+}

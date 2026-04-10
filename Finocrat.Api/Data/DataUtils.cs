@@ -23,6 +23,13 @@ namespace Finocrat.Api.Data
             return model;
         }
 
+        public async Task<FPassbookHistory> InsertFHistoryAsync(FPassbookHistory model)
+        {
+            await _context.fPassbookHistories.AddAsync(model);
+            await _context.SaveChangesAsync();
+            return model;
+        }
+
         public async Task<decimal> GetWalletAmount(string userPhone)
         {
             if (string.IsNullOrEmpty(userPhone))

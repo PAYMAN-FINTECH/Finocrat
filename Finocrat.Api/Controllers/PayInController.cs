@@ -1,6 +1,7 @@
 ﻿using Finocrat.Api.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace Finocrat.Api.Controllers
 {
@@ -89,6 +90,37 @@ namespace Finocrat.Api.Controllers
                     x.Created
                 })
                 .ToList();
+
+            return Ok(data);
+        }
+
+        [HttpGet("GetPassbook")]
+        public async Task<IActionResult> GetPassbook(string mobile, DateTime? fromDate, DateTime? toDate)
+        {
+            var query = _db.fPassbookHistories
+                .Where(x => x.UserPhone == mobile);
+
+            if (fromDate.HasValue)
+                query = query.Where(x => x.CreatedAt >= fromDate.Value);
+
+            if (toDate.HasValue)
+                query = query.Where(x => x.CreatedAt <= toDate.Value);
+
+            var data = await query
+                .OrderByDescending(x => x.CreatedAt)
+                .Select(x => new
+                {
+                    x.TxnId,
+                    x.Name,
+                    x.AccountNumber,
+                    x.TransactionType,
+                    x.Amount,
+                    x.Balance,
+                    x.Status,
+                    x.StatusMessage,
+                    x.CreatedAt
+                })
+                .ToListAsync();
 
             return Ok(data);
         }

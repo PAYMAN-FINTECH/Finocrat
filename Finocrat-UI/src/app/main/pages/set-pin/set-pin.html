@@ -3,8 +3,12 @@
     
     <div class="header">
       <div class="lock-icon">🔐</div>
-      <h2>Set Your PIN</h2>
-      <p>Create a 4-digit PIN to secure your account</p>
+      <h2>{{ isResetFlow ? 'Reset Your PIN' : 'Set Your PIN' }}</h2>
+      <p>{{ isResetFlow ? 'Create a new 4-digit PIN for your account' : 'Create a 4-digit PIN to secure your account' }}</p>
+    </div>
+    
+    <div class="info-banner" *ngIf="isResetFlow">
+      <span>ℹ️</span> You are resetting your PIN. Create a new 4-digit PIN.
     </div>
     
     <form [formGroup]="pinForm" (ngSubmit)="onSubmit()">
@@ -52,18 +56,17 @@
         </div>
       </div>
       
-      <!-- PIN strength indicator -->
       <div class="pin-strength" *ngIf="pinForm.get('pin')?.value?.length === 4">
         <div class="strength-bar"></div>
         <span class="strength-text">✓ Strong PIN</span>
       </div>
       
       <button type="submit" class="submit-btn" [disabled]="pinForm.invalid || isLoading">
-        {{ isLoading ? '⏳ Setting PIN...' : '✅ Set PIN' }}
+        {{ isLoading ? '⏳ Setting PIN...' : (isResetFlow ? '✅ Reset PIN' : '✅ Set PIN') }}
       </button>
       
       <button type="button" class="skip-btn" (click)="skipForNow()">
-        Skip for now
+        Cancel
       </button>
       
     </form>

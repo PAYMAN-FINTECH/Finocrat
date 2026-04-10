@@ -168,12 +168,12 @@
       </div>
 
       <!-- Pay Button -->
-      <button class="btn-success" 
-              [disabled]="isLoading"
-              (click)="processPayment()">
-        <span *ngIf="!isLoading">Pay ₹ {{model.amount | number}}</span>
-        <span *ngIf="isLoading" class="loader"></span>
-      </button>
+<button class="btn-success" 
+        [disabled]="isLoading"
+        (click)="processPayment()">
+  <span *ngIf="!isLoading">Pay ₹ {{model.amount | number}}</span>
+  <span *ngIf="isLoading" class="loader"></span>
+</button>
 
     </div>
 
@@ -192,5 +192,66 @@
     <h2>Payment Successful!</h2>
     <p>Your payment of ₹ {{model.amount | number}} has been processed successfully.</p>
     <button class="btn-done" (click)="closeSuccess()">Done</button>
+  </div>
+</div>
+
+<!-- PIN VERIFICATION MODAL -->
+<div class="pin-modal-overlay" *ngIf="showPinModal" (click)="closePinModal()">
+  <div class="pin-modal-container" (click)="$event.stopPropagation()">
+    
+    <div class="pin-modal-header">
+      <div class="pin-lock-icon">🔐</div>
+      <h3>Verify PIN</h3>
+      <p>Enter your 4-digit PIN to complete payment</p>
+      <button class="pin-close-btn" (click)="closePinModal()">✕</button>
+    </div>
+
+    <div class="pin-dots">
+      <span *ngFor="let dot of [1,2,3,4]; let i = index"
+            class="pin-dot"
+            [class.filled]="i < pin.length">
+      </span>
+    </div>
+
+    <input 
+      id="pin-input-field"
+      type="tel" 
+      maxlength="4" 
+      inputmode="numeric"
+      pattern="\d*"
+      class="pin-hidden-input"
+      [(ngModel)]="pin"
+      (input)="onPinInput($event.target.value)"
+      autofocus
+    />
+
+    <div class="pin-keypad">
+      <button *ngFor="let num of [1,2,3,4,5,6,7,8,9,0]" 
+              class="pin-key"
+              (click)="onPinInput(num.toString())">
+        {{num}}
+      </button>
+      <button class="pin-key delete" (click)="deletePin()">
+        ⌫
+      </button>
+    </div>
+
+    <div class="pin-error" *ngIf="pinError">
+      ⚠️ {{ pinError }}
+    </div>
+
+    <div class="pin-loading" *ngIf="isLoading">
+      <div class="spinner"></div>
+      <span>Verifying...</span>
+    </div>
+
+    <button class="pin-cancel-btn" (click)="closePinModal()">
+      Cancel Payment
+    </button>
+
+    <div class="payment-amount" *ngIf="model.amount">
+      Payment Amount: <strong>₹ {{ model.amount | number }}</strong>
+    </div>
+
   </div>
 </div>

@@ -14,5 +14,6 @@
         public string? ResetOtp { get; set; }
         public DateTime? OtpExpiry { get; set; }
         public string? Pin { get; set; }
+        public string? PinResetOtp { get; set; }    
     }
 }

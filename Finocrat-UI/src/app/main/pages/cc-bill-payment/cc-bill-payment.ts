@@ -6,6 +6,7 @@ import { TokenService } from '../../../services/mainservices/token.service';
 import { CreditcardService } from '../../../services/mainservices/creditcard.service';
 import { ToastrService } from 'ngx-toastr';
 import { Router } from '@angular/router';
+import { HomeService } from '../../../services/mainservices/home.service';
 
 @Component({
   selector: 'app-cc-bill-payment',
@@ -28,12 +29,27 @@ export class CcBillPaymentComponent implements OnInit {
 
   isLoading = false;
   showSuccessScreen = false;
+  
+  // PIN Verification Modal
+  showPinModal = false;
+  pin = '';
+  pinError = '';
+  pinAttempts = 0;
+  maxPinAttempts = 3;
+  pendingPaymentPayload: any = null;
 
   model: any = {
     billerId: '',
     last4: '',
     cardMobile: '',
-    amount: ''
+    amount: '',
+
+    consumerName: '',
+    dueDate: '',
+    param1: '',
+    param2: '',
+    enquiryReferenceId: '',
+    paymentMode: 'Cash'
   };
 
   constructor(
@@ -41,27 +57,28 @@ export class CcBillPaymentComponent implements OnInit {
     private ccService: CreditcardService,
     private toastr: ToastrService,
     private router: Router,
+    private homeService: HomeService
   ) {}
 
   goHome() {
-  this.router.navigate(['/app/finhome'], { replaceUrl: true });
-}
+    this.router.navigate(['/app/finhome'], { replaceUrl: true });
+  }
 
   ngOnInit(): void {
-
     const user = this.tokenService.getUser();
     if (user) {
       this.userPhone = user.userPhone;
     }
 
     this.loadBillers();
-    // 🔥 BLOCK BACK
-  history.pushState(null, '', location.href);
-  window.onpopstate = () => {
-    if (this.showSuccessScreen) {
-      this.goHome(); // force redirect
-    }
-  };
+    
+    // Block back button
+    history.pushState(null, '', location.href);
+    window.onpopstate = () => {
+      if (this.showSuccessScreen) {
+        this.goHome();
+      }
+    };
   }
 
   loadBillers() {
@@ -85,21 +102,23 @@ export class CcBillPaymentComponent implements OnInit {
       last4: '',
       cardMobile: '',
       amount: '',
-
-      // 🔥 hidden fields
-  consumerName: '',
-  dueDate: '',
-  param1: '',
-  param2: '',
-  enquiryReferenceId: '',
-  paymentMode:'Cash'
+      consumerName: '',
+      dueDate: '',
+      param1: '',
+      param2: '',
+      enquiryReferenceId: '',
+      paymentMode: 'Cash'
     };
     this.billDetails = null;
   }
 
   closePopup() {
     this.selectedBiller = null;
+    this.showPinModal = false;
+    this.pin = '';
+    this.pinError = '';
   }
+  
   closeSuccess() {
     this.showSuccessScreen = false;
     this.closePopup();
@@ -107,91 +126,139 @@ export class CcBillPaymentComponent implements OnInit {
   }
 
   fetchBill() {
-
-  if (this.model.last4.length !== 4) {
-    this.toastr.error('Enter valid last 4 digits');
-    return;
-  }
-
-  this.isLoading = true;
-
-  const payload = {
-    BillerId: this.model.billerId,
-    CreditCardLast4: this.model.last4,
-    RegisteredMobile: this.model.cardMobile,
-    CustomerMobile: this.userPhone,
-    UserPhone: this.userPhone,
-    ServiceNumber: this.model.last4,
-    Category: "Credit Card"
-  };
-
-  this.ccService.fetchBill(payload).subscribe({
-    next: (res: any) => {
-      this.isLoading = false;
-
-      if (!res.success) {
-        this.toastr.error('Failed to fetch bill');
-        return;
-      }
-
-      this.billDetails = res;
-      this.model.amount = res.totalAmount;
-
-      this.model.consumerName = res.consumerName;
-      this.model.dueDate = res.dueDate;
-      this.model.param1 = res.param1;
-      this.model.param2 = res.param2;
-      this.model.enquiryReferenceId = res.enquiryReferenceId;
-    },
-    error: () => {
-      this.isLoading = false;
-      this.toastr.error('Fetch failed');
+    if (this.model.last4.length !== 4) {
+      this.toastr.error('Enter valid last 4 digits');
+      return;
     }
-  });
-}
-
-
-  processPayment() {
 
     this.isLoading = true;
 
     const payload = {
+      BillerId: this.model.billerId,
+      CreditCardLast4: this.model.last4,
+      RegisteredMobile: this.model.cardMobile,
+      CustomerMobile: this.userPhone,
+      UserPhone: this.userPhone,
+      ServiceNumber: this.model.last4,
+      Category: "Credit Card"
+    };
 
-    BillerId: this.model.billerId,
+    this.ccService.fetchBill(payload).subscribe({
+      next: (res: any) => {
+        this.isLoading = false;
 
-    CustomerMobile: this.userPhone,
-    Phone: this.userPhone,
+        if (!res.success) {
+          this.toastr.error('Failed to fetch bill');
+          return;
+        }
 
-    Amount: Number(this.model.amount),
+        this.billDetails = res;
+        this.model.amount = res.totalAmount;
+        this.model.consumerName = res.consumerName;
+        this.model.dueDate = res.dueDate;
+        this.model.param1 = res.param1;
+        this.model.param2 = res.param2;
+        this.model.enquiryReferenceId = res.enquiryReferenceId;
+      },
+      error: () => {
+        this.isLoading = false;
+        this.toastr.error('Fetch failed');
+      }
+    });
+  }
 
-    PaymentMode: this.model.paymentMode,
+  // Open PIN verification modal before payment
+  processPayment() {
+    if (!this.model.amount || this.model.amount <= 0) {
+      this.toastr.warning('Please enter valid amount');
+      return;
+    }
 
-    EnquiryReferenceId: this.model.enquiryReferenceId,
+    // Prepare payment payload
+    this.pendingPaymentPayload = {
+      BillerId: this.model.billerId,
+      CustomerMobile: this.userPhone,
+      Phone: this.userPhone,
+      Amount: Number(this.model.amount),
+      PaymentMode: this.model.paymentMode,
+      EnquiryReferenceId: this.model.enquiryReferenceId,
+      Param1: this.model.param1,
+      Param2: this.model.param2,
+      LastFourDigits: this.model.last4,
+      customerName: this.model.consumerName,
+      holderMobile: this.model.cardMobile,
+      Device: "Web"
+    };
 
-    Param1: this.model.param1,
-    Param2: this.model.param2,
+    // Show PIN modal instead of processing directly
+    this.showPinModal = true;
+    this.pin = '';
+    this.pinError = '';
+    this.focusPinInput();
+  }
 
-    LastFourDigits: this.model.last4,
+  // Verify PIN and process payment
+  verifyPinAndPay() {
+    if (!this.pin || this.pin.length !== 4) {
+      this.pinError = 'Please enter 4-digit PIN';
+      return;
+    }
 
-    customerName: this.model.consumerName,
+    this.isLoading = true;
+    this.pinError = '';
 
-    holderMobile: this.model.cardMobile,
+    const payload = {
+      UserPhone: this.userPhone,
+      Pin: this.pin
+    };
 
-    Device: "Web"
-  };
+    this.homeService.verifyPin(payload).subscribe({
+      next: (response) => {
+        console.log("✅ PIN VERIFIED - Processing payment");
+        this.isLoading = false;
+        this.showPinModal = false;
+        this.pinAttempts = 0;
+        
+        // Proceed with payment
+        this.executePayment();
+      },
+      error: (err) => {
+        console.error('PIN verification error:', err);
+        this.isLoading = false;
+        this.pinAttempts++;
+        
+        if (this.pinAttempts >= this.maxPinAttempts) {
+          this.pinError = `Too many failed attempts. Payment cancelled.`;
+          this.toastr.error('Too many failed PIN attempts. Payment cancelled.');
+          this.showPinModal = false;
+          this.pin = '';
+          this.pinAttempts = 0;
+          return;
+        }
+        
+        this.pinError = `Wrong PIN. ${this.maxPinAttempts - this.pinAttempts} attempt(s) left`;
+        this.pin = '';
+        this.focusPinInput();
+      }
+    });
+  }
 
+  // Execute actual payment after PIN verification
+  executePayment() {
+    this.isLoading = true;
 
-    this.ccService.processPayment(payload).subscribe({
+    this.ccService.processPayment(this.pendingPaymentPayload).subscribe({
       next: (res: any) => {
         this.isLoading = false;
 
         if (res.success === true) {
           this.showSuccessScreen = true;
-
-        // 🔥 AUTO REDIRECT AFTER 3 SEC
-        setTimeout(() => {
-          this.goHome();
-        }, 3000);
+          this.pendingPaymentPayload = null;
+          
+          // Auto redirect after 3 seconds
+          setTimeout(() => {
+            this.goHome();
+          }, 3000);
           this.closePopup();
         } else {
           this.toastr.error('Payment Failed ❌');
@@ -202,5 +269,37 @@ export class CcBillPaymentComponent implements OnInit {
         this.toastr.error('Payment Error');
       }
     });
+  }
+
+  focusPinInput() {
+    setTimeout(() => {
+      const pinInput = document.getElementById('pin-input-field');
+      if (pinInput) {
+        pinInput.focus();
+      }
+    }, 100);
+  }
+
+  // Handle PIN input from keypad
+  onPinInput(value: string) {
+    if (this.pin.length < 4) {
+      this.pin += value;
+      this.pinError = '';
+      
+      if (this.pin.length === 4) {
+        this.verifyPinAndPay();
+      }
+    }
+  }
+
+  deletePin() {
+    this.pin = this.pin.slice(0, -1);
+  }
+
+  closePinModal() {
+    this.showPinModal = false;
+    this.pin = '';
+    this.pinError = '';
+    this.pendingPaymentPayload = null;
   }
 }

@@ -183,6 +183,22 @@
 .skip-btn:hover {
   color: #667eea;
 }
+/* Add this to existing set-pin.css */
+.info-banner {
+  background: #eff6ff;
+  color: #3b82f6;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 13px;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.info-banner span {
+  font-size: 18px;
+}
 
 /* Number keypad hint */
 .pin-hint {

@@ -1,8 +1,8 @@
-// main/pages/set-pin/set-pin.component.ts
+// main/pages/set-pin/set-pin.component.ts (Updated)
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { HomeService } from '../../../services/mainservices/home.service';
 import { TokenService } from '../../../services/mainservices/token.service';
@@ -20,19 +20,32 @@ export class SetPinComponent implements OnInit {
   isLoading = false;
   showPin = false;
   showConfirmPin = false;
-  
+  isResetFlow = false;
+  resetUserId = '';
+
   constructor(
     private fb: FormBuilder,
-    public router: Router,  // Changed from private to public
+    public router: Router,
+    private route: ActivatedRoute,
     private toastr: ToastrService,
     private homeService: HomeService,
     private tokenService: TokenService
   ) {}
   
   ngOnInit() {
-    // Check if user already has PIN
+    // Check if this is a reset PIN flow
+    this.route.queryParams.subscribe(params => {
+      this.isResetFlow = params['isReset'] === 'true';
+      this.resetUserId = sessionStorage.getItem('resetPinUserId') || '';
+      
+      if (this.isResetFlow && this.resetUserId) {
+        console.log('Reset PIN flow for user:', this.resetUserId);
+      }
+    });
+    
+    // Check if user already has PIN (only for normal flow)
     const user = this.tokenService.getUser();
-    if (user?.pin) {
+    if (!this.isResetFlow && user?.pin) {
       this.toastr.info('PIN already set. Please verify your PIN.');
       this.router.navigate(['/dashboard/verify-pin']);
       return;
@@ -71,42 +84,61 @@ export class SetPinComponent implements OnInit {
     }
     
     this.isLoading = true;
-    const user = this.tokenService.getUser();
     
-    if (!user || !user.userPhone) {
+    let userPhone = '';
+    let token = '';
+    
+    if (this.isResetFlow && this.resetUserId) {
+      // Reset PIN flow - use the userId from forgot pin
+      userPhone = this.resetUserId;
+      token = '';
+    } else {
+      // Normal set PIN flow
+      const user = this.tokenService.getUser();
+      userPhone = user?.userPhone;
+      token = this.tokenService.getToken()!;
+    }
+    
+    if (!userPhone) {
       this.toastr.error('User session expired. Please login again');
       this.router.navigate(['/dashboard/login']);
       return;
     }
     
     const payload = {
-      UserPhone: user.userPhone,
+      UserPhone: userPhone,
       Pin: this.pinForm.get('pin')?.value
     };
     
-    console.log('Setting PIN for:', user.userPhone);
+    console.log('Setting PIN for:', userPhone);
+    console.log('Is reset flow:', this.isResetFlow);
     
     this.homeService.setPin(payload).subscribe({
       next: (response) => {
         console.log('PIN set successfully', response);
-        this.toastr.success('PIN set successfully! Please verify your PIN.');
         
-        // Update user data with PIN status
-        const updatedUser = {
-          ...user,
-          pin: true
-        };
-        
-        const token = this.tokenService.getToken();
-        this.tokenService.saveToken(token!, updatedUser);
-        
-        // Clear any existing PIN verification
-        sessionStorage.removeItem('pin_verified');
-        
-        // Navigate to verify PIN page
-        setTimeout(() => {
-          this.router.navigate(['/dashboard/verify-pin']);
-        }, 1500);
+        if (this.isResetFlow) {
+          this.toastr.success('PIN reset successfully! Please login with your new PIN.');
+          // Clear session storage
+          sessionStorage.removeItem('resetPinUserId');
+          sessionStorage.removeItem('pin_verified');
+          // Navigate to login
+          setTimeout(() => {
+            this.router.navigate(['/dashboard/login']);
+          }, 1500);
+        } else {
+          this.toastr.success('PIN set successfully! Please verify your PIN.');
+          // Update user data with PIN status
+          const user = this.tokenService.getUser();
+          if (user) {
+            const updatedUser = { ...user, pin: true };
+            this.tokenService.saveToken(token, updatedUser);
+          }
+          sessionStorage.removeItem('pin_verified');
+          setTimeout(() => {
+            this.router.navigate(['/dashboard/verify-pin']);
+          }, 1500);
+        }
         
         this.isLoading = false;
       },
@@ -118,8 +150,11 @@ export class SetPinComponent implements OnInit {
     });
   }
   
-  // Add method to skip for now
   skipForNow() {
-    this.router.navigate(['/dashboard/login']);
+    if (this.isResetFlow) {
+      this.router.navigate(['/dashboard/login']);
+    } else {
+      this.router.navigate(['/dashboard/login']);
+    }
   }
 }

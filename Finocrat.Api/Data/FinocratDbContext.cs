@@ -20,5 +20,6 @@ namespace Finocrat.Api.Data
         public DbSet<FKycDetail> FKycDetails { get; set; }
         public DbSet<FAadharDetails> fAadharDetails { get; set; }
         public DbSet<FUserDocuments> fUserDocuments  { get; set; }
+        public DbSet<FPassbookHistory> fPassbookHistories { get; set; }
     }
 }

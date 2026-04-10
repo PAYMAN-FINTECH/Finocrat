@@ -110,25 +110,28 @@ namespace Finocrat.Api.Controllers
         [HttpGet("admin-dash")]
         public async Task<IActionResult> GetDashboard(DateTime? from, DateTime? to)
         {
-            DateTime start = from ?? DateTime.Today;
-            DateTime end = to ?? DateTime.Today.AddDays(1);
+            // =========================
+            // ✅ DATE RANGE (IMPORTANT FIX)
+            // =========================
+            DateTime startDate = (from ?? DateTime.Today).Date;
+            DateTime endDate = (to ?? DateTime.Today).Date.AddDays(1);
 
             // =========================
-            // ✅ PAYIN TOTAL (SUM)
+            // ✅ PAYIN TOTAL
             // =========================
             var payInTotal = await _db.fPayIns
-                .Where(x => x.Created >= start && x.Created < end && x.Status)
+                .Where(x => x.Created >= startDate && x.Created < endDate && x.Status)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
-            // ✅ PAYOUT TOTAL (SUM)
+            // ✅ PAYOUT TOTAL
             // =========================
             var payOutTotal = await _db.fPayouts
-                .Where(x => x.Created >= start && x.Created < end && x.Status)
+                .Where(x => x.Created >= startDate && x.Created < endDate && x.Status)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
-            // ✅ USER LIST
+            // ✅ USERS
             // =========================
             var users = await _db.fUsers
                 .Where(x => x.IsActive)
@@ -140,56 +143,90 @@ namespace Finocrat.Api.Controllers
                 .ToListAsync();
 
             // =========================
-            // ✅ USER BALANCE (SEQUENTIAL → FIXES DB ERROR)
+            // ✅ USER-WISE PAYIN
             // =========================
-            var userWithBalance = new List<object>();
-            decimal totalUserBalance = 0;
+            var payInGrouped = await _db.fPayIns
+                .Where(x => x.Created >= startDate && x.Created < endDate)
+                .GroupBy(x => x.UserPhone)
+                .Select(g => new
+                {
+                    userPhone = g.Key,
+                    total = g.Where(x => x.Status).Sum(x => x.Amount),
+                    transactions = g
+                        .OrderByDescending(x => x.Created)
+                        .Select(x => new
+                        {
+                            amount = x.Amount,
+                            status = x.Status,
+                            created = x.Created,
+                            paymentid = x.PaymentId,
+                            cardno = x.CardNo,
+                            cardholdername = x.CardHolderName,
+                            cardholderphone = x.CardHolderPhone,
+                            payincommission = x.PayInCommission,
+                            fpayincommition = x.FCommission,
+
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            // =========================
+            // ✅ USER-WISE PAYOUT
+            // =========================
+            var payOutGrouped = await _db.fPayouts
+                .Where(x => x.Created >= startDate && x.Created < endDate)
+                .GroupBy(x => x.UserPhone)
+                .Select(g => new
+                {
+                    userPhone = g.Key,
+                    total = g.Where(x => x.Status).Sum(x => x.Amount),
+                    transactions = g
+                        .OrderByDescending(x => x.Created)
+                        .Select(x => new
+                        {
+                            amount = x.Amount,
+                            status = x.Status,
+                            created = x.Created,
+                            txnId = x.TxnReferenceId,
+                            paoutcommition = x.PaoutCommission,
+                            customername = x.CustomerName,
+                            cardnumber = x.CardNumber,
+                            customerNumber = x.AccountNumber
+
+                        })
+                        .ToList()
+                })
+                .ToListAsync();
+
+            // =========================
+            // ✅ USER SUMMARY (PayIn + PayOut + Balance)
+            // =========================
+            var userSummary = new List<object>();
+            decimal totalBalance = 0;
 
             foreach (var user in users)
             {
-                var balance = await _dataUtils.GetWalletAmount(user.UserPhone);
+                var payIn = await _db.fPayIns
+                    .Where(x => x.UserPhone == user.UserPhone && x.Status && x.Created >= startDate && x.Created < endDate)
+                    .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
-                totalUserBalance += balance;
+                var payOut = await _db.fPayouts
+                    .Where(x => x.UserPhone == user.UserPhone && x.Status && x.Created >= startDate && x.Created < endDate)
+                    .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
-                userWithBalance.Add(new
+                var balance = _dataUtils.GetWalletAmount(user.UserPhone).Result;
+                totalBalance += balance;
+
+                userSummary.Add(new
                 {
-                    user.UserName,
-                    user.UserPhone,
-                    Balance = balance
+                    userName = user.UserName,
+                    userPhone = user.UserPhone,
+                    payIn,
+                    payOut,
+                    balance
                 });
             }
-
-            // =========================
-            // ✅ PAYIN LIST
-            // =========================
-            var payIns = await _db.fPayIns
-                .Where(x => x.Created >= start && x.Created < end)
-                .OrderByDescending(x => x.Created)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.UserPhone,
-                    x.Amount,
-                    x.Status,
-                    x.Created
-                })
-                .ToListAsync();
-
-            // =========================
-            // ✅ PAYOUT LIST
-            // =========================
-            var payOuts = await _db.fPayouts
-                .Where(x => x.Created >= start && x.Created < end)
-                .OrderByDescending(x => x.Created)
-                .Select(x => new
-                {
-                    x.Id,
-                    x.UserPhone,
-                    x.Amount,
-                    x.Status,
-                    x.Created
-                })
-                .ToListAsync();
 
             // =========================
             // ✅ FINAL RESPONSE
@@ -200,15 +237,17 @@ namespace Finocrat.Api.Controllers
                 {
                     payInTotal,
                     payOutTotal,
-                    totalUserBalance
+                    totalBalance
                 },
-                users = userWithBalance,
-                payIns,
-                payOuts
+                users = userSummary,
+                payIns = payInGrouped,
+                payOuts = payOutGrouped
             });
         }
-
+        
         // ✅ GET USERS (DROPDOWN)
+        
+        
         [HttpGet("GetUsers")]
         public IActionResult GetUsers()
         {
@@ -229,7 +268,7 @@ namespace Finocrat.Api.Controllers
 
         // ✅ ADD FAILED AMOUNT
         [HttpPost("AddFailedAmount")]
-        public IActionResult AddFailedAmount([FromBody] FailedAmountRequest request)
+        public async Task<IActionResult> AddFailedAmount([FromBody] FailedAmountRequest request)
         {
             try
             {
@@ -294,6 +333,25 @@ namespace Finocrat.Api.Controllers
                     };
 
                     var res = _dataUtils.InsertAsync(payIns);
+
+
+                    var userbalance = await _dataUtils.GetWalletAmount(user.UserPhone);
+                    var fhistory = new FPassbookHistory
+                    {
+                        UserId = user.Id,
+                        UserPhone = user.UserPhone,
+                        Name = "Manual",
+                        TxnId = request.RefId,
+                        AccountNumber = request.OrderId,
+                        Amount = request.Amount,
+                        TransactionType = "PayIn",
+                        Status = payIns.Status,
+                        StatusMessage = payIns.Result,
+                        ParentId = payIns.Id,
+                        Balance = userbalance,
+                        CreatedAt = istNow
+                    };
+                    var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
 
                 }
 

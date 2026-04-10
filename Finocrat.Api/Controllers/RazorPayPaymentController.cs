@@ -15,11 +15,11 @@ namespace Finocrat.Api.Controllers
     [ApiController]
     public class RazorPayPaymentController : ControllerBase
     {
-        private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
-        private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
+        //private const string RAZORPAY_KEY = "rzp_test_SAyyJpAwngeELw";
+        //private const string RAZORPAY_SECRET = "8Au83rntX9vQslAlgM4Z9NiB";
 
-        //private const string RAZORPAY_KEY = "rzp_live_SAywFmrElCuSJH";
-        //private const string RAZORPAY_SECRET = "oQmy8qIa09hGxop7d05f3Pex";
+        private const string RAZORPAY_KEY = "rzp_live_SAywFmrElCuSJH";
+        private const string RAZORPAY_SECRET = "oQmy8qIa09hGxop7d05f3Pex";
 
         private readonly FinocratDbContext _db;
         private readonly DataUtils _dataUtils;
@@ -291,6 +291,27 @@ namespace Finocrat.Api.Controllers
                     };
 
                     var res = _dataUtils.InsertAsync(payIns);
+
+                    if(payIns.Status == true)
+                    {
+                        var userbalance = _dataUtils.GetWalletAmount(model.LoggedInUserPhone).Result;
+                        var fhistory = new FPassbookHistory
+                        {
+                            UserId = userdetails.Id,
+                            UserPhone = model.LoggedInUserPhone,
+                            Name = model.CardHolderName,
+                            TxnId = model.PaymentId,
+                            AccountNumber = model.CardHolderCard,
+                            Amount = model.Amount,
+                            TransactionType = "PayIn",
+                            Status = payIns.Status,
+                            StatusMessage = payIns.Result,
+                            ParentId = payIns.Id,
+                            Balance = userbalance,
+                            CreatedAt = istNow
+                        };
+                        var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
+                    }
                 }
                
                 // ✅ SAVE SUCCESS PAYMENT IN DB HERE

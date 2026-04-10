@@ -1,0 +1,48 @@
+<div class="container">
+
+  <h2>Passbook</h2>
+
+  <!-- FILTER -->
+  <div class="filters">
+    <input type="date" [(ngModel)]="fromDate">
+    <input type="date" [(ngModel)]="toDate">
+    <button (click)="loadPassbook()">Filter</button>
+  </div>
+
+  <!-- LIST -->
+  <div *ngFor="let group of groupedData | keyvalue">
+
+    <div class="date-header">
+      {{group.key}}
+    </div>
+
+    <div *ngFor="let tx of group.value" class="txn-card">
+
+      <div class="left">
+        <div class="name">{{tx.name || 'Transaction'}}</div>
+        <div class="sub">
+          {{tx.txnId}} • {{tx.accountNumber || '----'}}
+        </div>
+      </div>
+
+      <div class="right">
+
+        <div 
+          class="amount"
+          [class.credit]="tx.transactionType === 'CREDIT'"
+          [class.debit]="tx.transactionType === 'DEBIT'">
+
+          {{tx.transactionType === 'CREDIT' ? '+' : '-'}} ₹{{tx.amount}}
+        </div>
+
+        <div class="balance">
+          Bal: ₹{{tx.balance}}
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

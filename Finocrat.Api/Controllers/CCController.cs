@@ -478,6 +478,29 @@ namespace Finocrat.Api.Controllers
                             await _db.SaveChangesAsync();
                         }
                         _db.SaveChanges();
+
+
+                        if (status == true)
+                        {
+
+                            var userbalance = _dataUtils.GetWalletAmount(userDetails.UserPhone).Result;
+                            var fhistory = new FPassbookHistory
+                            {
+                                UserId = userDetails.Id,
+                                UserPhone = userDetails.UserPhone,
+                                Name = transactionResponse.Data.BillDetails.CustomerName,
+                                TxnId = transactionResponse.Data.TxnReferenceId,
+                                AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
+                                Amount = payout.Amount,
+                                TransactionType = "CC Bill",
+                                Status = status,
+                                StatusMessage = transactionResponse.Status,
+                                ParentId = payout.Id,
+                                Balance = userbalance,
+                                CreatedAt = istNow
+                            };
+                            var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
+                        }
                     }
                     else
                     {

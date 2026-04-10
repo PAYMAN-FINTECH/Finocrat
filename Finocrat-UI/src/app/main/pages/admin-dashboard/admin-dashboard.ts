@@ -16,8 +16,7 @@ export class AdminDashboardComponent implements OnInit {
   toDate: string = '';
 
   data: any = {
-    payInCount: 0,
-    payOutCount: 0,
+    summary: {},
     users: [],
     payIns: [],
     payOuts: []
@@ -26,7 +25,6 @@ export class AdminDashboardComponent implements OnInit {
   loading = false;
   errorMsg = '';
 
-  // ✅ Accordion default open
   active: string = 'users';
 
   constructor(private service: HomeService) {}
@@ -36,19 +34,13 @@ export class AdminDashboardComponent implements OnInit {
     this.fromDate = today;
     this.toDate = today;
 
-    this.loadData(); // ✅ fixed method name
+    this.loadData();
   }
 
-  // =============================
-  // ACCORDION TOGGLE
-  // =============================
   toggle(section: string) {
     this.active = this.active === section ? '' : section;
   }
 
-  // =============================
-  // LOAD DASHBOARD
-  // =============================
   loadData() {
     this.loading = true;
     this.errorMsg = '';
@@ -56,20 +48,19 @@ export class AdminDashboardComponent implements OnInit {
     this.service.getDashboard(this.fromDate, this.toDate)
       .subscribe({
         next: (res) => {
-          this.data = res || {
-            payInCount: 0,
-            payOutCount: 0,
-            users: [],
-            payIns: [],
-            payOuts: []
-          };
+          this.data = res;
           this.loading = false;
         },
-        error: (err) => {
-          console.error('Dashboard Error', err);
+        error: () => {
           this.errorMsg = 'Failed to load dashboard';
           this.loading = false;
         }
       });
+  }
+
+  // 🔥 GET USER NAME FROM PHONE
+  getUserName(phone: string): string {
+    const user = this.data?.users?.find((u: any) => u.userPhone === phone);
+    return user ? user.userName : phone;
   }
 }

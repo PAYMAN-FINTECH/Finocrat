@@ -4,6 +4,7 @@ using Finocrat.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Finocrat.Api.Migrations
 {
     [DbContext(typeof(FinocratDbContext))]
-    partial class FinocratDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260409163036_added history table")]
+    partial class addedhistorytable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -170,10 +173,6 @@ namespace Finocrat.Api.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("TransactionType")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("TxnId")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid>("UserId")

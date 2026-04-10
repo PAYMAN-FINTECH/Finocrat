@@ -15,7 +15,11 @@ import {
   User,
   LogOut,
   Shield,
-  Users
+  Users,
+  Search,
+  BadgeCheck,
+  BookText,
+  AlertCircle
 } from 'lucide-angular';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { ToastrService } from 'ngx-toastr';
@@ -52,6 +56,10 @@ export class SidebarComponent {
   LogOut = LogOut;
   Shield = Shield;
   Users = Users;
+  Search = Search;
+  BadgeCheck = BadgeCheck;
+  BookText = BookText;
+  AlertCircle = AlertCircle;
 
   constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,) {}
 

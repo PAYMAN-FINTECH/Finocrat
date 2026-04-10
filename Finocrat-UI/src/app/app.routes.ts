@@ -44,6 +44,8 @@ import { PinVerificationComponent } from './main/pages/pin-verification/pin-veri
 import { SetPinComponent } from './main/pages/set-pin/set-pin';
 import { ChangePinComponent } from './main/pages/change-pin/change-pin';
 import { VerifyPinPageComponent } from './main/pages/verify-pin-page/verify-pin-page';
+import { ForgotPinComponent } from './main/pages/forgot-pin/forgot-pin';
+import { PassbookComponent } from './main/pages/pass-book/pass-book';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -88,6 +90,7 @@ export const routes: Routes = [
       // PIN Routes
       { path: 'set-pin', component: SetPinComponent, canActivate: [AuthGuard] },
       { path: 'verify-pin', component: VerifyPinPageComponent },
+      { path: 'forgot-pin', component: ForgotPinComponent },
     ]
   },
 
@@ -107,7 +110,9 @@ export const routes: Routes = [
       { path: 'payout-history', component: PayoutHistoryComponent },
       { path: 'profile', component: ProfileComponent },
       { path: 'change-pin', component: ChangePinComponent },  // Add this
-      { path: 'admin-dash', component: AdminDashboardComponent }
+      { path: 'admin-dash', component: AdminDashboardComponent },
+      { path: 'passbook', component: PassbookComponent },
+
     ]
   },
 
