@@ -1,0 +1,112 @@
+<div class="kyc-container">
+
+  <h2>KYC Details</h2>
+
+  <!-- ✅ DESKTOP TABLE -->
+  <table class="kyc-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Aadhaar</th>
+        <th>PAN</th>
+        <th>Status</th>
+        <th>Front</th>
+        <th>Back</th>
+        <th>PAN Img</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let k of kycList">
+
+        <td>{{ k.userName }}</td>
+        <td>{{ k.userPhone }}</td>
+        <td>{{ k.aadharNo }}</td>
+        <td>{{ k.pan }}</td>
+
+        <td>
+          <span 
+            [class.approved]="k.status === 'Approved'"
+            [class.pending]="k.status === 'Aadhaar Pending' || k.status === 'Docs Pending'"
+            [class.rejected]="k.status === 'Rejected'">
+            {{ k.status }}
+          </span>
+
+          <div *ngIf="k.rejectionReason" class="reject-reason">
+            {{ k.rejectionReason }}
+          </div>
+        </td>
+
+        <td>
+          <img *ngIf="k.frontImage"
+               [src]="k.frontImage"
+               (click)="openImage(k.frontImage)"
+               class="thumb">
+        </td>
+
+        <td>
+          <img *ngIf="k.backImage"
+               [src]="k.backImage"
+               (click)="openImage(k.backImage)"
+               class="thumb">
+        </td>
+
+        <td>
+          <img *ngIf="k.panImage"
+               [src]="k.panImage"
+               (click)="openImage(k.panImage)"
+               class="thumb">
+        </td>
+
+      </tr>
+    </tbody>
+  </table>
+
+  <!-- ✅ MOBILE CARD VIEW -->
+  <div class="kyc-cards">
+
+    <div class="kyc-card" *ngFor="let k of kycList">
+
+      <div><b>Name:</b> {{ k.userName }}</div>
+      <div><b>Phone:</b> {{ k.userPhone }}</div>
+      <div><b>Aadhaar:</b> {{ k.aadharNo }}</div>
+      <div><b>PAN:</b> {{ k.pan }}</div>
+
+      <div>
+        <b>Status:</b>
+        <span 
+          [class.approved]="k.status === 'Approved'"
+          [class.pending]="k.status === 'Aadhaar Pending' || k.status === 'Docs Pending'"
+          [class.rejected]="k.status === 'Rejected'">
+          {{ k.status }}
+        </span>
+      </div>
+
+      <!-- IMAGES -->
+      <div class="card-images">
+        <img *ngIf="k.frontImage" [src]="k.frontImage" (click)="openImage(k.frontImage)">
+        <img *ngIf="k.backImage" [src]="k.backImage" (click)="openImage(k.backImage)">
+        <img *ngIf="k.panImage" [src]="k.panImage" (click)="openImage(k.panImage)">
+      </div>
+
+    </div>
+
+  </div>
+
+  <!-- ✅ IMAGE MODAL -->
+  <div class="modal" *ngIf="selectedImage">
+
+    <div class="overlay" (click)="closeImage()"></div>
+
+    <div class="modal-content" (click)="$event.stopPropagation()">
+
+      <span class="close-btn" (click)="closeImage()">×</span>
+
+      <img [src]="selectedImage" class="full-img">
+
+    </div>
+
+  </div>
+
+</div>

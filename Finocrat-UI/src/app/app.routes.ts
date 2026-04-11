@@ -46,6 +46,7 @@ import { ChangePinComponent } from './main/pages/change-pin/change-pin';
 import { VerifyPinPageComponent } from './main/pages/verify-pin-page/verify-pin-page';
 import { ForgotPinComponent } from './main/pages/forgot-pin/forgot-pin';
 import { PassbookComponent } from './main/pages/pass-book/pass-book';
+import { KycDetailsComponent } from './main/pages/kyc-details/kyc-details';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -112,6 +113,7 @@ export const routes: Routes = [
       { path: 'change-pin', component: ChangePinComponent },  // Add this
       { path: 'admin-dash', component: AdminDashboardComponent },
       { path: 'passbook', component: PassbookComponent },
+      { path: 'kyc-details', component: KycDetailsComponent }
 
     ]
   },

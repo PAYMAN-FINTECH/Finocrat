@@ -4,7 +4,7 @@ import { Injectable, NgZone } from '@angular/core';
 export class InactivityService {
 
   private timeout: any;
-  private idleTime = 1 * 60 * 1000;
+  private idleTime = 5 * 60 * 1000;
   private callback!: () => void;
   private events: string[] = ['click', 'mousemove', 'keypress', 'scroll', 'touchstart', 'keydown'];
   private isWatching: boolean = false;

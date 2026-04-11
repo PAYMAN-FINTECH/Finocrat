@@ -504,7 +504,86 @@ namespace Finocrat.Api.Controllers
             return Ok(new { success = true, message = "PIN changed successfully" });
         }
 
+        [HttpGet("GetAllKycDetails")]
+        public async Task<IActionResult> GetAllKycDetails()
+        {
+            try
+            {
+                var data = await (
+                    from user in _db.fUsers
 
+                        // AADHAAR
+                    join aadhar in _db.fAadharDetails
+                        on user.UserPhone equals aadhar.Phone into ad
+                    from aadhar in ad.DefaultIfEmpty()
+
+                        // DOCUMENTS
+                    join doc in _db.fUserDocuments
+                        on user.UserPhone equals doc.Phone into docs
+                    from doc in docs.DefaultIfEmpty()
+
+                    select new
+                    {
+                        userId = user.Id,
+                        userName = user.UserName,
+                        userPhone = user.UserPhone,
+
+                        // Aadhaar
+                        aadharNo = aadhar != null ? aadhar.AadharNo : "",
+
+                        // PAN
+                        pan = doc != null ? doc.PanCardNumber : "",
+
+                        // 🔥 STATUS LOGIC
+                        status =
+                            aadhar == null ? "Not Submitted" :
+
+                            aadhar.Status == false ? "Aadhaar Pending" :
+
+                            (doc == null) ? "Docs Pending" :
+
+                            (doc.IsVerified == false) ? "Docs Pending" :
+
+                            (doc.IsVerified == true) ? "Approved" :
+
+                            "Pending",
+
+                        // ✅ KYC COMPLETED
+                        isKycCompleted =
+                            aadhar != null &&
+                            aadhar.Status == true &&
+                            doc != null &&
+                            doc.IsVerified == true,
+
+                        // 🔥 IMAGES (BYTE → BASE64)
+                        frontImage = doc != null && doc.AadharFront != null
+                            ? Convert.ToBase64String(doc.AadharFront)
+                            : null,
+
+                        backImage = doc != null && doc.AadharBack != null
+                            ? Convert.ToBase64String(doc.AadharBack)
+                            : null,
+
+                        panImage = doc != null && doc.PanCard != null
+                            ? Convert.ToBase64String(doc.PanCard)
+                            : null,
+
+                        rejectionReason = doc != null ? doc.RejectionReason : ""
+                    }
+
+                ).ToListAsync();
+
+                return Ok(data);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
     }
     public class DashboardFilter
     {

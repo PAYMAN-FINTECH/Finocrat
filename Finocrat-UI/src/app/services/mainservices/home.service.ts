@@ -81,6 +81,10 @@ export class HomeService {
     return this.http.post(`${this.api}/ChangePin`, data);
   }
 
+  getAllKycDetails() {
+  return this.http.get<any[]>(`${this.api}/GetAllKycDetails`);
+}
+
   // services/mainservices/home.service.ts
 updateProfile(payload: any): Observable<any> {
   return this.http.post(`${this.api}/update-profile`, payload);
