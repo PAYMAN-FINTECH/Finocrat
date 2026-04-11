@@ -23,25 +23,32 @@ export class EduWalletComponent implements OnInit {
   model: any = {};
   userPhone = '';
 
-  constructor(private razorService: RazorPaymentService, private router: Router, private toastr: ToastrService,) {}
+  constructor(
+    private razorService: RazorPaymentService,
+    private router: Router,
+    private toastr: ToastrService
+  ) {}
 
   ngOnInit(): void {
-
     const params = new URLSearchParams(window.location.search);
     const data = params.get('data');
 
     if (data) {
-      const decoded = JSON.parse(atob(data));
+      try {
+        const decoded = JSON.parse(atob(data));
+        this.model = decoded;
+        this.userPhone = decoded.userPhone;
 
-      this.model = decoded;
-      this.userPhone = decoded.userPhone;
-
-      this.startPayment();
+        this.startPayment();
+      } catch (e) {
+        this.toastr.error('Invalid payment data');
+      }
+    } else {
+      this.toastr.error('Missing payment data');
     }
   }
 
   startPayment(): void {
-
     this.isLoading = true;
 
     this.razorService.createOrder(this.model.amount)
@@ -53,12 +60,40 @@ export class EduWalletComponent implements OnInit {
             amount: res.amount * 100,
             currency: "INR",
             order_id: res.orderId,
+
             name: 'Finocrat Edu',
             description: 'Add Wallet Funds',
-            redirect: true,
 
+            // ✅ FULL SCREEN EXPERIENCE
+            modal: {
+              backdropclose: false,
+              escape: false,
+              handleback: true,
+              ondismiss: () => {
+                this.isLoading = false;
+              }
+            },
+
+            // ✅ ALLOW ONLY CARDS
+            method: {
+              netbanking: false,
+              upi: false,
+              wallet: false,
+              emi: false,
+              paylater: false
+            },
+
+            // ✅ PREFILL USER DATA
+            prefill: {
+              name: this.model.name,
+              email: this.model.email,
+              contact: this.model.mobile
+            },
+
+            theme: { color: '#6A1B9A' },
+
+            // ✅ SUCCESS HANDLER
             handler: (response: any) => {
-
               const verifyPayload = {
                 orderId: response.razorpay_order_id,
                 paymentId: response.razorpay_payment_id,
@@ -72,60 +107,68 @@ export class EduWalletComponent implements OnInit {
                 cardHolderMail: this.model.email || null
               };
 
-              this.razorService.verifyPayment(verifyPayload)
-                .subscribe({
-                  next: (result) => {
-                    if (result.status === 'SUCCESS') {
-                      //this.isLoading = false;
-                      this.showSuccessScreen = true;
-                                              setTimeout(() => {
-                              this.goToDashboard();
-                             }, 3000);
-                    } else {
-                      this.showFailureScreen = true;
-                       setTimeout(() => {
-                              this.goToDashboard();
-                             }, 3000);
-                    }
-                  },
-                  error: () => {
-                    this.isLoading = false;
-                    this.showFailureScreen = true;
-                     setTimeout(() => {
-                              this.goToDashboard();
-                             }, 3000);
-                  }
-                });
-            },
-
-            modal: {
-              ondismiss: () => {
-                this.isLoading = false;
-              }
-            },
-
-            prefill: {
-              name: this.model.name,
-              email: this.model.email,
-              contact: this.model.mobile
-            },
-
-            theme: { color: '#6A1B9A' }
+              this.verifyPayment(verifyPayload);
+            }
           };
 
           const rzp = new Razorpay(options);
+
+          // ✅ HANDLE FAILURE
+          rzp.on('payment.failed', (response: any) => {
+            console.error('Payment Failed:', response);
+
+            this.isLoading = false;
+            this.showFailureScreen = true;
+
+            this.toastr.error('Payment Failed');
+
+            setTimeout(() => this.goToDashboard(), 3000);
+          });
+
+          // ✅ OPEN FULL SCREEN
           rzp.open();
         },
-        error: () => {
+
+        error: (err) => {
+          console.error(err);
           this.isLoading = false;
-          alert("Unable to create payment order");
+          this.toastr.error("Unable to create payment order");
         }
       });
   }
 
-goToDashboard(): void {
-  this.showSuccessScreen = false;
-  //window.location.reload();
- window.location.href ="https://thefinocrat.com/app/finhome";
-}
+  verifyPayment(payload: any): void {
+    this.razorService.verifyPayment(payload)
+      .subscribe({
+        next: (result) => {
+
+          this.isLoading = false;
+
+          if (result.status === 'SUCCESS') {
+            this.showSuccessScreen = true;
+            this.toastr.success('Payment Successful');
+          } else {
+            this.showFailureScreen = true;
+            this.toastr.error('Payment Verification Failed');
+          }
+
+          setTimeout(() => this.goToDashboard(), 3000);
+        },
+
+        error: (err) => {
+          console.error(err);
+
+          this.isLoading = false;
+          this.showFailureScreen = true;
+
+          this.toastr.error('Server Error');
+
+          setTimeout(() => this.goToDashboard(), 3000);
+        }
+      });
+  }
+
+  goToDashboard(): void {
+    window.location.href = "https://thefinocrat.com/app/finhome";
+  }
 }

@@ -223,102 +223,124 @@ namespace Finocrat.Api.Controllers
             });
         }
 
-        // VERIFY PAYMENT
         [HttpPost("verify")]
-        public IActionResult VerifyPayment([FromBody] VerifyPaymentRequest model)
+        public async Task<IActionResult> VerifyPayment([FromBody] VerifyPaymentRequest model)
         {
-            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
-
-            string payload =
-                model.OrderId + "|" + model.PaymentId;
-
-            string generatedSignature = GenerateSignature(payload, RAZORPAY_SECRET);
-            var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
-
-            var order = client.Order.Fetch(model.OrderId);
-            var payment = client.Payment.Fetch(model.PaymentId);
-            var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
-
-            var userdetails = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
-
-
-            var data =  _db.fUserLookups
-               .FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
-            var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
-
-            decimal payInLimit = 0;
-
-            if (dbSettings.ContainsKey("PayIn Margin"))
+            try
             {
-                var value = dbSettings["PayIn Margin"];
+                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
-                if (value is JsonElement element)
+                string payload = model.OrderId + "|" + model.PaymentId;
+                string generatedSignature = GenerateSignature(payload, RAZORPAY_SECRET);
+
+                // ❌ Signature mismatch
+                if (generatedSignature != model.Signature)
+                    return BadRequest(new { status = "FAILED" });
+
+                var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
+
+                var payment = client.Payment.Fetch(model.PaymentId);
+                var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
+
+                // ❌ Payment not captured
+                if (payment["status"].ToString() != "captured")
+                    return BadRequest(new { status = "FAILED" });
+
+                // ✅ Duplicate check
+                var existing = _db.fPayIns.FirstOrDefault(x => x.PaymentId == model.PaymentId);
+                if (existing != null)
+                    return Ok(new { status = "SUCCESS" });
+
+                var user = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
+                if (user == null)
+                    return BadRequest(new { status = "FAILED" });
+
+                // ✅ PayIn Margin
+                decimal payInLimit = 0;
+                var lookup = _db.fUserLookups.FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
+
+                if (lookup != null)
                 {
-                    if (element.ValueKind == JsonValueKind.String)
-                        payInLimit = decimal.Parse(element.GetString());
-                    else if (element.ValueKind == JsonValueKind.Number)
-                        payInLimit = element.GetDecimal();
-                }
-            }
+                    var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
 
-            if (generatedSignature == model.Signature)
-            {
-                if (userdetails != null)
-                {
-                    var payIns = new FPayIn
+                    if (settings.ContainsKey("PayIn Margin"))
                     {
-                        UserId = userdetails.Id,
-                        UserPhone = model.LoggedInUserPhone,
-                        UserEmail = userdetails.Email,
-                        CardHolderName = model.CardHolderName,
-                        CardHolderPhone = model.Mobile,
-                        CardHolderEmail = model.CardHolderMail,
-                        CardHolderCardNumber = model.CardHolderCard,
-                        Result = payment["status"],
-                        CardBrand = razorPayCard["issuer"] ?? "",
-                        BankName = razorPayCard["network"] ?? "",// razorPayCard["sub_type"]
-                        CardType = razorPayCard["sub_type"] ?? "",
-                        Status = payment["status"] == "captured",
-                        CardNo = razorPayCard["last4"] ?? "",
-                        PaymentId = model.PaymentId,
-                        TaxNumber = model.OrderId,
-                        Amount = model.Amount,
-                        PayInCommission = model.Amount * payInLimit / 100,
-                        FCommission = model.Amount / 100,
-                        Gateway = model.SelectedGateway,
-                        Created = istNow
-                    };
+                        var value = settings["PayIn Margin"];
 
-                    var res = _dataUtils.InsertAsync(payIns);
-
-                    if(payIns.Status == true)
-                    {
-                        var userbalance = _dataUtils.GetWalletAmount(model.LoggedInUserPhone).Result;
-                        var fhistory = new FPassbookHistory
+                        if (value is JsonElement element)
                         {
-                            UserId = userdetails.Id,
-                            UserPhone = model.LoggedInUserPhone,
-                            Name = model.CardHolderName,
-                            TxnId = model.PaymentId,
-                            AccountNumber = model.CardHolderCard,
-                            Amount = model.Amount,
-                            TransactionType = "PayIn",
-                            Status = payIns.Status,
-                            StatusMessage = payIns.Result,
-                            ParentId = payIns.Id,
-                            Balance = userbalance,
-                            CreatedAt = istNow
-                        };
-                        var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
+                            if (element.ValueKind == JsonValueKind.String)
+                                payInLimit = decimal.Parse(element.GetString());
+                            else if (element.ValueKind == JsonValueKind.Number)
+                                payInLimit = element.GetDecimal();
+                        }
                     }
                 }
-               
-                // ✅ SAVE SUCCESS PAYMENT IN DB HERE
+
+                // =========================
+                // ✅ STEP 1: INSERT PAYIN
+                // =========================
+                var payIn = new FPayIn
+                {
+                    UserId = user.Id,
+                    UserPhone = model.LoggedInUserPhone,
+                    UserEmail = user.Email,
+                    CardHolderName = model.CardHolderName,
+                    CardHolderPhone = model.Mobile,
+                    CardHolderEmail = model.CardHolderMail,
+                    CardHolderCardNumber = model.CardHolderCard,
+                    Result = payment["status"],
+                    CardBrand = razorPayCard["issuer"] ?? "",
+                    BankName = razorPayCard["network"] ?? "",
+                    CardType = razorPayCard["sub_type"] ?? "",
+                    Status = true,
+                    CardNo = razorPayCard["last4"] ?? "",
+                    PaymentId = model.PaymentId,
+                    TaxNumber = model.OrderId,
+                    Amount = model.Amount,
+                    PayInCommission = model.Amount * payInLimit / 100,
+                    FCommission = model.Amount / 100,
+                    Gateway = model.SelectedGateway,
+                    Created = istNow
+                };
+
+                await _db.fPayIns.AddAsync(payIn);
+                await _db.SaveChangesAsync(); // ✅ FIRST SAVE
+
+                // =========================
+                // ✅ STEP 2: GET LATEST BALANCE
+                // =========================
+                var balance = await _dataUtils.GetWalletAmount(model.LoggedInUserPhone);
+
+                // =========================
+                // ✅ STEP 3: INSERT PASSBOOK
+                // =========================
+                var history = new FPassbookHistory
+                {
+                    UserId = user.Id,
+                    UserPhone = model.LoggedInUserPhone,
+                    Name = model.CardHolderName,
+                    TxnId = model.PaymentId,
+                    AccountNumber = model.CardHolderCard,
+                    Amount = model.Amount,
+                    TransactionType = "PayIn",
+                    Status = true,
+                    StatusMessage = payment["status"],
+                    ParentId = payIn.Id, // ✅ now available
+                    Balance = balance,
+                    CreatedAt = istNow
+                };
+
+                await _db.fPassbookHistories.AddAsync(history);
+                await _db.SaveChangesAsync(); // ✅ SECOND SAVE
+
                 return Ok(new { status = "SUCCESS" });
             }
-
-            return BadRequest(new { status = "FAILED" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { status = "FAILED" });
+            }
         }
 
         private static string GenerateSignature(string payload, string secret)
@@ -329,6 +351,7 @@ namespace Finocrat.Api.Controllers
             byte[] hash = hmac.ComputeHash(payloadBytes);
             return BitConverter.ToString(hash).Replace("-", "").ToLower();
         }
+    
     }
 
     public class OrderRequest

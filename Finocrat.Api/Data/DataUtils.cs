@@ -18,7 +18,6 @@ namespace Finocrat.Api.Data
         public async Task<FPayIn> InsertAsync(FPayIn model)
         {
             await _context.fPayIns.AddAsync(model);
-            await _context.SaveChangesAsync();
 
             return model;
         }
@@ -26,8 +25,36 @@ namespace Finocrat.Api.Data
         public async Task<FPassbookHistory> InsertFHistoryAsync(FPassbookHistory model)
         {
             await _context.fPassbookHistories.AddAsync(model);
-            await _context.SaveChangesAsync();
             return model;
+        }
+
+
+        public async Task<bool> SavePayInWithHistory(FPayIn payIn, FPassbookHistory history)
+        {
+            using var transaction = await _context.Database.BeginTransactionAsync();
+
+            try
+            {
+                // Insert PayIn
+                await _context.fPayIns.AddAsync(payIn);
+                await _context.SaveChangesAsync();
+
+                // Set ParentId after PayIn insert
+                history.ParentId = payIn.Id;
+
+                // Insert History
+                await _context.fPassbookHistories.AddAsync(history);
+                await _context.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                await transaction.RollbackAsync();
+                // TODO: Add logging here
+                return false;
+            }
         }
 
         public async Task<decimal> GetWalletAmount(string userPhone)

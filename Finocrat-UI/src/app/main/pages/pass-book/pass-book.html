@@ -1,44 +1,41 @@
-<div class="container">
+<div class="passbook-container">
 
-  <h2>Passbook</h2>
-
-  <!-- FILTER -->
-  <div class="filters">
+  <!-- 🔍 FILTER -->
+  <div class="filter-box">
     <input type="date" [(ngModel)]="fromDate">
     <input type="date" [(ngModel)]="toDate">
-    <button (click)="loadPassbook()">Filter</button>
+    <button (click)="applyFilter()">Filter</button>
   </div>
 
-  <!-- LIST -->
-  <div *ngFor="let group of groupedData | keyvalue">
+  <!-- 📄 PASSBOOK -->
+  <div *ngFor="let date of objectKeys(groupedData)">
 
-    <div class="date-header">
-      {{group.key}}
-    </div>
+    <div class="date-header">{{ date }}</div>
 
-    <div *ngFor="let tx of group.value" class="txn-card">
+    <div *ngFor="let tx of groupedData[date]" class="txn-card">
 
+      <!-- LEFT -->
       <div class="left">
-        <div class="name">{{tx.name || 'Transaction'}}</div>
-        <div class="sub">
-          {{tx.txnId}} • {{tx.accountNumber || '----'}}
-        </div>
+        <div class="name">{{ tx.name }}</div>
+        <div class="type">{{ tx.transactionType }}</div>
+        <div class="txn-id">Txn: {{ tx.txnId }}</div>
       </div>
 
+      <!-- RIGHT -->
       <div class="right">
-
-        <div 
-          class="amount"
-          [class.credit]="tx.transactionType === 'CREDIT'"
-          [class.debit]="tx.transactionType === 'DEBIT'">
-
-          {{tx.transactionType === 'CREDIT' ? '+' : '-'}} ₹{{tx.amount}}
+        <div [ngClass]="tx.amountClass">
+          {{ tx.displayAmount }}
         </div>
 
         <div class="balance">
-          Bal: ₹{{tx.balance}}
+          Bal: ₹{{ tx.balance }}
         </div>
 
+        <div class="status" 
+             [class.success]="tx.status" 
+             [class.failed]="!tx.status">
+          {{ tx.statusText }}
+        </div>
       </div>
 
     </div>

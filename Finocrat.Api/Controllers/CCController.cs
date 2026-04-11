@@ -317,7 +317,8 @@ namespace Finocrat.Api.Controllers
             }
         }
 
-
+       
+        
         [HttpPost("ProcessPayment")]
         public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequestApp request)
         {
@@ -337,11 +338,6 @@ namespace Finocrat.Api.Controllers
 
             var panNumber = "BRXPK7957B";
 
-            //var panNumber = await _context.userDocuments
-            //    .Where(t => t.Phone == request.Phone)
-            //    .Select(t => t.PanCardNumber)
-            //    .FirstOrDefaultAsync();
-
             if (panNumber == null)
                 return Ok(GenerateFailureResponse("PAN details not found"));
 
@@ -355,24 +351,17 @@ namespace Finocrat.Api.Controllers
             var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
-
-            var existingPayment = await _db.fPayouts
-                .FirstOrDefaultAsync(t => t.ExternalRef == externalRef);
-            if(existingPayment == null)
+            // ✅ CREATE PAYOUT OBJECT (NOT SAVED YET)
+            var payout = new FPayout
             {
-                var payout = new FPayout
-                {
-                    UserId = userDetails.Id,
-                    UserPhone = request.Phone,
-                    ExternalRef = externalRef,
-                    Amount = request.Amount,
-                    PaoutCommission= 15,
-                    Created = istNow,
-                    Status = false,
-                };
-                _db.fPayouts.Add(payout);
-                await _db.SaveChangesAsync();
-            }
+                UserId = userDetails.Id,
+                UserPhone = request.Phone,
+                ExternalRef = externalRef,
+                Amount = request.Amount,
+                PaoutCommission = 15,
+                Created = istNow,
+                Status = false
+            };
 
             try
             {
@@ -462,64 +451,70 @@ namespace Finocrat.Api.Controllers
                     bool status =
                         transactionResponse.Status == "Transaction Successful" ||
                         transactionResponse.Status == "Transaction Under Process";
-                    var payout = await _db.fPayouts.FirstOrDefaultAsync(t => t.ExternalRef == externalRef);
+
+                    // =========================
+                    // ✅ INSERT + UPDATE LOGIC
+                    // =========================
+
                     if (status)
                     {
-                      
-                        if (payout != null)
-                        {
-                            payout.Status = true;
-                            payout.TxnReferenceId = transactionResponse.Data.TxnReferenceId;
-                            payout.OrderId = transactionResponse.Data.PoolReferenceId;
-                            payout.CustomerName = transactionResponse.Data.BillDetails.CustomerName;
-                            payout.CardNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
-                            payout.AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
-                            payout.Result = transactionResponse.Status;
-                            await _db.SaveChangesAsync();
-                        }
-                        _db.SaveChanges();
-
-
-                        if (status == true)
-                        {
-
-                            var userbalance = _dataUtils.GetWalletAmount(userDetails.UserPhone).Result;
-                            var fhistory = new FPassbookHistory
-                            {
-                                UserId = userDetails.Id,
-                                UserPhone = userDetails.UserPhone,
-                                Name = transactionResponse.Data.BillDetails.CustomerName,
-                                TxnId = transactionResponse.Data.TxnReferenceId,
-                                AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
-                                Amount = payout.Amount,
-                                TransactionType = "CC Bill",
-                                Status = status,
-                                StatusMessage = transactionResponse.Status,
-                                ParentId = payout.Id,
-                                Balance = userbalance,
-                                CreatedAt = istNow
-                            };
-                            var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
-                        }
+                        payout.Status = true;
+                        payout.TxnReferenceId = transactionResponse.Data.TxnReferenceId;
+                        payout.OrderId = transactionResponse.Data.PoolReferenceId;
+                        payout.CustomerName = transactionResponse.Data.BillDetails.CustomerName;
+                        payout.CardNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
+                        payout.AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
+                        payout.Result = transactionResponse.Status;
                     }
                     else
                     {
                         payout.Result = transactionResponse.Status;
+                    }
+
+                    // ✅ ADD PAYOUT
+                    await _db.fPayouts.AddAsync(payout);
+                    await _db.SaveChangesAsync();
+
+                    // ✅ ADD HISTORY ONLY IF SUCCESS
+                    if (status)
+                    {
+                        var userbalance = await _dataUtils.GetWalletAmount(userDetails.UserPhone);
+
+                        var fhistory = new FPassbookHistory
+                        {
+                            UserId = userDetails.Id,
+                            UserPhone = userDetails.UserPhone,
+                            Name = transactionResponse.Data.BillDetails.CustomerName,
+                            TxnId = transactionResponse.Data.TxnReferenceId,
+                            AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
+                            Amount = payout.Amount,
+                            TransactionType = "CC Bill",
+                            Status = true,
+                            StatusMessage = transactionResponse.Status,
+                            ParentId = payout.Id, // will be set after save
+                            Balance = userbalance,
+                            CreatedAt = istNow
+                        };
+
+                        await _dataUtils.InsertFHistoryAsync(fhistory);
                         await _db.SaveChangesAsync();
                     }
 
-                        return Ok(new PaymentResponseProcess
-                        {
-                            Success = status,
-                            Amount = transactionResponse.Data.BillDetails?.BillAmount ?? "0",
-                            OrderId = transactionResponse.Data.TxnReferenceId,
-                            ReferenceId = transactionResponse.Data.ExternalRef,
-                            Category = "Credit Card",
-                            BillerName = transactionResponse.Data.BillerDetails?.Name,
-                            Status = transactionResponse.Status,
-                            UserPhone = request.Phone,
-                            UserName = userDetails.UserName
-                        });
+                    // ✅ SINGLE SAVE (MOST IMPORTANT)
+                    
+
+                    return Ok(new PaymentResponseProcess
+                    {
+                        Success = status,
+                        Amount = transactionResponse.Data.BillDetails?.BillAmount ?? "0",
+                        OrderId = transactionResponse.Data.TxnReferenceId,
+                        ReferenceId = transactionResponse.Data.ExternalRef,
+                        Category = "Credit Card",
+                        BillerName = transactionResponse.Data.BillerDetails?.Name,
+                        Status = transactionResponse.Status,
+                        UserPhone = request.Phone,
+                        UserName = userDetails.UserName
+                    });
                 }
             }
             catch (Exception ex)

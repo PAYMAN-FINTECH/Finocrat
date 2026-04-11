@@ -278,105 +278,158 @@ namespace Finocrat.Api.Controllers
                 if (string.IsNullOrEmpty(request.UserId) || request.Amount <= 0)
                     return BadRequest("Required fields missing");
 
-                var user = _db.fUsers.FirstOrDefault(x => x.Id.ToString() == request.UserId);
+                var user = await _db.fUsers.FirstOrDefaultAsync(x => x.Id.ToString() == request.UserId);
                 if (user == null)
                     return NotFound("User not found");
 
-                var data = _db.fUserLookups
-            .FirstOrDefault(x => x.UserPhone == user.UserPhone);
-                var dbSettings = JsonSerializer.Deserialize<Dictionary<string, object>>(data.LookupJson);
+                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
+                // ✅ DUPLICATE CHECK
+                var existsPayIn = await _db.fPayIns.FirstOrDefaultAsync(x => x.PaymentId == request.RefId);
+                var existsPayOut = await _db.fPayouts.FirstOrDefaultAsync(x => x.ExternalRef == request.RefId);
 
+                if (existsPayIn != null || existsPayOut != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Already processed"
+                    });
+                }
+
+                // =========================
+                // ✅ PAYIN
+                // =========================
                 if (request.Mode == "PayIn")
                 {
                     decimal payInLimit = 0;
 
-                    if (dbSettings.ContainsKey("PayIn Margin"))
+                    var lookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == user.UserPhone);
+                    if (lookup != null)
                     {
-                        var value = dbSettings["PayIn Margin"];
+                        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
 
-                        if (value is JsonElement element)
+                        if (settings.ContainsKey("PayIn Margin"))
                         {
-                            if (element.ValueKind == JsonValueKind.String)
-                                payInLimit = decimal.Parse(element.GetString());
-                            else if (element.ValueKind == JsonValueKind.Number)
-                                payInLimit = element.GetDecimal();
+                            var value = settings["PayIn Margin"];
+
+                            if (value is JsonElement element)
+                            {
+                                if (element.ValueKind == JsonValueKind.String)
+                                    payInLimit = decimal.Parse(element.GetString());
+                                else if (element.ValueKind == JsonValueKind.Number)
+                                    payInLimit = element.GetDecimal();
+                            }
                         }
                     }
 
-                    var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-                    var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
-
-
-                    var payIns = new FPayIn
+                    var payIn = new FPayIn
                     {
                         UserId = user.Id,
                         UserPhone = user.UserPhone,
                         UserEmail = user.Email,
-                        CardHolderName = "",
-                        CardHolderPhone = "",
-                        CardHolderEmail = "",
-                        CardHolderCardNumber = "",
-                        Result = "captured",
-                        CardBrand =  "",
-                        BankName =  "",// razorPayCard["sub_type"]
-                        CardType =  "",
+                        Result = "MANUAL_ADJUSTMENT",
                         Status = true,
-                        CardNo =  "",
-                        PaymentId = request.RefId,
+                        PaymentId = request.OrderId,
                         TaxNumber = request.OrderId,
                         Amount = request.Amount,
                         PayInCommission = request.Amount * payInLimit / 100,
                         FCommission = request.Amount / 100,
-                        Gateway = "REduction",
-                        Created = istNow
+                        Gateway = "REducation",
+                        Created = istNow,
+                        CardHolderName = "",
+                        CardHolderPhone = request.customerMobile,
+                        CardHolderEmail = "",
+                        CardHolderCardNumber = request.RefId,
+                        CardBrand = "",
+                        BankName = "",
+                        CardType = "",
+                        CardNo =  request.RefId,
                     };
 
-                    var res = _dataUtils.InsertAsync(payIns);
+                    await _db.fPayIns.AddAsync(payIn);
+                    await _db.SaveChangesAsync();
 
+                    var balance = await _dataUtils.GetWalletAmount(user.UserPhone);
 
-                    var userbalance = await _dataUtils.GetWalletAmount(user.UserPhone);
-                    var fhistory = new FPassbookHistory
+                    var history = new FPassbookHistory
                     {
                         UserId = user.Id,
                         UserPhone = user.UserPhone,
-                        Name = "Manual",
-                        TxnId = request.RefId,
-                        AccountNumber = request.OrderId,
+                        Name = "Manual PayIn",
+                        TxnId = request.OrderId,
+                        AccountNumber = request.RefId,
                         Amount = request.Amount,
                         TransactionType = "PayIn",
-                        Status = payIns.Status,
-                        StatusMessage = payIns.Result,
-                        ParentId = payIns.Id,
-                        Balance = userbalance,
+                        Status = true,
+                        StatusMessage = "Manual Credit",
+                        ParentId = payIn.Id,
+                        Balance = balance,
                         CreatedAt = istNow
                     };
-                    var res1 = _dataUtils.InsertFHistoryAsync(fhistory);
 
+                    await _db.fPassbookHistories.AddAsync(history);
                 }
 
+                // =========================
+                // ✅ PAYOUT / CC
+                // =========================
+                else if (request.Mode == "PayOut" || request.Mode == "CC")
+                {
+                    var payout = new FPayout
+                    {
+                        UserId = user.Id,
+                        UserPhone = user.UserPhone,
+                        ExternalRef = request.OrderId,
+                        OrderId = request.OrderId,
+                        CustomerName = "Manual",
+                        Amount = request.Amount,
+                        PaoutCommission = 15,
+                        Status = true,
+                        Result = "MANUAL_ADJUSTMENT",
+                        Created = istNow,
+                        TxnReferenceId = request.OrderId,
+                        CardNumber = request.customerMobile,
+                        AccountNumber = request.RefId,
+                    };
 
+                    await _db.fPayouts.AddAsync(payout);
+                    await _db.SaveChangesAsync();
 
+                    var balance = await _dataUtils.GetWalletAmount(user.UserPhone);
 
-                // 🔥 BUSINESS LOGIC
-                // You can store in DB OR update wallet
+                    var history = new FPassbookHistory
+                    {
+                        UserId = user.Id,
+                        UserPhone = user.UserPhone,
+                        Name = "Manual" + request.Mode,
+                        TxnId = request.OrderId,
+                        AccountNumber = request.RefId,
+                        Amount = request.Amount,
+                        TransactionType = request.Mode,
+                        Status = true,
+                        StatusMessage = "Manual Adjustment",
+                        ParentId = payout.Id,
+                        Balance = balance,
+                        CreatedAt = istNow
+                    };
 
-                // Example:
-                var transactionId = Guid.NewGuid().ToString();
+                    await _db.fPassbookHistories.AddAsync(history);
+                }
+                else
+                {
+                    return BadRequest("Invalid Mode");
+                }
 
-                // TODO:
-                // 1. Insert into FailedTransactions table
-                // 2. Credit/Debit wallet based on Mode
-                // 3. Maintain audit log
+                // ✅ SINGLE SAVE
+                await _db.SaveChangesAsync();
 
-                var response = new
+                return Ok(new
                 {
                     success = true,
-                    message = "Amount adjusted successfully",
-                    transactionId = transactionId
-                };
-
-                return Ok(response);
+                    message = "Amount adjusted successfully"
+                });
             }
             catch (Exception ex)
             {
@@ -388,7 +441,9 @@ namespace Finocrat.Api.Controllers
             }
         }
 
+
         // ✅ SET PIN
+
         [HttpPost("SetPin")]
         public IActionResult SetPin([FromBody] SetPinRequest request)
         {
@@ -470,6 +525,7 @@ namespace Finocrat.Api.Controllers
         public decimal Amount { get; set; }
         public string OrderId { get; set; }
         public string RefId { get; set; }
+        public string customerMobile { get; set; }
     }
     public class AddFailedUserDto
     {

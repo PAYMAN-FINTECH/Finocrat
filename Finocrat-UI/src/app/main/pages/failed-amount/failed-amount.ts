@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-
 import { HomeService } from '../../../services/mainservices/home.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-failed-amount',
@@ -18,10 +18,11 @@ export class FailedAmountComponent implements OnInit {
   model: any = {
     userId: '',
     mode: '',
-    type: '',
-    amount: '',
+    amount: null,
     orderId: '',
-    refId: ''
+    refId: '',
+    customerMobile: ''
+
   };
 
   modes = [
@@ -32,29 +33,58 @@ export class FailedAmountComponent implements OnInit {
 
   isLoading = false;
 
-  constructor(private adminService: HomeService) {}
+  constructor(private adminService: HomeService,  private router: Router,) {}
 
   ngOnInit(): void {
     this.loadUsers();
   }
 
-  // LOAD USERS
+  // ✅ LOAD USERS
   loadUsers() {
     this.adminService.getAllUsers().subscribe({
       next: (res: any) => {
         this.users = res || [];
       },
-      error: () => alert("Failed to load users")
+      error: () => alert("Failed to load users ❌")
     });
   }
 
-  // SUBMIT
+  // ✅ VALIDATION
+  isValid(): boolean {
+    if (!this.model.userId) {
+      alert("Select User");
+      return false;
+    }
+
+    if (!this.model.mode) {
+      alert("Select Mode");
+      return false;
+    }
+
+    if (!this.model.amount || this.model.amount <= 0) {
+      alert("Enter valid amount");
+      return false;
+    }
+
+    if (!this.model.refId) {
+      alert("Reference ID is required (important for duplicate check)");
+      return false;
+    }
+
+    return true;
+  }
+
+  // ✅ SUBMIT
   submit() {
 
-    if (!this.model.userId || !this.model.mode || !this.model.amount) {
-      alert("Please fill all required fields");
-      return;
-    }
+    if (!this.isValid()) return;
+
+    // 🔥 CONFIRMATION (VERY IMPORTANT)
+    const confirmAction = confirm(
+      `Are you sure?\n\nUser: ${this.model.userId}\nAmount: ₹${this.model.amount}`
+    );
+
+    if (!confirmAction) return;
 
     this.isLoading = true;
 
@@ -62,8 +92,9 @@ export class FailedAmountComponent implements OnInit {
       UserId: this.model.userId,
       Mode: this.model.mode,
       Amount: Number(this.model.amount),
-      OrderId: this.model.orderId,
-      RefId: this.model.refId
+      OrderId: this.model.orderId || '',
+      RefId: this.model.refId,
+      CustomerMobile: this.model.customerMobile || ''
     };
 
     console.log("Submit Payload 👉", payload);
@@ -75,6 +106,10 @@ export class FailedAmountComponent implements OnInit {
 
         if (res.success) {
           alert("Amount Added Successfully ✅");
+            this.router.navigate(['/app/finhome']).then(() => {
+    window.location.reload(); // reload dashboard & wallet data
+  });
+
           this.resetForm();
         } else {
           alert(res.message || "Failed ❌");
@@ -82,18 +117,20 @@ export class FailedAmountComponent implements OnInit {
       },
       error: () => {
         this.isLoading = false;
-        alert("Error ❌");
+        alert("Server Error ❌");
       }
     });
   }
 
+  // ✅ RESET
   resetForm() {
     this.model = {
       userId: '',
       mode: '',
-      amount: '',
+      amount: null,
       orderId: '',
-      refId: ''
+      refId: '',
+      customerMobile: ''
     };
   }
 }

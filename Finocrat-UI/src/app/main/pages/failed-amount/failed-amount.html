@@ -27,12 +27,15 @@
     <input type="number" [(ngModel)]="model.amount">
 
     <!-- ORDER ID -->
-    <label>Order ID</label>
+    <label>Payment/TXN ID</label>
     <input type="text" [(ngModel)]="model.orderId">
 
     <!-- REF ID -->
-    <label>Reference ID</label>
+    <label>Card Number</label>
     <input type="text" [(ngModel)]="model.refId">
+
+    <label>Mobile Number</label>
+    <input type="text" [(ngModel)]="model.customerMobile">
 
     <!-- BUTTON -->
     <button (click)="submit()" [disabled]="isLoading">

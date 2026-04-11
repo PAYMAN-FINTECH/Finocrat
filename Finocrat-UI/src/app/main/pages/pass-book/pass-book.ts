@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+
 import { HomeService } from '../../../services/mainservices/home.service';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { PayInService } from '../../../services/mainservices/payin.service';
@@ -25,7 +26,7 @@ export class PassbookComponent implements OnInit {
   constructor(
     private service: HomeService,
     private token: TokenService,
-    private payinservice : PayInService
+    private payinservice: PayInService
   ) {}
 
   ngOnInit() {
@@ -37,8 +38,21 @@ export class PassbookComponent implements OnInit {
 
   loadPassbook() {
     this.payinservice.getPassbook(this.userPhone, this.fromDate, this.toDate)
-      .subscribe(res => {
-        this.transactions = res;
+      .subscribe((res: any[]) => {
+
+        // ✅ Format transactions
+        this.transactions = res.map(tx => {
+
+          const isCredit = tx.type === 'CREDIT';
+
+          return {
+            ...tx,
+            displayAmount: isCredit ? `+ ₹${tx.amount}` : `- ₹${tx.amount}`,
+            amountClass: isCredit ? 'credit' : 'debit',
+            statusText: tx.status ? 'Success' : 'Failed'
+          };
+        });
+
         this.groupByDate();
       });
   }
@@ -55,5 +69,13 @@ export class PassbookComponent implements OnInit {
 
       this.groupedData[date].push(tx);
     });
+  }
+
+  objectKeys(obj: any): string[] {
+    return Object.keys(obj);
+  }
+
+  applyFilter() {
+    this.loadPassbook();
   }
 }

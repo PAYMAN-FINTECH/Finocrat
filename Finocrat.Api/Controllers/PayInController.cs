@@ -118,12 +118,14 @@ namespace Finocrat.Api.Controllers
                     x.Balance,
                     x.Status,
                     x.StatusMessage,
-                    x.CreatedAt
+                    x.CreatedAt,
+
+                    // ✅ ADD THIS (IMPORTANT)
+                    Type = (x.TransactionType == "PayIn") ? "CREDIT" : "DEBIT"
                 })
                 .ToListAsync();
 
             return Ok(data);
         }
-
     }
 }
