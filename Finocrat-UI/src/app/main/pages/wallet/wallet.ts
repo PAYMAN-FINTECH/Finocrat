@@ -116,28 +116,6 @@ loadGateways(): void {
 }
 
 // 🔥 REDIRECT TO EDU DOMAIN
-  // addFunds(form: any): void {
-
-  //   if (form.invalid || this.model.amount > 99999) {
-  //     form.control.markAllAsTouched();
-  //     return;
-  //   }
-
-  //   const payload = {
-  //     name: this.model.name,
-  //     email: this.model.email,
-  //     mobile: this.model.mobile,
-  //     amount: this.model.amount,
-  //     category: this.model.category,
-  //     userPhone: this.userPhone
-  //   };
-
-  //   const encodedData = btoa(JSON.stringify(payload));
-
-  //   window.location.href =
-  //     `https://edu.thefinocrat.com/edu/edu-wallet?data=${encodedData}`;
-  // }
-
   addFunds(form: any): void {
 
     if (form.invalid || this.model.amount > 99999) {
@@ -145,77 +123,99 @@ loadGateways(): void {
       return;
     }
 
-    this.razorService.createOrder(this.model.amount)
-      .subscribe({
-        next: (res) => {
-          debugger;
-          this.isLoading = false;   // 👈 ADD THIS
+    const payload = {
+      name: this.model.name,
+      email: this.model.email,
+      mobile: this.model.mobile,
+      amount: this.model.amount,
+      category: this.model.category,
+      userPhone: this.userPhone
+    };
 
-          const options: any = {
-            key: res.key,
-            amount: res.amount * 100,
-            currency: "INR",
-            order_id: res.orderId,
-            name: 'Finocrat',
-            description: 'Add Wallet Funds',
+    const encodedData = btoa(JSON.stringify(payload));
 
-            handler: (response: any) => {
-              debugger;
-               this.isLoading = true;
-
-              const verifyPayload = {
-                orderId: response.razorpay_order_id,
-                paymentId: response.razorpay_payment_id,
-                signature: response.razorpay_signature,
-                amount: this.model.amount,
-                mobile: this.model.mobile,
-                selectedGateway: this.model.category,
-                loggedInUserPhone: this.userPhone,
-                cardHolderName: this.model.name,
-                cardHolderCard: '',
-                cardHolderMail: this.model.email || null
-
-              };
-
-              this.razorService.verifyPayment(verifyPayload)
-                .subscribe({
-                  next: (result) => {
-                    debugger;
-
-                    if (result.status == 'SUCCESS') {
-                      alert("Payment Verified Successfully");
-                      this.loadWalletBalance();
-                      form.resetForm();
-                      this.showSuccessScreen = true;
-                            setTimeout(() => {
-                              this.goToDashboard();
-                             }, 3000);
-                    } else {
-                      alert("Payment Verification Failed");
-                    }
-                  },
-                  error: () => {
-                    alert("Payment Verification Failed");
-                  }
-                });
-            },
-
-            prefill: {
-              name: this.model.name,
-              email: this.model.email,
-              contact: this.model.mobile
-            },
-
-            theme: { color: '#6A1B9A' }
-          };
-
-          const rzp = new Razorpay(options);
-          rzp.open();
-        },
-        error: () => {
-          this.isLoading = false;
-          alert("Unable to create payment order");
-        }
-      });
+    window.location.href =
+      `https://edu.thefinocrat.com/edu/edu-wallet?data=${encodedData}`;
   }
+
+  // addFunds(form: any): void {
+
+  //   if (form.invalid || this.model.amount > 99999) {
+  //     form.control.markAllAsTouched();
+  //     return;
+  //   }
+
+  //   this.razorService.createOrder(this.model.amount)
+  //     .subscribe({
+  //       next: (res) => {
+  //         debugger;
+  //         this.isLoading = false;   // 👈 ADD THIS
+
+  //         const options: any = {
+  //           key: res.key,
+  //           amount: res.amount * 100,
+  //           currency: "INR",
+  //           order_id: res.orderId,
+  //           name: 'Finocrat',
+  //           description: 'Add Wallet Funds',
+
+  //           handler: (response: any) => {
+  //             debugger;
+  //              this.isLoading = true;
+
+  //             const verifyPayload = {
+  //               orderId: response.razorpay_order_id,
+  //               paymentId: response.razorpay_payment_id,
+  //               signature: response.razorpay_signature,
+  //               amount: this.model.amount,
+  //               mobile: this.model.mobile,
+  //               selectedGateway: this.model.category,
+  //               loggedInUserPhone: this.userPhone,
+  //               cardHolderName: this.model.name,
+  //               cardHolderCard: '',
+  //               cardHolderMail: this.model.email || null
+
+  //             };
+
+  //             this.razorService.verifyPayment(verifyPayload)
+  //               .subscribe({
+  //                 next: (result) => {
+  //                   debugger;
+
+  //                   if (result.status == 'SUCCESS') {
+  //                     alert("Payment Verified Successfully");
+  //                     this.loadWalletBalance();
+  //                     form.resetForm();
+  //                     this.showSuccessScreen = true;
+  //                           setTimeout(() => {
+  //                             this.goToDashboard();
+  //                            }, 3000);
+  //                   } else {
+  //                     alert("Payment Verification Failed");
+  //                   }
+  //                 },
+  //                 error: () => {
+  //                   alert("Payment Verification Failed");
+  //                 }
+  //               });
+  //           },
+
+  //           prefill: {
+  //             name: this.model.name,
+  //             email: this.model.email,
+  //             contact: this.model.mobile
+  //           },
+
+  //           theme: { color: '#6A1B9A' }
+  //         };
+
+  //         const rzp = new Razorpay(options);
+  //         rzp.open();
+  //       },
+  //       error: () => {
+  //         this.isLoading = false;
+  //         alert("Unable to create payment order");
+  //       }
+  //     });
+  // }
 }

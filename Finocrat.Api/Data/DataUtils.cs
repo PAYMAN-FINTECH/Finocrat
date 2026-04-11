@@ -1,7 +1,10 @@
-﻿using Finocrat.Api.Models.Entities.Main;
+﻿using Finocrat.Api.Models.DTOs.MainDtos;
+using Finocrat.Api.Models.Entities.Main;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Net;
 using System.Net.Mail;
+using System.Text;
 
 namespace Finocrat.Api.Data
 {
@@ -86,6 +89,66 @@ namespace Finocrat.Api.Data
             decimal walletBalance = totalAmount - totalPayIn;
 
             return walletBalance;
+        }
+
+        public async Task<decimal> BalanceCheck()
+        {
+            try
+            {
+                using var client = new HttpClient
+                {
+                    Timeout = TimeSpan.FromSeconds(30) // ✅ timeout
+                };
+
+                client.DefaultRequestHeaders.Add("Accept", "application/json");
+                client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
+                client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["InstantPay:X-Ipay-Client-Id"]);
+                client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"]);
+                client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"]);
+
+                var requestData = new
+                {
+                    bankProfileId = "0",
+                    accountNumber = "9014559309", // 🔁 make dynamic later
+                    externalRef = "BAL_" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                    latitude = "20.126",
+                    longitude = "78.3228"
+                };
+
+                var jsonData = System.Text.Json.JsonSerializer.Serialize(requestData);
+                var content = new StringContent(jsonData, Encoding.UTF8, "application/json");
+
+                var response = await client.PostAsync(
+                    "https://api.instantpay.in/accounts/balance",
+                    content
+                );
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    return 0;
+                }
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                var balanceResponse = Newtonsoft.Json.JsonConvert
+                    .DeserializeObject<BalanceResponse>(responseContent);
+
+                var balanceStr = balanceResponse?.Data?.Balance?.Available;
+
+                // ✅ SAFE PARSE
+                if (decimal.TryParse(balanceStr, out decimal balance))
+                {
+                    return balance;
+                }
+
+                return 0;
+            }
+            catch (Exception ex)
+            {
+                // ✅ LOG THIS (VERY IMPORTANT)
+                Console.WriteLine("BalanceCheck Error: " + ex.Message);
+                return 0;
+            }
         }
 
         public async Task SendEmailAsync(string toEmail, string subject, string body)

@@ -48,7 +48,8 @@ namespace Finocrat.Api.Controllers
                     x.Amount,
                     x.Status,
                     x.PaymentId,
-                    x.Created
+                    x.Created,
+                    x.PayInCommission
                 })
                 .ToList();
 
@@ -87,7 +88,9 @@ namespace Finocrat.Api.Controllers
                     x.Amount,
                     x.Status,
                     x.TxnReferenceId,
-                    x.Created
+                    x.Created,
+                    x.PaoutCommission,
+                    x.Type
                 })
                 .ToList();
 

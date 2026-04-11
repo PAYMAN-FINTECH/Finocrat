@@ -63,8 +63,10 @@
         <tr>
           <th>#</th>
           <th>Amount</th>
+          <th>Commission</th>
           <th>Status</th>
           <th>Transaction ID</th>
+          <th>Mode</th>
           <th>Date</th>
         </tr>
       </thead>
@@ -73,6 +75,7 @@
         <tr *ngFor="let item of history; let i = index">
           <td>{{ i + 1 }}</td>
           <td class="amount">₹ {{ item.amount }}</td>
+          <td>₹ {{ item.paoutcommition | number:'1.2-2' }}</td>
 
           <td>
             <span class="status"
@@ -86,6 +89,7 @@
           </td>
 
           <td>{{ item.txnReferenceId }}</td>
+          <td>{{ item.type }}</td>
           <td>{{ item.created | date:'medium' }}</td>
         </tr>
       </tbody>

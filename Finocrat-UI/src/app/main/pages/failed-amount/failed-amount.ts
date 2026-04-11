@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HomeService } from '../../../services/mainservices/home.service';
 import { Router } from '@angular/router';
+import { ToastrService } from 'ngx-toastr';
 
 @Component({
   selector: 'app-failed-amount',
@@ -33,7 +34,7 @@ export class FailedAmountComponent implements OnInit {
 
   isLoading = false;
 
-  constructor(private adminService: HomeService,  private router: Router,) {}
+  constructor(private adminService: HomeService,  private router: Router, private toastr: ToastrService,) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -105,19 +106,19 @@ export class FailedAmountComponent implements OnInit {
         this.isLoading = false;
 
         if (res.success) {
-          alert("Amount Added Successfully ✅");
+          this.toastr.success("Amount Added Successfully ✅");
             this.router.navigate(['/app/finhome']).then(() => {
     window.location.reload(); // reload dashboard & wallet data
   });
 
           this.resetForm();
         } else {
-          alert(res.message || "Failed ❌");
+          this.toastr.error(res.message || "Failed ❌");
         }
       },
       error: () => {
         this.isLoading = false;
-        alert("Server Error ❌");
+        this.toastr.error("Server Error ❌");
       }
     });
   }

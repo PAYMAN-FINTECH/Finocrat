@@ -346,6 +346,20 @@ namespace Finocrat.Api.Controllers
             if (request.Amount > walletBalance)
                 return Ok(GenerateFailureResponse("Insufficient wallet balance"));
 
+            var ccamount = await _dataUtils.BalanceCheck();
+
+            // ✅ Safety check (API failure case)
+            if (ccamount <= 0)
+            {
+                return Ok(GenerateFailureResponse("Unable to fetch InstantPay balance. Try again."));
+            }
+
+            // ✅ Rounded comparison (safe)
+            if (Math.Round(request.Amount, 2) > Math.Round(ccamount, 2))
+            {
+                return Ok(GenerateFailureResponse("Insufficient InstantPay balance"));
+            }
+
             var externalRef = "PAYMAN" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
             var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
@@ -360,6 +374,7 @@ namespace Finocrat.Api.Controllers
                 Amount = request.Amount,
                 PaoutCommission = 15,
                 Created = istNow,
+                Type = "CC Bill",
                 Status = false
             };
 

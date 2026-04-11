@@ -261,7 +261,7 @@ export class CcBillPaymentComponent implements OnInit {
           }, 3000);
           this.closePopup();
         } else {
-          this.toastr.error('Payment Failed ❌');
+          this.toastr.error(res.message || 'Payment failed');
         }
       },
       error: () => {
