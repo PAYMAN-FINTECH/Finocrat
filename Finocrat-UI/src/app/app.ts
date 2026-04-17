@@ -33,6 +33,8 @@ import { TokenService } from './services/mainservices/token.service';
 export class App implements OnInit, OnDestroy {
 
   isEdu = window.location.hostname.startsWith('edu.');
+  isFastag = window.location.hostname.startsWith('fastag');
+  
   showFooter = true;
   showGlobalPin = false;
   private sub!: Subscription;

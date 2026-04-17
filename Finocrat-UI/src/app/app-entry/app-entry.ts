@@ -1,3 +1,4 @@
+// app-entry/app-entry.component.ts
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { TokenService } from '../services/mainservices/token.service';
@@ -15,13 +16,26 @@ export class AppEntryComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const isEduDomain = window.location.hostname.startsWith('edu.');
-
+    const hostname = window.location.hostname;
+   
+    // Check for EDU domain
+    const isEduDomain = hostname.startsWith('edu.');
+    
+    // Check for FASTag in URL path or subdomain
+    const isFastagDomain = hostname.startsWith('fastag.');
+    
+    
     if (isEduDomain) {
       this.router.navigateByUrl('/edu');
       return;
     }
-
+    
+    if (isFastagDomain) {
+      this.router.navigateByUrl('/fastag');
+      return;
+    }
+    
+    // Normal flow for main domain
     const token = this.tokenService.getToken();
     const user = this.tokenService.getUser();
     

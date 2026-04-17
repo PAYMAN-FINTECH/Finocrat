@@ -15,6 +15,8 @@ namespace Finocrat.Api.Models.Entities.Edu
         [Required]
         public string PasswordHash { get; set; } = string.Empty;
 
+        public string? phone { get; set; }
+
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     }
 }

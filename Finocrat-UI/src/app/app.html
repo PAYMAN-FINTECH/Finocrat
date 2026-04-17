@@ -2,13 +2,13 @@
 
   <edu-header *ngIf="isEdu"></edu-header>
 
-  <app-mainheader *ngIf="!isEdu"></app-mainheader>
+  <app-mainheader *ngIf="!isEdu && !isFastag"></app-mainheader>
 
   <router-outlet></router-outlet>
 
   <edu-footer *ngIf="isEdu"></edu-footer>
 
-  <app-mainfooter *ngIf="!isEdu && !showFooter"></app-mainfooter>
+  <app-mainfooter *ngIf="!isEdu && !isFastag && !showFooter"></app-mainfooter>
 
   <app-loader></app-loader>
 

@@ -47,6 +47,10 @@ import { VerifyPinPageComponent } from './main/pages/verify-pin-page/verify-pin-
 import { ForgotPinComponent } from './main/pages/forgot-pin/forgot-pin';
 import { PassbookComponent } from './main/pages/pass-book/pass-book';
 import { KycDetailsComponent } from './main/pages/kyc-details/kyc-details';
+import { FastagLayoutComponent } from './fastag/components/fastag-layout/fastag-layout';
+import { FastagHomeComponent } from './fastag/pages/fastag-home/fastag-home';
+import { FastagHistoryComponent } from './fastag/pages/fastag-history/fastag-history';
+import { PaymentStatusComponent } from './edu/pages/payment-status/payment-status';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -71,6 +75,18 @@ export const routes: Routes = [
       { path: 'signup', component: SignupComponent },
       { path: 'my-learning', component: MyLearningComponent },
       { path: 'edu-wallet', component: EduWalletComponent },
+      { path: 'payment-status', component: PaymentStatusComponent }
+    ]
+  },
+
+   // FASTAG ROUTES (Similar to EDU)
+  {
+    path: 'fastag',
+    component: FastagLayoutComponent,
+    children: [
+      { path: '', component: FastagHomeComponent },
+      { path: 'history', component: FastagHistoryComponent },
+      //{ path: 'support', component: FastagSupportComponent }, // Optional
     ]
   },
 

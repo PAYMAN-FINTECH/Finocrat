@@ -1,0 +1,26 @@
+<div class="status-container">
+
+  <!-- 🔄 Loading -->
+  <div *ngIf="isLoading" class="status-box">
+    <div class="loader"></div>
+    <h2>Processing Payment...</h2>
+    <p>Please wait while we verify your transaction</p>
+  </div>
+
+  <!-- ✅ Success -->
+  <div *ngIf="isSuccess" class="status-box success">
+    <div class="icon success-icon">✔</div>
+    <h2>Payment Successful</h2>
+    <p>Your transaction has been completed successfully.</p>
+    <small>Redirecting to dashboard...</small>
+  </div>
+
+  <!-- ❌ Failed -->
+  <div *ngIf="isFailed" class="status-box failed">
+    <div class="icon failed-icon">✖</div>
+    <h2>Payment Failed</h2>
+    <p>Something went wrong. Please try again.</p>
+    <small>Redirecting to dashboard...</small>
+  </div>
+
+</div>
