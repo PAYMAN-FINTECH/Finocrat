@@ -20,11 +20,11 @@ import { FastagAuthService } from '../../../services/fastgservices/fastag-auth.s
           </a>
         </div>
         
-        <nav class="nav-links">
+        <!-- <nav class="nav-links">
           <a routerLink="/fastag" routerLinkActive="active">Recharge</a>
           <a routerLink="/fastag/history" routerLinkActive="active">History</a>
           <a routerLink="/fastag/support" routerLinkActive="active">Support</a>
-        </nav>
+        </nav> -->
 
         <!-- Login/User Section -->
         <div class="user-section">

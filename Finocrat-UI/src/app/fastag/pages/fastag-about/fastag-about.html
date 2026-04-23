@@ -1,0 +1,122 @@
+<div class="about-container">
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <h1 class="hero-title">Welcome to <span class="highlight">Finocrat FASTag</span></h1>
+      <p class="hero-subtitle">
+        Your trusted partner for quick, secure, and hassle-free vehicle toll payments across India.
+      </p>
+      <div class="hero-buttons">
+        <a routerLink="/fastag" class="btn-primary">Recharge Now</a>
+        <a routerLink="/fastag/contact" class="btn-secondary">Contact Us</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <div class="floating-card">
+        <span class="emoji">🚗💨</span>
+        <p>Drive Fast. Recharge Faster.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Stats Section -->
+  <section class="stats-section">
+    <div class="stats-grid">
+      <div class="stat-card" *ngFor="let stat of stats">
+        <div class="stat-value">{{ stat.value }}</div>
+        <div class="stat-label">{{ stat.label }}</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- About Content -->
+  <section class="about-content">
+    <div class="content-card">
+      <h2>About Our FASTag Portal</h2>
+      <p>
+        Welcome to <strong>fastag.payman.in</strong>, your trusted partner for quick, secure, and hassle-free 
+        vehicle toll payments across India.
+      </p>
+      <p>
+        Our platform allows you to recharge your FASTag account anytime, anywhere. Whether you're on the go 
+        or planning your next trip, our 24/7 recharge system ensures you never face delays at toll booths. 
+        We support a wide range of FASTag providers and offer real-time updates on your transactions.
+      </p>
+    </div>
+  </section>
+
+  <!-- Why Choose Us -->
+  <section class="features-section">
+    <h2 class="section-title">Why Use Our FASTag Recharge Service?</h2>
+    <div class="features-grid">
+      <div class="feature-card" *ngFor="let feature of features">
+        <div class="feature-icon">{{ feature.icon }}</div>
+        <h3>{{ feature.title }}</h3>
+        <p>{{ feature.description }}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Commitment Section -->
+  <section class="commitment-section">
+    <div class="commitment-content">
+      <h2>Our Commitment</h2>
+      <p>
+        We are committed to making toll payments smooth and effortless for vehicle owners, logistics companies, 
+        and frequent travelers. Our user-friendly interface is optimized for mobile and desktop use, so you can 
+        manage your FASTag needs on the go.
+      </p>
+      <p>
+        Whether you're managing a fleet or just recharging your personal vehicle's FASTag, our platform is 
+        designed to serve your needs efficiently. Join thousands of satisfied users who trust our service for 
+        their daily travel needs.
+      </p>
+      <div class="tagline">
+        <span class="tagline-icon">🚗💨</span>
+        <span class="tagline-text">FASTag - Drive Fast. Recharge Faster.</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Supported Providers -->
+  <section class="providers-section">
+    <h2 class="section-title">We Support All Major FASTag Providers</h2>
+    <div class="providers-grid">
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/HDFC00000NAT5K.svg" alt="HDFC">
+        <span>HDFC Bank</span>
+      </div>
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/TOLL00000NAT72.svg" alt="ICICI">
+        <span>ICICI Bank</span>
+      </div>
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/AXIS00000NAT31.svg" alt="Axis">
+        <span>Axis Bank</span>
+      </div>
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/PAYT00000NATTQ.svg" alt="Paytm">
+        <span>Paytm</span>
+      </div>
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/SBI00000NAT11.svg" alt="SBI">
+        <span>SBI</span>
+      </div>
+      <div class="provider-item">
+        <img src="https://static.instantpay.in/assets/logo/products/KOTK00000NAT41.svg" alt="Kotak">
+        <span>Kotak</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section">
+    <div class="cta-content">
+      <h2>Ready to Experience Hassle-Free Toll Payments?</h2>
+      <p>Join thousands of satisfied users and start recharging your FASTag today!</p>
+      <a routerLink="/fastag" class="btn-large">Recharge Now →</a>
+    </div>
+  </section>
+
+</div>

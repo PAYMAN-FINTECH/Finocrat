@@ -51,6 +51,13 @@ import { FastagLayoutComponent } from './fastag/components/fastag-layout/fastag-
 import { FastagHomeComponent } from './fastag/pages/fastag-home/fastag-home';
 import { FastagHistoryComponent } from './fastag/pages/fastag-history/fastag-history';
 import { PaymentStatusComponent } from './edu/pages/payment-status/payment-status';
+import { FastagAboutComponent } from './fastag/pages/fastag-about/fastag-about';
+import { FastagPrivacyPolicyComponent } from './fastag/pages/fastag-privacy-policy/fastag-privacy-policy';
+import { FastagRefundPolicyComponent } from './fastag/pages/fastag-refund-policy/fastag-refund-policy';
+import { FastagTermsComponent } from './fastag/pages/fastag-terms/fastag-terms';
+import { FastagContactComponent } from './fastag/pages/fastag-contact/fastag-contact';
+import { FastagFaqComponent } from './fastag/pages/fastag-faq/fastag-faq';
+import { FastagSupportComponent } from './fastag/pages/fastag-support/fastag-support';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -86,6 +93,13 @@ export const routes: Routes = [
     children: [
       { path: '', component: FastagHomeComponent },
       { path: 'history', component: FastagHistoryComponent },
+      { path: 'about', component: FastagAboutComponent },                     // /fastag/about
+      { path: 'privacy-policy', component: FastagPrivacyPolicyComponent },    // /fastag/privacy-policy
+      { path: 'refund-policy', component: FastagRefundPolicyComponent },      // /fastag/refund-policy
+      { path: 'terms', component: FastagTermsComponent },                     // /fastag/terms
+      { path: 'contact', component: FastagContactComponent },                 // /fastag/contact
+      { path: 'faq', component: FastagFaqComponent },                         // /fastag/faq
+      { path: 'support', component: FastagSupportComponent },                 // /fastag/support
       //{ path: 'support', component: FastagSupportComponent }, // Optional
     ]
   },
