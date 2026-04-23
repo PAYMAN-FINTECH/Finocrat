@@ -64,7 +64,9 @@
           <th>#</th>
           <th>Amount</th>
           <th>Commission</th>
+          <th>Card No</th>
           <th>Status</th>
+          <th>Result</th>
           <th>Transaction ID</th>
           <th>Mode</th>
           <th>Date</th>
@@ -75,7 +77,8 @@
         <tr *ngFor="let item of history; let i = index">
           <td>{{ i + 1 }}</td>
           <td class="amount">₹ {{ item.amount }}</td>
-          <td>₹ {{ item.paoutcommition | number:'1.2-2' }}</td>
+          <td>₹ {{ item.paoutCommission | number:'1.2-2' }}</td>
+          <td>{{ item.cardNumber }}</td>
 
           <td>
             <span class="status"
@@ -87,6 +90,7 @@
               {{ item.status === true ? 'SUCCESS' : item.status === false ? 'FAILED' : 'PENDING' }}
             </span>
           </td>
+          <td>{{ item.result }}</td>
 
           <td>{{ item.txnReferenceId }}</td>
           <td>{{ item.type }}</td>

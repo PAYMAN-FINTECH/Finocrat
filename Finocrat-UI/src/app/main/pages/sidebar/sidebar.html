@@ -66,6 +66,10 @@
         <lucide-icon [img]="ArrowUpCircle"></lucide-icon>
         <span>PayOut</span>
       </li>
+      <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
+      <lucide-icon [img]="BookText"></lucide-icon>
+      <span>Passbook</span>
+    </li>
     </ul>
 
    <!-- ADMIN -->
@@ -111,10 +115,10 @@
     </li>
 
     <!-- PASSBOOK -->
-    <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
+    <!-- <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
       <lucide-icon [img]="BookText"></lucide-icon>
       <span>Passbook</span>
-    </li>
+    </li> -->
 
     <!-- FAILED -->
     <li routerLink="/app/failed" routerLinkActive="active" (click)="onLinkClick()">

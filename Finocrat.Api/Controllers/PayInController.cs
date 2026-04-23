@@ -90,7 +90,9 @@ namespace Finocrat.Api.Controllers
                     x.TxnReferenceId,
                     x.Created,
                     x.PaoutCommission,
-                    x.Type
+                    x.Type,
+                    x.Result,
+                    x.CardNumber
                 })
                 .ToList();
 

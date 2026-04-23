@@ -152,7 +152,7 @@ namespace Finocrat.Api.Controllers
                         AvailableAmount = "0.00",
                         InstantPayBalance = "0.00",
                         BillAvenue =  false,
-                        Billers = filteredBillers
+                        Billers = filteredBillers.Where(b => b.IsAvailable).ToList()
                     };
 
                     return Ok(result);
