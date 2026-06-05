@@ -58,6 +58,7 @@ import { FastagTermsComponent } from './fastag/pages/fastag-terms/fastag-terms';
 import { FastagContactComponent } from './fastag/pages/fastag-contact/fastag-contact';
 import { FastagFaqComponent } from './fastag/pages/fastag-faq/fastag-faq';
 import { FastagSupportComponent } from './fastag/pages/fastag-support/fastag-support';
+import { BbpsComponent } from './main/pages/bbps/bbps';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -135,6 +136,7 @@ export const routes: Routes = [
       { path: 'wallet', component: WalletComponent },
       { path: 'failed', component: FailedAmountComponent },
       { path: 'cc', component: CcBillPaymentComponent },
+      { path: 'bbps', component: BbpsComponent },
       { path: 'admin-user-lookup', component: AdminUserLookupComponent },
       { path: 'users', component: UsersComponent },
       { path: 'payin-history', component: PayInHistoryComponent },

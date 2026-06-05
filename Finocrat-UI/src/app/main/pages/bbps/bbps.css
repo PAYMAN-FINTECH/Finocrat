@@ -1,0 +1,111 @@
+.bill-container {
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
+  background: #f4f5f9;
+  min-height: 100vh;
+}
+
+/* Card */
+.right-section {
+  width: 100%;
+  max-width: 900px;
+  background: #ffffff;
+  padding: 40px;
+  border-radius: 18px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+}
+
+/* Header */
+.bbps-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+}
+
+/* Left Text */
+.header-text h2 {
+  margin: 0;
+  font-size: 36px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.header-text p {
+  margin-top: 10px;
+  font-size: 17px;
+  color: #6b7280;
+}
+
+/* Logo */
+.logo {
+  width: 220px;
+  height: auto;
+  object-fit: contain;
+}
+
+/* Form */
+.form-group {
+  margin-top: 28px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 12px;
+  font-size: 22px;
+  font-weight: 600;
+  color: #111827;
+}
+
+/* Select Box */
+.form-control {
+  width: 100%;
+  height: 62px;
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  padding: 0 18px;
+  font-size: 18px;
+  background: #ffffff;
+  outline: none;
+  transition: 0.2s;
+}
+
+/* Focus */
+.form-control:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+
+  .right-section {
+    padding: 25px;
+  }
+
+  .bbps-header {
+    flex-direction: column-reverse;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .logo {
+    width: 180px;
+  }
+
+  .header-text h2 {
+    font-size: 28px;
+  }
+
+  .form-group label {
+    font-size: 18px;
+  }
+
+  .form-control {
+    height: 55px;
+    font-size: 16px;
+  }
+
+}

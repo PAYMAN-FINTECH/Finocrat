@@ -10,6 +10,11 @@
   overflow-y: auto;
   overflow-x: hidden;
 }
+.menu-icon {
+  width: 18px;
+  height: 18px;
+  min-width: 18px;
+}
 
 /* COLLAPSED STATE */
 .sidebar-container.collapsed {

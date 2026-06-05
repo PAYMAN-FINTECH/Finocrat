@@ -1,0 +1,74 @@
+<div class="bill-container">
+
+  <div class="right-section">
+
+    <!-- Header -->
+    <div class="bbps-header">
+
+      <!-- Left Text -->
+      <div class="header-text">
+        <h2>Bharat Connect Billers</h2>
+        <p>Select and pay your Bharat billers easily</p>
+      </div>
+
+      <!-- Right Logo -->
+      <img
+        src="assets/images/main/Bharat Connect Primary Logo_JPG.jpg"
+        class="logo"
+        alt="Bharat Connect"
+      />
+
+    </div>
+
+    <!-- Category Dropdown -->
+    <div class="form-group">
+
+      <label>Biller Category</label>
+
+      <select
+        class="form-control"
+        [(ngModel)]="selectedCategory"
+        (change)="onCategoryChange()">
+
+        <option value="">Select Category</option>
+
+        <option
+          *ngFor="let item of categories"
+          [value]="item.categoryName">
+
+          {{ item.categoryName }}
+
+        </option>
+
+      </select>
+
+    </div>
+
+    <!-- Biller Dropdown -->
+    <div
+      class="form-group"
+      *ngIf="billers.length > 0">
+
+      <label>Select Biller</label>
+
+      <select
+        class="form-control"
+        [(ngModel)]="selectedBiller">
+
+        <option value="">Select Biller</option>
+
+        <option
+          *ngFor="let biller of billers"
+          [value]="biller.billerId">
+
+          {{ biller.billerName }}
+
+        </option>
+
+      </select>
+
+    </div>
+
+  </div>
+
+</div>

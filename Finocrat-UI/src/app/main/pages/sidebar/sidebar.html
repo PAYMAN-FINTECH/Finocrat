@@ -25,20 +25,34 @@
     </li>
 
     <!-- WALLET - Add click handler -->
-    <li routerLink="/app/wallet" routerLinkActive="active" (click)="onLinkClick()">
+    <!-- <li routerLink="/app/wallet" routerLinkActive="active" (click)="onLinkClick()">
       <div class="menu-left">
         <lucide-icon [img]="Wallet"></lucide-icon>
         <span class="menu-text">Wallet</span>
       </div>
-    </li>
+    </li> -->
 
     <!-- BILL PAYMENTS - Add click handler -->
-    <li routerLink="/app/cc" routerLinkActive="active" (click)="onLinkClick()">
+    <!-- <li routerLink="/app/cc" routerLinkActive="active" (click)="onLinkClick()">
       <div class="menu-left">
         <lucide-icon [img]="CreditCard"></lucide-icon>
         <span class="menu-text">Bill Payments</span>
       </div>
-    </li>
+    </li> -->
+
+
+    <li routerLink="/app/bbps" routerLinkActive="active" (click)="onLinkClick()">
+  <div class="menu-left">
+
+    <img 
+      src="assets/images/main/B mnemonic_JPG.jpg" 
+      alt="Credit Card"
+      class="menu-icon"
+    />
+
+    <span class="menu-text">Bill Payments</span>
+  </div>
+</li>
 
     <!-- SERVICES - Add click handler -->
     <li routerLink="/app/services" routerLinkActive="active" (click)="onLinkClick()">
