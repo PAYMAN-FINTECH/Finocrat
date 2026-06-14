@@ -11,9 +11,13 @@
   overflow-x: hidden;
 }
 .menu-icon {
-  width: 18px;
-  height: 18px;
-  min-width: 18px;
+  width: 32px;          /* adjust to your desired size */
+  height: 32px;
+  border-radius: 50%;   /* makes the image round */
+  background-color: #ffffff; /* white background */
+  object-fit: cover;    /* ensures the image fills the circle without distortion */
+  padding: 4px;         /* optional: adds inner spacing between the image and the white background */
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1); /* optional soft shadow for depth */
 }
 
 /* COLLAPSED STATE */

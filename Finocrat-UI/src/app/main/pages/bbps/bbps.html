@@ -1,74 +1,277 @@
 <div class="bill-container">
-
-  <div class="right-section">
+  <div class="main-wrapper">
 
     <!-- Header -->
-    <div class="bbps-header">
+    <div class="header-card">
+      <div class="bbps-header">
+        <div>
+          <h2>Bharat Connect Bill Payment</h2>
+          <p>Select your biller and pay securely</p>
+        </div>
+        <img src="assets/images/main/Bharat Connect Primary Logo_JPG.jpg" class="logo" alt="Bharat Connect">
+      </div>
+    </div>
 
-      <!-- Left Text -->
-      <div class="header-text">
-        <h2>Bharat Connect Billers</h2>
-        <p>Select and pay your Bharat billers easily</p>
+    <!-- Tabs -->
+    <div class="tab-container">
+      <button class="tab-btn" [class.active]="activeTab === 'pay'" (click)="setActiveTab('pay')">Pay Bill</button>
+      <button class="tab-btn" [class.active]="activeTab === 'query'" (click)="setActiveTab('query')">Query Transaction</button>
+      <button class="tab-btn" [class.active]="activeTab === 'complaint'" (click)="setActiveTab('complaint')">Raise Complaint</button>
+      <button class="tab-btn" [class.active]="activeTab === 'status'" (click)="setActiveTab('status')">Complaint Status</button>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" *ngIf="toastMessage">
+      <div class="toast" [class.toast-success]="toastType === 'success'" [class.toast-error]="toastType === 'error'" [class.toast-warning]="toastType === 'warning'">
+        <span class="toast-icon">{{ toastType === 'success' ? '✓' : toastType === 'error' ? '✗' : '⚠' }}</span>
+        <span class="toast-message">{{ toastMessage }}</span>
+        <button class="toast-close" (click)="clearToast()">×</button>
+      </div>
+    </div>
+
+    <!-- PAY BILL TAB -->
+    <div *ngIf="activeTab === 'pay'">
+      <div class="card-box">
+        <div class="card-title">Biller Information</div>
+
+        <!-- Custom Dropdown for Category -->
+        <div class="form-group">
+          <label>Biller Category <span class="required">*</span></label>
+          <div class="custom-dropdown" [class.open]="categoryDropdownOpen" (click)="toggleCategoryDropdown()" (document:click)="closeCategoryDropdown($event)">
+            <div class="dropdown-selected">
+              {{ selectedCategory || 'Select Category' }}
+              <span class="dropdown-arrow">▼</span>
+            </div>
+            <div class="dropdown-options" *ngIf="categoryDropdownOpen">
+              <div class="dropdown-option" *ngFor="let item of categories" (click)="selectCategory(item.categoryName); $event.stopPropagation()">
+                {{ item.categoryName }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="billers.length">
+          <label>Select Biller <span class="required">*</span></label>
+          <select class="form-control" [(ngModel)]="selectedBiller" [disabled]="disableBiller" (change)="onBillerChange()">
+            <option value="">Select Biller</option>
+            <option *ngFor="let biller of billers" [value]="biller.billerId">{{ biller.billerName }}</option>
+          </select>
+        </div>
+        <div class="loader-placeholder" *ngIf="loadingBillers">
+          <div class="spinner-border spinner-sm"></div> Loading billers...
+        </div>
       </div>
 
-      <!-- Right Logo -->
-      <img
-        src="assets/images/main/Bharat Connect Primary Logo_JPG.jpg"
-        class="logo"
-        alt="Bharat Connect"
-      />
+      <!-- Customer Information Card -->
+      <div class="card-box" *ngIf="showCustomerCard">
+        <div class="card-title">Customer Information</div>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Card Number <span class="required">*</span></label>
+              <input type="text" class="form-control" [(ngModel)]="cardNumber" [disabled]="disableCustomerFields" placeholder="Enter Card Number">
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="form-group">
+              <label>Registered Mobile Number <span class="required">*</span></label>
+              <input type="text" maxlength="10" class="form-control" [(ngModel)]="registeredMobile" [disabled]="disableCustomerFields" placeholder="Enter Registered Mobile">
+            </div>
+          </div>
+        </div>
+        <div class="button-center" *ngIf="showFetchButton">
+          <button class="btn btn-primary" (click)="fetchBill()" [disabled]="loadingFetch">
+            <ng-container *ngIf="!loadingFetch">Fetch Bill</ng-container>
+            <ng-container *ngIf="loadingFetch">
+              <span class="spinner-border spinner-sm me-1"></span> Fetching...
+            </ng-container>
+          </button>
+        </div>
+      </div>
 
+      <!-- Bill Summary Card - FIXED TABLE -->
+      <div class="card-box" *ngIf="showBillCard">
+        <div class="card-title">Bill Summary</div>
+        <table class="bill-table">
+          <tbody>
+            <tr>
+              <th>Customer Name</th>
+              <td>{{ billDetails.customerName || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Bill Number</th>
+              <td>{{ billDetails.billNumber || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Bill Date</th>
+              <td>{{ billDetails.billDate || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Due Date</th>
+              <td>{{ billDetails.dueDate || '-' }}</td>
+            </tr>
+            <tr>
+              <th>Status</th>
+              <td>{{ billDetails.billStatus || '-' }}</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="form-group">
+          <label>Amount (₹) <span class="required">*</span></label>
+          <input type="number" class="form-control" [(ngModel)]="amount" placeholder="Enter amount">
+        </div>
+        <div class="button-center">
+          <button class="btn btn-success me-2" (click)="payBill()" [disabled]="loadingPay">
+            <ng-container *ngIf="!loadingPay">Pay Bill</ng-container>
+            <ng-container *ngIf="loadingPay">
+              <span class="spinner-border spinner-sm me-1"></span> Processing...
+            </ng-container>
+          </button>
+          <button class="btn btn-secondary" (click)="reset()">Reset</button>
+        </div>
+      </div>
     </div>
 
-    <!-- Category Dropdown -->
-    <div class="form-group">
-
-      <label>Biller Category</label>
-
-      <select
-        class="form-control"
-        [(ngModel)]="selectedCategory"
-        (change)="onCategoryChange()">
-
-        <option value="">Select Category</option>
-
-        <option
-          *ngFor="let item of categories"
-          [value]="item.categoryName">
-
-          {{ item.categoryName }}
-
-        </option>
-
-      </select>
-
+    <!-- QUERY TAB -->
+    <div *ngIf="activeTab === 'query'">
+      <div class="card-box">
+        <div class="card-title">Query Transaction</div>
+        <div class="row">
+          <div class="col-md-4"><div class="form-group"><label>Mobile Number</label><input type="text" maxlength="10" class="form-control" [(ngModel)]="queryMobile" placeholder="Enter Mobile Number"></div></div>
+          <div class="col-md-4"><div class="form-group"><label>From Date</label><input type="date" class="form-control" [(ngModel)]="queryFromDate"></div></div>
+          <div class="col-md-4"><div class="form-group"><label>To Date</label><input type="date" class="form-control" [(ngModel)]="queryToDate"></div></div>
+        </div>
+        <div class="text-center mt-2 mb-2"><strong>OR</strong></div>
+        <div class="form-group"><label>B-Connect TXN ID</label><input type="text" class="form-control" [(ngModel)]="queryTxnRef" placeholder="Enter B-Connect TXN ID"></div>
+        <div class="button-center">
+          <button class="btn btn-primary" (click)="queryTransaction()" [disabled]="loadingQuery">
+            <ng-container *ngIf="!loadingQuery">Search</ng-container>
+            <ng-container *ngIf="loadingQuery">
+              <span class="spinner-border spinner-sm me-1"></span> Searching...
+            </ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="card-box" *ngIf="queryResult">
+        <div class="card-title">Transaction Details</div>
+        <table class="bill-table">
+          <tbody>
+            <tr><th>Transaction Id</th><td>{{ queryResult.transactionId }}</td></tr>
+            <tr><th>Biller Name</th><td>{{ queryResult.billerName }}</td></tr>
+            <tr><th>Amount</th><td>₹ {{ queryResult.amount }}</td></tr>
+            <tr><th>Status</th><td>{{ queryResult.status }}</td></tr>
+            <tr><th>Transaction Date</th><td>{{ queryResult.transactionDate }}</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
-    <!-- Biller Dropdown -->
-    <div
-      class="form-group"
-      *ngIf="billers.length > 0">
+    <!-- COMPLAINT TAB -->
+    <div *ngIf="activeTab === 'complaint'">
+      <div class="card-box">
+        <div class="card-title">Raise Complaint</div>
+        <div class="form-group"><label>B-Connect TXN ID <span class="required">*</span></label><input type="text" maxlength="10" class="form-control" [(ngModel)]="complaintMobile"></div>
+        <div class="form-group"><label>Complaint Type <span class="required">*</span></label><select class="form-control" [(ngModel)]="complaintType">
+          <option value="">Select Complaint Type</option><option value="Transaction">Transaction</option><option value="Service">Service</option><option value="Payment">Payment</option></select></div>
+        <div class="form-group"><label>Participation Type <span class="required">*</span></label><select class="form-control" [(ngModel)]="participationType">
+          <option value="">Transaction successful, Amount Debited but services not received</option>
+          <option value="Customer">Transaction successful, Amount Debited but service Disconnected or service stopped</option>
+          <option value="Biller">Transaction successful, Amount Debited but Late Payment Surcharge Charges add in next bill</option>
+          <option value="Customer">Erroneously paid in wrong account</option>
+          <option value="Customer">Duplicate Payment</option>
+          <option value="Customer">Erroneously paid the wrong amount</option>
+          <option value="Customer">Payment information not received from Biller or Delay in receiving payment information from the Biller</option>
+          <option value="Customer">Bill Paid but amount not adjusted or still showing due amount</option>
+        </select></div>
+        <div class="form-group"><label>Service Reason</label><input type="text" class="form-control" [(ngModel)]="serviceReason" placeholder="Enter Service Reason"></div>
+        <div class="form-group"><label>Complaint Description <span class="required">*</span></label><textarea rows="4" class="form-control" [(ngModel)]="complaintDescription" placeholder="Enter Complaint Description"></textarea></div>
+        <div class="button-center">
+          <button class="btn btn-primary" (click)="raiseComplaint()" [disabled]="loadingComplaint">
+            <ng-container *ngIf="!loadingComplaint">Submit Complaint</ng-container>
+            <ng-container *ngIf="loadingComplaint">
+              <span class="spinner-border spinner-sm me-1"></span> Submitting...
+            </ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="card-box" *ngIf="complaintResponse">
+        <div class="card-title">Complaint Submitted</div>
+        <table class="bill-table">
+          <tbody>
+            <tr><th>Complaint Id</th><td>{{ complaintResponse.complaintId }}</td></tr>
+            <tr><th>Status</th><td>{{ complaintResponse.status }}</td></tr>
+            <tr><th>Message</th><td>{{ complaintResponse.message }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
 
-      <label>Select Biller</label>
-
-      <select
-        class="form-control"
-        [(ngModel)]="selectedBiller">
-
-        <option value="">Select Biller</option>
-
-        <option
-          *ngFor="let biller of billers"
-          [value]="biller.billerId">
-
-          {{ biller.billerName }}
-
-        </option>
-
-      </select>
-
+    <!-- COMPLAINT STATUS TAB -->
+    <div *ngIf="activeTab === 'status'">
+      <div class="card-box">
+        <div class="card-title">Complaint Status</div>
+        <div class="row">
+          <div class="col-md-6"><div class="form-group"><label>Complaint ID <span class="required">*</span></label><input type="text" class="form-control" [(ngModel)]="complaintId" placeholder="Enter Complaint ID"></div></div>
+          <div class="col-md-6"><div class="form-group"><label>Complaint Type <span class="required">*</span></label><select class="form-control" [(ngModel)]="complaintStatusType"><option value="">Select Complaint Type</option><option value="Transaction">Transaction</option><option value="Service">Service</option><option value="Payment">Payment</option></select></div></div>
+        </div>
+        <div class="button-center">
+          <button class="btn btn-primary" (click)="getComplaintStatus()" [disabled]="loadingStatus">
+            <ng-container *ngIf="!loadingStatus">Check Status</ng-container>
+            <ng-container *ngIf="loadingStatus">
+              <span class="spinner-border spinner-sm me-1"></span> Checking...
+            </ng-container>
+          </button>
+        </div>
+      </div>
+      <div class="card-box" *ngIf="complaintStatusResult">
+        <div class="card-title">Complaint Details</div>
+        <table class="bill-table">
+          <tbody>
+            <tr><th>Complaint ID</th><td>{{ complaintStatusResult.complaintId }}</td></tr>
+            <tr><th>Complaint Type</th><td>{{ complaintStatusResult.complaintType }}</td></tr>
+            <tr><th>Status</th><td>{{ complaintStatusResult.status }}</td></tr>
+            <tr><th>Message</th><td>{{ complaintStatusResult.message }}</td></tr>
+            <tr><th>Updated On</th><td>{{ complaintStatusResult.updatedOn }}</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
 
   </div>
 
+  <!-- PAYMENT RECEIPT MODAL -->
+  <!-- PAYMENT RECEIPT MODAL with logo on the right of header -->
+<div class="modal-overlay" *ngIf="showPaymentReceipt" (click)="closeReceiptModal()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title-with-logo">
+        <h3>Bharat Connect - Payment Confirmation</h3>
+        <img 
+  src="assets/images/main/B Assured Logo_SVG.svg" 
+  alt="Assured Logo"
+  class="modal-assured-logo">
+      <!-- <button class="modal-close" (click)="closeReceiptModal()">&times;</button> -->
+    </div>
+    <div class="modal-body">
+      <p class="thankyou">Thank You. We have received your payment request. Please quote your Transaction Reference ID for any queries for the below payment.</p>
+      <table class="receipt-table">
+        <tbody>
+          <tr><td class="label">B-Connect Txn ID</td><td class="value">{{ receiptData.transactionId }}</td></tr>
+          <tr><td class="label">Bill Number</td><td class="value">BBPS123456789</td></tr>
+          <tr><td class="label">Bill Date (dd/mm/yyyy)</td><td class="value">{{ receiptData.billDate }}</td></tr>
+          <tr><td class="label">Payment Mode</td><td class="value">{{ receiptData.paymentMode }}</td></tr>
+          <tr><td class="label">Bill Amount</td><td class="value">{{ receiptData.billAmount }}</td></tr>
+          <tr><td class="label">Customer Convenience Fee</td><td class="value">{{ receiptData.convenienceFee }}</td></tr>
+          <tr><td class="label">Total Amount</td><td class="value">{{ receiptData.totalAmount }}</td></tr>
+          <tr><td class="label">Transaction Date and Time</td><td class="value">{{ receiptData.transactionDateTime }}</td></tr>
+          <tr><td class="label">Status</td><td class="value">{{ receiptData.status }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-print" (click)="printReceipt()">🖨️ Print This Page</button>
+      <button class="btn-another" (click)="makeAnotherPayment()">Make Another Payment</button>
+    </div>
+  </div>
+</div>
 </div>

@@ -250,7 +250,7 @@ namespace Finocrat.Api.Controllers
                     {
                         billerId = request.BillerId,
                         initChannel = "AGT",
-                        externalRef = "PAYMAN" + DateTime.Now.ToString("yyyyMMddHHmmss"),
+                        externalRef = "FINOCRAT" + DateTime.Now.ToString("yyyyMMddHHmmss"),
                         inputParameters = new
                         {
                             param1 = param11,
@@ -360,7 +360,7 @@ namespace Finocrat.Api.Controllers
                 return Ok(GenerateFailureResponse("Insufficient InstantPay balance"));
             }
 
-            var externalRef = "PAYMAN" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            var externalRef = "FINOCART" + DateTime.Now.ToString("yyyyMMddHHmmss");
 
             var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
