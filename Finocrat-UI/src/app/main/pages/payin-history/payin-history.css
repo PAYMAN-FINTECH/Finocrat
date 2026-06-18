@@ -112,6 +112,26 @@
   border-radius: 6px;
 }
 
+/* RECEIPT BUTTON (NEW) */
+.btn-receipt {
+  background: none;
+  border: 1px solid #6a5af9;
+  color: #6a5af9;
+  padding: 5px 12px;
+  border-radius: 20px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.btn-receipt:hover {
+  background-color: #6a5af9;
+  color: white;
+  border-color: #6a5af9;
+}
+
 /* TABLE */
 .table-card {
   background: white;
@@ -219,5 +239,11 @@ tbody tr:hover {
   th, td {
     padding: 10px 12px;
     font-size: 14px;
+  }
+
+  /* Make receipt button touch-friendly on mobile */
+  .btn-receipt {
+    padding: 6px 14px;
+    font-size: 13px;
   }
 }

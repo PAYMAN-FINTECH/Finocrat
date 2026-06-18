@@ -226,123 +226,180 @@ namespace Finocrat.Api.Controllers
         [HttpPost("verify")]
         public async Task<IActionResult> VerifyPayment([FromBody] VerifyPaymentRequest model)
         {
+            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
+            string txnStatus = "FAILED";
+            string remarks = "Transaction Failed";
+            bool isSuccess = false;
+
+            FUser? user = null;
+            string cardBrand = "";
+            string bankName = "";
+            string cardType = "";
+            string cardNo = "";
+            decimal payInLimit = 0;
+
             try
             {
-                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-                var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+                user = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
+
+                // Duplicate check
+                var existing = _db.fPayIns.FirstOrDefault(x => x.PaymentId == model.PaymentId);
+                if (existing != null)
+                {
+                    return Ok(new { status = "SUCCESS" });
+                }
 
                 string payload = model.OrderId + "|" + model.PaymentId;
                 string generatedSignature = GenerateSignature(payload, RAZORPAY_SECRET);
 
-                // ❌ Signature mismatch
                 if (generatedSignature != model.Signature)
-                    return BadRequest(new { status = "FAILED" });
-
-                var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
-
-                var payment = client.Payment.Fetch(model.PaymentId);
-                var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
-
-                // ❌ Payment not captured
-                if (payment["status"].ToString() != "captured")
-                    return BadRequest(new { status = "FAILED" });
-
-                // ✅ Duplicate check
-                var existing = _db.fPayIns.FirstOrDefault(x => x.PaymentId == model.PaymentId);
-                if (existing != null)
-                    return Ok(new { status = "SUCCESS" });
-
-                var user = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
-                if (user == null)
-                    return BadRequest(new { status = "FAILED" });
-
-                // ✅ PayIn Margin
-                decimal payInLimit = 0;
-                var lookup = _db.fUserLookups.FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
-
-                if (lookup != null)
                 {
-                    var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+                    remarks = "Signature Mismatch";
+                }
+                else
+                {
+                    var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
 
-                    if (settings.ContainsKey("PayIn Margin"))
+                    var payment = client.Payment.Fetch(model.PaymentId);
+                    var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
+
+                    cardBrand = razorPayCard["issuer"]?.ToString() ?? "";
+                    bankName = razorPayCard["network"]?.ToString() ?? "";
+                    cardType = razorPayCard["sub_type"]?.ToString() ?? "";
+                    cardNo = razorPayCard["last4"]?.ToString() ?? "";
+
+                    if (payment["status"]?.ToString() == "captured")
                     {
-                        var value = settings["PayIn Margin"];
+                        txnStatus = "SUCCESS";
+                        remarks = "Payment Captured";
+                        isSuccess = true;
 
-                        if (value is JsonElement element)
+                        if (user != null)
                         {
-                            if (element.ValueKind == JsonValueKind.String)
-                                payInLimit = decimal.Parse(element.GetString());
-                            else if (element.ValueKind == JsonValueKind.Number)
-                                payInLimit = element.GetDecimal();
+                            var lookup = _db.fUserLookups
+                                .FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
+
+                            if (lookup != null)
+                            {
+                                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+
+                                if (settings != null &&
+                                    settings.ContainsKey("PayIn Margin"))
+                                {
+                                    var value = settings["PayIn Margin"];
+
+                                    if (value is JsonElement element)
+                                    {
+                                        if (element.ValueKind == JsonValueKind.String)
+                                            decimal.TryParse(element.GetString(), out payInLimit);
+                                        else if (element.ValueKind == JsonValueKind.Number)
+                                            payInLimit = element.GetDecimal();
+                                    }
+
+                                    else if (razorPayCard["sub_type"] == "business" || razorPayCard["sub_type"] == "BUSINESS")
+                                    {
+                                        payInLimit = (decimal)3.0;
+                                    }
+                                }
+                            }
                         }
                     }
+                    else
+                    {
+                        remarks = payment["status"]?.ToString() ?? "Payment Failed";
+                    }
                 }
+            }
+            catch (Exception ex)
+            {
+                remarks = ex.Message;
+            }
 
-                // =========================
-                // ✅ STEP 1: INSERT PAYIN
-                // =========================
+            try
+            {
                 var payIn = new FPayIn
                 {
                     UserId = user.Id,
                     UserPhone = model.LoggedInUserPhone,
-                    UserEmail = user.Email,
+                    UserEmail = user?.Email,
                     CardHolderName = model.CardHolderName,
                     CardHolderPhone = model.Mobile,
                     CardHolderEmail = model.CardHolderMail,
                     CardHolderCardNumber = model.CardHolderCard,
-                    Result = payment["status"],
-                    CardBrand = razorPayCard["issuer"] ?? "",
-                    BankName = razorPayCard["network"] ?? "",
-                    CardType = razorPayCard["sub_type"] ?? "",
-                    Status = true,
-                    CardNo = razorPayCard["last4"] ?? "",
+
+                    Result = txnStatus,
+                    Status = isSuccess,
+
+                    CardBrand = cardBrand,
+                    BankName = bankName,
+                    CardType = cardType,
+                    CardNo = cardNo,
+
                     PaymentId = model.PaymentId,
                     TaxNumber = model.OrderId,
                     Amount = model.Amount,
-                    PayInCommission = model.Amount * payInLimit / 100,
-                    FCommission = model.Amount / 100,
+
+                    PayInCommission = isSuccess
+                        ? model.Amount * payInLimit / 100
+                        : 0,
+
+                    FCommission = isSuccess
+                        ? model.Amount / 100
+                        : 0,
+
                     Gateway = model.SelectedGateway,
                     Created = istNow
                 };
 
                 await _db.fPayIns.AddAsync(payIn);
-                await _db.SaveChangesAsync(); // ✅ FIRST SAVE
+                await _db.SaveChangesAsync();
 
-                // =========================
-                // ✅ STEP 2: GET LATEST BALANCE
-                // =========================
-                var balance = await _dataUtils.GetWalletAmount(model.LoggedInUserPhone);
+                decimal balance = 0;
 
-                // =========================
-                // ✅ STEP 3: INSERT PASSBOOK
-                // =========================
-                var history = new FPassbookHistory
+                if (isSuccess)
                 {
-                    UserId = user.Id,
-                    UserPhone = model.LoggedInUserPhone,
-                    Name = model.CardHolderName,
-                    TxnId = model.PaymentId,
-                    AccountNumber = model.CardHolderCard,
-                    Amount = model.Amount,
-                    TransactionType = "PayIn",
-                    Status = true,
-                    StatusMessage = payment["status"],
-                    ParentId = payIn.Id, // ✅ now available
-                    Balance = balance,
-                    CreatedAt = istNow
-                };
+                    balance = await _dataUtils.GetWalletAmount(model.LoggedInUserPhone);
+                    var history = new FPassbookHistory
+                    {
+                        UserId = user.Id,
+                        UserPhone = model.LoggedInUserPhone,
+                        Name = model.CardHolderName,
+                        TxnId = model.PaymentId,
+                        AccountNumber = model.CardHolderCard,
+                        Amount = model.Amount,
+                        TransactionType = "PayIn",
+                        Status = isSuccess,
+                        StatusMessage = remarks,
+                        ParentId = payIn.Id,
+                        Balance = balance,
+                        CreatedAt = istNow
+                    };
 
-                await _db.fPassbookHistories.AddAsync(history);
-                await _db.SaveChangesAsync(); // ✅ SECOND SAVE
+                    await _db.fPassbookHistories.AddAsync(history);
+                    await _db.SaveChangesAsync();
 
+                }
+
+                
+            }
+            catch
+            {
+                // Optional logging
+            }
+
+            if (isSuccess)
+            {
                 return Ok(new { status = "SUCCESS" });
             }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { status = "FAILED" });
-            }
-        }
 
+            return BadRequest(new
+            {
+                status = "FAILED",
+                message = remarks
+            });
+        }
         private static string GenerateSignature(string payload, string secret)
         {
             byte[] secretBytes = Encoding.UTF8.GetBytes(secret);

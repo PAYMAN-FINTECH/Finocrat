@@ -14,90 +14,83 @@
 
   <!-- SUMMARY CARDS -->
   <div class="summary-grid">
-
     <div class="summary-card">
       <span>Total Amount</span>
       <h2>₹ {{ getTotalAmount() | number:'1.2-2' }}</h2>
     </div>
-
     <div class="summary-card success">
       <span>Successful</span>
       <h2>{{ getSuccessCount() }}</h2>
     </div>
-
     <div class="summary-card failed">
       <span>Failed</span>
       <h2>{{ getFailedCount() }}</h2>
     </div>
-
   </div>
 
   <!-- FILTER CARD -->
   <div class="filter-card">
-
     <div class="filter-row">
       <div>
         <label>From Date</label>
         <input type="date" [(ngModel)]="fromDate">
       </div>
-
       <div>
         <label>To Date</label>
         <input type="date" [(ngModel)]="toDate">
       </div>
-
       <div class="filter-buttons">
         <button class="btn-primary" (click)="search()">Search</button>
         <button class="btn-outline" (click)="loadToday()">Today</button>
       </div>
     </div>
-
   </div>
 
   <!-- TABLE CARD -->
   <div class="table-card">
-
     <div class="table-wrapper">
-      <table>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Amount</th>
-          <th>Commission</th>
-          <th>Status</th>
-          <th>Transaction ID</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-
-      <tbody>
-        <tr *ngFor="let item of history; let i = index">
-          <td>{{ i + 1 }}</td>
-          <td class="amount">₹ {{ item.amount }}</td>
-          <td>₹ {{ item.payInCommission | number:'1.2-2' }}</td>
-
-          <td>
-            <span class="status"
-              [ngClass]="{
-                'status-success': item.status === true,
-                'status-failed': item.status === false,
-                'status-pending': item.status === null || item.status === undefined
-              }">
-              {{ item.status === true ? 'SUCCESS' : item.status === false ? 'FAILED' : 'PENDING' }}
-            </span>
-          </td>
-
-          <td>{{ item.paymentId }}</td>
-          <td>{{ item.created | date:'medium' }}</td>
-        </tr>
-      </tbody>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Amount</th>
+            <th>Commission</th>
+            <th>Status</th>
+            <th>Transaction ID</th>
+            <th>Date</th>
+            <th>Receipt</th>
+           </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let item of history; let i = index">
+            <td>{{ i + 1 }}</td>
+            <td class="amount">₹ {{ item.amount }}</td>
+            <td>₹ {{ item.payInCommission | number:'1.2-2' }}</td>
+            <td>
+              <span class="status"
+                [ngClass]="{
+                  'status-success': item.status === true,
+                  'status-failed': item.status === false,
+                  'status-pending': item.status === null || item.status === undefined
+                }">
+                {{ item.status === true ? 'SUCCESS' : item.status === false ? 'FAILED' : 'PENDING' }}
+              </span>
+            </td>
+            <td>{{ item.paymentId }}</td>
+            <td>{{ item.created | date:'medium' }}</td>
+            <td>
+              <button class="btn-receipt" (click)="downloadReceipt(item)">
+                📄 PDF
+              </button>
+            </td>
+          </tr>
+        </tbody>
       </table>
     </div>
 
     <div *ngIf="history.length === 0" class="no-data">
       No records found
     </div>
-
   </div>
 
 </div>
