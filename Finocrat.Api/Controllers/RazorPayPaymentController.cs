@@ -298,9 +298,9 @@ namespace Finocrat.Api.Controllers
                                             payInLimit = element.GetDecimal();
                                     }
 
-                                    else if (razorPayCard["sub_type"] == "business" || razorPayCard["sub_type"] == "BUSINESS")
+                                    if (razorPayCard["sub_type"] == "business" || razorPayCard["sub_type"] == "BUSINESS")
                                     {
-                                        payInLimit = (decimal)3.0;
+                                        payInLimit = (decimal)3.6;
                                     }
                                 }
                             }
