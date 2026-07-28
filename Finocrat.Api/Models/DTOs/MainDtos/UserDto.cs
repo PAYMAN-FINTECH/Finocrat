@@ -12,5 +12,8 @@
         public string? Gender { get; set; }
         public bool? IsRazorpayEnabled { get; set; }
         public bool? IsAdmin { get; set; } = false;
+        public int UserTypeId { get; set; }          // required
+        public Guid? ParentUserId { get; set; }      // will be set server‑side
+        public string CurrentLoginPhone {  get; set; } 
     }
 }

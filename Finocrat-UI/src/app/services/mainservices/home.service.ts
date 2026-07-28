@@ -30,8 +30,8 @@ export class HomeService {
   // ============================
   // 🔥 GET USER LIST (NEW)
   // ============================
-  getUsers(): Observable<any> {
-    return this.http.get(`${this.baseUrl}/FUserLookup/users`);
+  getUsers(userPhone: string): Observable<any> {
+    return this.http.get(`${this.baseUrl}/FUserLookup/users?userPhone=${userPhone}`);
   }
 
   // ============================

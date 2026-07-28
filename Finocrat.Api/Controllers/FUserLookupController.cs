@@ -45,19 +45,27 @@ namespace Finocrat.Api.Controllers
                 defaultSettings.Add("System PayIn Limit", 10000);
                 defaultSettings.Add("System PayOut Limit", 10000);
                 defaultSettings.Add("System CC Limit", 10000);
+
+                // ✅ COMMON USER CONFIG
+                
+                defaultSettings.Add("CEducation Enabled", false);
             }
 
-            // ✅ COMMON USER CONFIG
+
             defaultSettings.Add("REduction Enabled", false);
-            defaultSettings.Add("CEducation Enabled", false);
-
             defaultSettings.Add("PayIn Margin", 0);
-            defaultSettings.Add("PayOut Margin", 0);
-            defaultSettings.Add("CC Margin", 0);
-
             defaultSettings.Add("PayIn Enabled", false);
-            defaultSettings.Add("PayOut Enabled", false);
-            defaultSettings.Add("CC Enabled", false);
+
+            if (userDetails.IsAdmin == true && userDetails.UserName == "Admin")
+            {
+                defaultSettings.Add("PayOut Margin", 0);
+                defaultSettings.Add("CC Margin", 0);
+
+                
+                defaultSettings.Add("PayOut Enabled", false);
+                defaultSettings.Add("CC Enabled", false);
+            }
+            
 
             // =========================================
             // IF NO DB DATA → RETURN DEFAULT
@@ -128,16 +136,48 @@ namespace Finocrat.Api.Controllers
         // USERS DROPDOWN
         // =========================================
         [HttpGet("users")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] string? userPhone = null)
         {
-            var users = await _db.fUsers
-                .Select(x => new
+            var exists = await _db.fUsers
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            if (exists == null)
+            {
+                return NotFound(new
                 {
-                    name = x.UserName,
-                    userPhone = x.UserPhone
-                }).ToListAsync();
+                    status = false,
+                    message = "User not found."
+                });
+            }
+
+            List<object> users;
+
+            if (exists.IsAdmin == false)
+            {
+                users = await _db.fUsers
+                    .Where(x => x.ParentUserId == exists.Id)
+                    .Select(x => new
+                    {
+                        name = x.UserName,
+                        userPhone = x.UserPhone
+                    })
+                    .Cast<object>()
+                    .ToListAsync();
+            }
+            else
+            {
+                users = await _db.fUsers
+                    .Select(x => new
+                    {
+                        name = x.UserName,
+                        userPhone = x.UserPhone
+                    })
+                    .Cast<object>()
+                    .ToListAsync();
+            }
 
             return Ok(users);
         }
+
     }
 }

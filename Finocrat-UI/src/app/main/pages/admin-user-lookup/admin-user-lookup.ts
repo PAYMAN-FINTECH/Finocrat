@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HomeService } from '../../../services/mainservices/home.service';
+import { TokenService } from '../../../services/mainservices/token.service';
 
 @Component({
   selector: 'app-admin-user-lookup',
@@ -26,7 +27,7 @@ export class AdminUserLookupComponent implements OnInit {
   newValue: any = '';
   newValueType = 'string';
 
-  constructor(private service: HomeService) {}
+  constructor(private service: HomeService,  private tokenService: TokenService ) {}
 
   ngOnInit(): void {
     this.loadUsers();
@@ -34,7 +35,9 @@ export class AdminUserLookupComponent implements OnInit {
 
   // ================= USERS =================
   loadUsers() {
-    this.service.getUsers().subscribe({
+    var loginUser = this.tokenService.getUser();
+
+    this.service.getUsers(loginUser.userPhone).subscribe({
       next: (res: any) => this.users = res,
       error: (err) => console.error(err)
     });

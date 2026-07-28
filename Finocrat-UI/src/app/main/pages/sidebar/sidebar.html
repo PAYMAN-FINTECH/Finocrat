@@ -87,7 +87,7 @@
     </ul>
 
    <!-- ADMIN -->
-<ng-container *ngIf="isAdmin">
+<ng-container *ngIf="isAdmin || this.isUserTypeId != 3">
   <li (click)="toggleAdmin()" class="parent">
     <div class="menu-left">
       <lucide-icon [img]="Shield"></lucide-icon>
@@ -111,31 +111,31 @@
     </li>
 
     <!-- KYC -->
-    <!-- <li routerLink="/app/kyc" routerLinkActive="active" (click)="onLinkClick()">
+    <!-- <li routerLink="/app/kyc" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
       <lucide-icon [img]="BadgeCheck"></lucide-icon>
       <span>KYC</span>
     </li> -->
 
     <!-- KYC Details -->
-    <li routerLink="/app/kyc-details" routerLinkActive="active" (click)="onLinkClick()">
+    <li routerLink="/app/kyc-details" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
       <lucide-icon [img]="BadgeCheck"></lucide-icon>
       <span>KYC Details</span>
     </li>
 
     <!-- DASHBOARD -->
-    <li routerLink="/app/admin-dash" routerLinkActive="active" (click)="onLinkClick()">
+    <li routerLink="/app/admin-dash" routerLinkActive="active" (click)="onLinkClick() " *ngIf="isAdmin">
       <lucide-icon [img]="BarChart3"></lucide-icon>
       <span>Admin Dashboard</span>
     </li>
 
-    <!-- PASSBOOK -->
-    <!-- <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
+    <!-- PASSBOOK -->`
+    <!-- <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
       <lucide-icon [img]="BookText"></lucide-icon>
       <span>Passbook</span>
     </li> -->
 
     <!-- FAILED -->
-    <li routerLink="/app/failed" routerLinkActive="active" (click)="onLinkClick()">
+    <li routerLink="/app/failed" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
       <lucide-icon [img]="AlertCircle"></lucide-icon>
       <span>Failed Amount</span>
     </li>

@@ -14,6 +14,19 @@
         public string? ResetOtp { get; set; }
         public DateTime? OtpExpiry { get; set; }
         public string? Pin { get; set; }
-        public string? PinResetOtp { get; set; }    
+        public string? PinResetOtp { get; set; }
+        // NEW
+        public int UserTypeId { get; set; }
+        public Guid? ParentUserId { get; set; }
+
+        public FUserTypes UserType { get; set; }   // navigation
+    }
+
+    public class FUserTypes
+    {
+        public int Id { get; set; }
+        public string Name { get; set; }
+        public bool Active { get; set; }
+        public DateTime Created { get; set; }
     }
 }

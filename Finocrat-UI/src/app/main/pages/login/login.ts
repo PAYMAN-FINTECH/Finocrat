@@ -97,7 +97,8 @@ export class MainLoginComponent implements OnInit {
           isAdmin: userData?.isAdmin ?? false,
           isKyc: userData?.iskyc ?? userData?.isKyc ?? false,
           pin: userData?.pin ?? null,
-          email: userData?.email ?? ''
+          email: userData?.email ?? '',
+          userTypeId: userData?.userTypeId ?? null
         };
         
         console.log('Saving user with PIN:', userToSave.pin);

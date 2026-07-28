@@ -58,7 +58,8 @@ namespace Finocrat.Api.Controllers
                 isAdmin = user.IsAdmin,
                 iskyc = iskyc?.IsKycCompleted,
                 email = user.Email,
-                pin = user.Pin
+                pin = user.Pin,
+                userTypeId = user.UserTypeId
             };
 
             return Ok(new
@@ -71,9 +72,28 @@ namespace Finocrat.Api.Controllers
         // GET ALL USERS
         // GET ALL USERS
         [HttpGet("users")]
-        public async Task<IActionResult> GetUsers()
+        public async Task<IActionResult> GetUsers([FromQuery] string? userPhone = null)
         {
-            var users = await _db.fUsers
+            if (string.IsNullOrWhiteSpace(userPhone))
+                return BadRequest("User phone is required.");
+
+            var exists = await _db.fUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            if (exists == null)
+                return NotFound("User not found.");
+
+            IQueryable<FUser> query = _db.fUsers
+                .Include(u => u.UserType);
+
+            // If not admin, show only their own details
+            if (exists.IsAdmin == false)
+            {
+                query = query.Where(u => u.ParentUserId == exists.Id);
+            }
+
+            var users = await query
                 .Select(u => new
                 {
                     u.Id,
@@ -82,13 +102,13 @@ namespace Finocrat.Api.Controllers
                     u.Email,
                     u.IsActive,
                     u.Gender,
-                    u.IsAdmin
+                    u.IsAdmin,
+                    UserTypeName = u.UserType.Name
                 })
                 .ToListAsync();
 
             return Ok(users);
         }
-
         // ADD USER
         [HttpPost("add")]
         public async Task<IActionResult> AddUser(UserDto model)
@@ -98,6 +118,8 @@ namespace Finocrat.Api.Controllers
 
             if (exists)
                 return BadRequest("User already exists");
+
+            var loginUser = await _db.fUsers.FirstOrDefaultAsync(x => x.UserPhone == model.CurrentLoginPhone);
 
             var user = new FUser
             {
@@ -109,7 +131,9 @@ namespace Finocrat.Api.Controllers
                 IsActive = model.IsActive,
                 Gender = model.Gender,
                 Created = DateTime.UtcNow,
-                IsAdmin = model.IsAdmin
+                IsAdmin = model.IsAdmin,
+                UserTypeId = model.UserTypeId,
+                ParentUserId = loginUser.Id,      // automatically assigned
             };
 
             _db.fUsers.Add(user);
@@ -142,6 +166,7 @@ namespace Finocrat.Api.Controllers
             user.IsActive = model.IsActive;
             user.Gender = model.Gender;
             user.IsAdmin = model.IsAdmin;
+            user.UserTypeId = model.UserTypeId;
 
             if (!string.IsNullOrEmpty(model.Password))
                 user.Password = model.Password;
@@ -190,6 +215,50 @@ namespace Finocrat.Api.Controllers
             return Ok(new { success = true, message = "OTP sent to email" });
         }
 
+        [HttpGet("usertypes")]
+        public async Task<IActionResult> GetUserTypes([FromQuery] string? userPhone = null)
+        {
+            if (string.IsNullOrWhiteSpace(userPhone))
+                return BadRequest("User phone is required.");
+
+            var user = await _db.fUsers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            IQueryable<FUserTypes> query = _db.fUserTypes;
+
+            if (user.IsAdmin == false)
+            {
+                switch (user.UserTypeId)
+                {
+                    case 1:
+                        query = query.Where(t => t.Id == 2 || t.Id == 3);
+                        break;
+
+                    case 2:
+                        query = query.Where(t => t.Id == 3);
+                        break;
+
+                    default:
+                        query = query.Where(t => false); // Returns empty list
+                        break;
+                }
+            }
+
+            var types = await query
+                .OrderBy(t => t.Id)
+                .Select(t => new
+                {
+                    t.Id,
+                    t.Name
+                })
+                .ToListAsync();
+
+            return Ok(types);
+        }
 
         [HttpPost("forgot-password/verify-otp")]
         public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest req)

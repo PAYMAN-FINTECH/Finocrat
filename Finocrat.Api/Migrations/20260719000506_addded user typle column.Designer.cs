@@ -4,6 +4,7 @@ using Finocrat.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Finocrat.Api.Migrations
 {
     [DbContext(typeof(FinocratDbContext))]
-    partial class FinocratDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260719000506_addded user typle column")]
+    partial class adddedusertyplecolumn
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -454,29 +457,6 @@ namespace Finocrat.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("fUserLookups");
-                });
-
-            modelBuilder.Entity("Finocrat.Api.Models.Entities.Main.FUserTypes", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<bool>("Active")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("fUserTypes");
                 });
 #pragma warning restore 612, 618
         }

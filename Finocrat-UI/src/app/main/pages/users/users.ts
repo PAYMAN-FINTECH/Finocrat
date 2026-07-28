@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../../environments/environment.prod';
+import { TokenService } from '../../../services/mainservices/token.service';
 
 @Component({
   selector: 'app-users',
@@ -13,9 +14,10 @@ import { environment } from '../../../../environments/environment.prod';
 })
 export class UsersComponent implements OnInit {
 
-  private baseUrl = environment.apiUrl
+  private baseUrl = environment.apiUrl;
 
   users: any[] = [];
+  userTypes: any[] = [];
 
   showModal = false;
   editMode = false;
@@ -24,14 +26,13 @@ export class UsersComponent implements OnInit {
   form!: FormGroup;
   loading = false;
 
-  constructor(private http: HttpClient, private fb: FormBuilder) {}
+  constructor(private http: HttpClient, private fb: FormBuilder, private tokenService: TokenService,) {}
 
   ngOnInit() {
     this.initForm();
     this.loadUsers();
+    this.loadUserTypes();
   }
-
-  /* ================= INIT FORM ================= */
 
   initForm() {
     this.form = this.fb.group({
@@ -41,16 +42,17 @@ export class UsersComponent implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       gender: [''],
       isActive: [true],
-      isAdmin: [false]
+      isAdmin: [false],
+      userTypeId: ['', Validators.required],  
+      currentLoginPhone: '' // new dropdown field
     });
   }
 
-  /* ================= LOAD USERS ================= */
-
   loadUsers() {
-    this.loading = true;
+    var loginUser = this.tokenService.getuserPhone();
 
-    this.http.get<any[]>(`${this.baseUrl}/Auth/users`)
+    this.loading = true;
+    this.http.get<any[]>(`${this.baseUrl}/Auth/users?userPhone=${loginUser}`)
       .subscribe({
         next: (res) => {
           this.users = res || [];
@@ -63,12 +65,28 @@ export class UsersComponent implements OnInit {
       });
   }
 
-  /* ================= OPEN ADD ================= */
+  loadUserTypes() {
+    var loginUser = this.tokenService.getuserPhone();
+    this.http.get<any[]>(`${this.baseUrl}/Auth/UserTypes?userPhone=${loginUser}`)
+      .subscribe({
+        next: (res) => {
+          this.userTypes = res || [];
+        },
+        error: (err) => {
+          console.error('Load User Types Error:', err);
+          // fallback static data
+          this.userTypes = [
+            { id: 1, name: 'Super Distribution' },
+            { id: 2, name: 'Distribution' },
+            { id: 3, name: 'Retailer' }
+          ];
+        }
+      });
+  }
 
   openAdd() {
     this.editMode = false;
     this.selectedId = null;
-
     this.form.reset({
       userName: '',
       password: '',
@@ -76,18 +94,16 @@ export class UsersComponent implements OnInit {
       email: '',
       gender: '',
       isActive: true,
-      isAdmin: false
+      isAdmin: false,
+      userTypeId: '',
+      currentLoginPhone: ''
     });
-
     this.showModal = true;
   }
-
-  /* ================= OPEN EDIT ================= */
 
   openEdit(user: any) {
     this.editMode = true;
     this.selectedId = user.id;
-
     this.form.patchValue({
       userName: user.userName,
       password: '',
@@ -95,26 +111,26 @@ export class UsersComponent implements OnInit {
       email: user.email,
       gender: user.gender,
       isActive: user.isActive,
-      isAdmin: user.isAdmin
+      isAdmin: user.isAdmin,
+      userTypeId: user.userTypeId
     });
-
     this.showModal = true;
   }
 
-  /* ================= SAVE ================= */
-
   save() {
-
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
+    const user = this.tokenService.getuserPhone();
+    this.form.patchValue({ currentLoginPhone: user });
 
     this.loading = true;
+    const payload = this.form.value;
 
     const request = this.editMode
-      ? this.http.put(`${this.baseUrl}/Auth/${this.selectedId}`, this.form.value)
-      : this.http.post(`${this.baseUrl}/Auth/add`, this.form.value);
+      ? this.http.put(`${this.baseUrl}/Auth/${this.selectedId}`, payload)
+      : this.http.post(`${this.baseUrl}/Auth/add`, payload);
 
     request.subscribe({
       next: () => {
@@ -129,5 +145,4 @@ export class UsersComponent implements OnInit {
       }
     });
   }
-
 }

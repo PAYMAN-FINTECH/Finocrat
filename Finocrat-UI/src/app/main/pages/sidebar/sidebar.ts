@@ -42,6 +42,7 @@ export class SidebarComponent {
   reportsOpen = false;
   adminOpen = false;
   isAdmin = false;
+  isUserTypeId = 0;
   isCollapsed = false;
 
   // Icons
@@ -67,6 +68,7 @@ export class SidebarComponent {
     const user = this.tokenService.getUser();
     if (user) {
       this.isAdmin = user.isAdmin || false;
+      this.isUserTypeId = user.userTypeId || 0;
     }
     
     // Load collapse state from localStorage

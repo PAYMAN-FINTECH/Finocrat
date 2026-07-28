@@ -13,6 +13,7 @@
           <th>Name</th>
           <th>Email</th>
           <th>Phone</th>
+          <th>User Type</th>
           <th>Status</th>
           <th>Action</th>
         </tr>
@@ -23,6 +24,7 @@
           <td>{{user.userName}}</td>
           <td>{{user.email}}</td>
           <td>{{user.userPhone}}</td>
+          <td>{{user.userTypeName}}</td>
           <td>
             <span class="status"
               [ngClass]="user.isActive ? 'active' : 'inactive'">
@@ -72,6 +74,20 @@
           <input type="email" formControlName="email">
         </div>
 
+        <!-- NEW: User Type Dropdown -->
+        <div class="form-group">
+          <label>User Type</label>
+          <select formControlName="userTypeId">
+            <option value="">-- Select --</option>
+            <option *ngFor="let type of userTypes" [value]="type.id">
+              {{ type.name }}
+            </option>
+          </select>
+          <div *ngIf="form.get('userTypeId')?.invalid && form.get('userTypeId')?.touched" class="error">
+            User Type is required.
+          </div>
+        </div>
+
         <div class="checkbox-group">
           <label>
             <input type="checkbox" formControlName="isActive">
@@ -79,12 +95,12 @@
           </label>
         </div>
 
-        <div class="checkbox-group">
+        <!-- <div class="checkbox-group">
           <label>
             <input type="checkbox" formControlName="isAdmin">
             Admin
           </label>
-        </div>
+        </div> -->
 
         <div class="form-actions">
           <button type="button" class="cancel-btn"
