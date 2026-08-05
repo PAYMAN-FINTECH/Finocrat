@@ -23,6 +23,7 @@ import {
 } from 'lucide-angular';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { ToastrService } from 'ngx-toastr';
+import { HomeService } from '../../../services/mainservices/home.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -62,14 +63,15 @@ export class SidebarComponent {
   BookText = BookText;
   AlertCircle = AlertCircle;
 
-  constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,) {}
+  constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,private userService: HomeService) {}
 
   ngOnInit() {
-    const user = this.tokenService.getUser();
-    if (user) {
-      this.isAdmin = user.isAdmin || false;
-      this.isUserTypeId = user.userTypeId || 0;
-    }
+     const user = this.tokenService.getUser();
+     this.isAdmin = user.isAdmin || false;
+
+  if (user?.userPhone) {
+    this.loadUser(user.userPhone);
+  }
     
     // Load collapse state from localStorage
     const savedState = localStorage.getItem('sidebarCollapsed');
@@ -77,6 +79,18 @@ export class SidebarComponent {
       this.isCollapsed = savedState === 'true';
     }
   }
+
+  loadUser(userPhone: string): void {
+  this.userService.getCurrentUser(userPhone).subscribe({
+    next: (user) => {
+      //this.isAdmin = user.isAdmin;
+      this.isUserTypeId = user.userTypeId;
+    },
+    error: (err) => {
+      console.error('Failed to load user', err);
+    }
+  });
+}
 
   toggleSidebar() {
     this.isCollapsed = !this.isCollapsed;

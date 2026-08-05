@@ -445,6 +445,31 @@ namespace Finocrat.Api.Controllers
         }
 
 
+        [HttpGet("current-user")]
+        public async Task<IActionResult> GetCurrentUser([FromQuery] string userPhone)
+        {
+            if (string.IsNullOrWhiteSpace(userPhone))
+                return BadRequest("User phone is required.");
+
+            var user = await _db.fUsers
+                .AsNoTracking()
+                .Where(x => x.UserPhone == userPhone)
+                .Select(x => new
+                {
+                    x.Id,
+                    x.UserName,
+                    x.UserPhone,
+                    x.UserTypeId,
+                    x.IsAdmin,
+                    x.IsActive
+                })
+                .FirstOrDefaultAsync();
+
+            if (user == null)
+                return NotFound("User not found.");
+
+            return Ok(user);
+        }
 
 
     }

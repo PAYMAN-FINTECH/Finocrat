@@ -90,5 +90,10 @@ updateProfile(payload: any): Observable<any> {
   return this.http.post(`${this.api}/update-profile`, payload);
 }
 
+getCurrentUser(userPhone: string) {
+  return this.http.get<any>(
+    `${this.api}/auth/current-user?userPhone=${userPhone}`
+  );
+}
 
 }

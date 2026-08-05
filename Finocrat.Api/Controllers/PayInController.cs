@@ -49,7 +49,8 @@ namespace Finocrat.Api.Controllers
                     x.Status,
                     x.PaymentId,
                     x.Created,
-                    x.PayInCommission
+                    x.PayInCommission,
+                    x.CardType
                 })
                 .ToList();
 

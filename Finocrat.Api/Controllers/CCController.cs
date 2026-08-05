@@ -289,11 +289,15 @@ namespace Finocrat.Api.Controllers
                     if (prePaymentResponse?.Data == null)
                         return NotFound(new { Success = false, Message = "Bill fetch failed." });
 
+                    string customerName = prePaymentResponse.Data.AdditionalDetails?
+    .FirstOrDefault(x => x.Name.Equals("Customer Name", StringComparison.OrdinalIgnoreCase))
+    ?.Value;
+
                     return Ok(new BillResponseApp
                     {
                         Success = true,
                         Message = "Bill fetched successfully",
-                        ConsumerName = prePaymentResponse.Data.CustomerName,
+                        ConsumerName = customerName,
                         BillNumber = prePaymentResponse.Data.BillNumber,
                         BillDate = prePaymentResponse.Data.BillDate,
                         DueDate = prePaymentResponse.Data.BillDueDate,
@@ -476,9 +480,9 @@ namespace Finocrat.Api.Controllers
                         payout.Status = true;
                         payout.TxnReferenceId = transactionResponse.Data.TxnReferenceId;
                         payout.OrderId = transactionResponse.Data.PoolReferenceId;
-                        payout.CustomerName = transactionResponse.Data.BillDetails.CustomerName;
-                        payout.CardNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
-                        payout.AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
+                        payout.CustomerName = holderName;//transactionResponse.Data.BillDetails.CustomerName;
+                        payout.CardNumber = request.Param1;//transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
+                        payout.AccountNumber = request.Param2;// transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
                         payout.Result = transactionResponse.Status;
                     }
                     else
@@ -499,9 +503,9 @@ namespace Finocrat.Api.Controllers
                         {
                             UserId = userDetails.Id,
                             UserPhone = userDetails.UserPhone,
-                            Name = transactionResponse.Data.BillDetails.CustomerName,
+                            Name = holderName,//transactionResponse.Data.BillDetails.CustomerName,
                             TxnId = transactionResponse.Data.TxnReferenceId,
-                            AccountNumber = transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
+                            AccountNumber = request.Param2,//transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
                             Amount = payout.Amount,
                             TransactionType = "CC Bill",
                             Status = true,
@@ -521,11 +525,11 @@ namespace Finocrat.Api.Controllers
                     return Ok(new PaymentResponseProcess
                     {
                         Success = status,
-                        Amount = transactionResponse.Data.BillDetails?.BillAmount ?? "0",
+                        Amount = payout.Amount.ToString(),//transactionResponse.Data.BillDetails?.BillAmount ?? "0",
                         OrderId = transactionResponse.Data.TxnReferenceId,
                         ReferenceId = transactionResponse.Data.ExternalRef,
                         Category = "Credit Card",
-                        BillerName = transactionResponse.Data.BillerDetails?.Name,
+                        BillerName = holderName,//transactionResponse.Data.BillerDetails?.Name,
                         Status = transactionResponse.Status,
                         UserPhone = request.Phone,
                         UserName = userDetails.UserName

@@ -15,6 +15,7 @@
         public string? StatusMessage { get; set; }
         public Guid ParentId { get; set; }
         public DateTime CreatedAt { get; set; }
+        public int? UserTypeId { get; set; }
 
     }
 }

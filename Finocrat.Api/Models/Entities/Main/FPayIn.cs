@@ -23,6 +23,8 @@
         public string CardHolderPhone { get; set; }
         public string CardHolderEmail { get; set; }
         public string CardHolderCardNumber { get; set; }
+        public int? UserTypeId { get; set; } 
+        public Guid? PatentTypeId {  get; set; }
 
     }
 }

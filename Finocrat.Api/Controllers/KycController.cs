@@ -67,6 +67,10 @@ namespace Finocrat.Api.Controllers
 
             var response = await client.PostAsync(url, content);
 
+            var resulqt = JsonConvert.DeserializeObject<dynamic>(
+               await response.Content.ReadAsStringAsync()
+           );
+
             if (!response.IsSuccessStatusCode)
                 return BadRequest("OTP failed");
 

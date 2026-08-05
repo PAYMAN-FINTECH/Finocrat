@@ -233,40 +233,41 @@ namespace Finocrat.Api.Controllers
             string remarks = "Transaction Failed";
             bool isSuccess = false;
 
-            FUser? user = null;
             string cardBrand = "";
             string bankName = "";
             string cardType = "";
             string cardNo = "";
             decimal payInLimit = 0;
 
+            // 1. Fetch User & Validate
+            var user = await _db.fUsers.FirstOrDefaultAsync(t => t.UserPhone == model.LoggedInUserPhone);
+            if (user == null)
+            {
+                return BadRequest(new { status = "FAILED", message = "User not found." });
+            }
+
+            // 2. Duplicate Check
+            var existing = await _db.fPayIns.FirstOrDefaultAsync(x => x.PaymentId == model.PaymentId);
+            if (existing != null)
+            {
+                return Ok(new { status = "SUCCESS" });
+            }
+
             try
             {
-                user = _db.fUsers.FirstOrDefault(t => t.UserPhone == model.LoggedInUserPhone);
-
-                // Duplicate check
-                var existing = _db.fPayIns.FirstOrDefault(x => x.PaymentId == model.PaymentId);
-                if (existing != null)
-                {
-                    return Ok(new { status = "SUCCESS" });
-                }
-
                 string payload = model.OrderId + "|" + model.PaymentId;
                 string generatedSignature = GenerateSignature(payload, RAZORPAY_SECRET);
 
                 var client = new RazorpayClient(RAZORPAY_KEY, RAZORPAY_SECRET);
-
                 var payment = client.Payment.Fetch(model.PaymentId);
                 var razorPayCard = client.Card.FetchCardDetails(model.PaymentId);
 
-                if (generatedSignature != model.Signature)
+                if (!string.Equals(generatedSignature, model.Signature, StringComparison.Ordinal))
                 {
                     remarks = "Signature Mismatch";
                 }
                 else
                 {
-                 
-
                     cardBrand = razorPayCard["issuer"]?.ToString() ?? "";
                     bankName = razorPayCard["network"]?.ToString() ?? "";
                     cardType = razorPayCard["sub_type"]?.ToString() ?? "";
@@ -278,35 +279,8 @@ namespace Finocrat.Api.Controllers
                         remarks = "Payment Captured";
                         isSuccess = true;
 
-                        if (user != null)
-                        {
-                            var lookup = _db.fUserLookups
-                                .FirstOrDefault(x => x.UserPhone == model.LoggedInUserPhone);
-
-                            if (lookup != null)
-                            {
-                                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-
-                                if (settings != null &&
-                                    settings.ContainsKey("PayIn Margin"))
-                                {
-                                    var value = settings["PayIn Margin"];
-
-                                    if (value is JsonElement element)
-                                    {
-                                        if (element.ValueKind == JsonValueKind.String)
-                                            decimal.TryParse(element.GetString(), out payInLimit);
-                                        else if (element.ValueKind == JsonValueKind.Number)
-                                            payInLimit = element.GetDecimal();
-                                    }
-
-                                    if (razorPayCard["sub_type"] == "business" || razorPayCard["sub_type"] == "BUSINESS")
-                                    {
-                                        payInLimit = (decimal)3.6;
-                                    }
-                                }
-                            }
-                        }
+                        var lookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == model.LoggedInUserPhone);
+                        payInLimit = ExtractPayInMargin(lookup, cardType);
                     }
                     else
                     {
@@ -319,6 +293,8 @@ namespace Finocrat.Api.Controllers
                 remarks = ex.Message;
             }
 
+            // 3. Database Updates inside Transaction
+            using var transaction = await _db.Database.BeginTransactionAsync();
             try
             {
                 if (cardBrand != "ICIC")
@@ -327,32 +303,22 @@ namespace Finocrat.Api.Controllers
                     {
                         UserId = user.Id,
                         UserPhone = model.LoggedInUserPhone,
-                        UserEmail = user?.Email,
+                        UserEmail = user.Email,
                         CardHolderName = model.CardHolderName,
                         CardHolderPhone = model.Mobile,
                         CardHolderEmail = model.CardHolderMail,
                         CardHolderCardNumber = model.CardHolderCard,
-
                         Result = txnStatus,
                         Status = isSuccess,
-
                         CardBrand = cardBrand,
                         BankName = bankName,
                         CardType = cardType,
                         CardNo = cardNo,
-
                         PaymentId = model.PaymentId,
                         TaxNumber = model.OrderId,
                         Amount = model.Amount,
-
-                        PayInCommission = isSuccess
-                            ? model.Amount * payInLimit / 100
-                            : 0,
-
-                        FCommission = isSuccess
-                            ? model.Amount / 100
-                            : 0,
-
+                        PayInCommission = isSuccess ? (model.Amount * payInLimit / 100) : 0,
+                        FCommission = isSuccess ? (model.Amount / 100) : 0,
                         Gateway = model.SelectedGateway,
                         Created = istNow
                     };
@@ -360,11 +326,9 @@ namespace Finocrat.Api.Controllers
                     await _db.fPayIns.AddAsync(payIn);
                     await _db.SaveChangesAsync();
 
-                    decimal balance = 0;
-
                     if (isSuccess)
                     {
-                        balance = await _dataUtils.GetWalletAmount(model.LoggedInUserPhone);
+                        decimal balance = await _dataUtils.GetWalletAmount(model.LoggedInUserPhone);
                         var history = new FPassbookHistory
                         {
                             UserId = user.Id,
@@ -383,319 +347,224 @@ namespace Finocrat.Api.Controllers
 
                         await _db.fPassbookHistories.AddAsync(history);
                         await _db.SaveChangesAsync();
-
                     }
-
                 }
 
-
-                if (user.UserTypeId == 2)
+                if (user.ParentUserId != null)
                 {
-                    decimal distributtercommission = 0;
-                    var distribussionUser = _db.fUsers.FirstOrDefault(t => t.Id == user.ParentUserId);
-
-                    var lookup = _db.fUserLookups
-                                .FirstOrDefault(x => x.UserPhone == distribussionUser.UserPhone);
-
-                    if (lookup != null)
+                    if (user.UserTypeId == 2)
                     {
-                        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-
-                        if (settings != null &&
-                            settings.ContainsKey("PayIn Margin"))
+                        var distribussionUser = await _db.fUsers.FirstOrDefaultAsync(t => t.Id == user.ParentUserId);
+                        if (distribussionUser != null)
                         {
-                            var value = settings["PayIn Margin"];
+                            var lookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == distribussionUser.UserPhone);
+                            decimal distributtercommission = ExtractPayInMargin(lookup, cardType);
 
-                            if (value is JsonElement element)
+                            decimal distcomm = payInLimit - distributtercommission;
+                            decimal amount = model.Amount * distcomm / 100;
+
+                            if (amount > 0)
                             {
-                                if (element.ValueKind == JsonValueKind.String)
-                                    decimal.TryParse(element.GetString(), out distributtercommission);
-                                else if (element.ValueKind == JsonValueKind.Number)
-                                    distributtercommission = element.GetDecimal();
+
+                                var distpayIn = new FPayIn
+                                {
+                                    UserId = distribussionUser.Id,
+                                    UserPhone = distribussionUser.UserPhone,
+                                    UserEmail = distribussionUser.Email,
+                                    CardHolderName = model.CardHolderName,
+                                    CardHolderPhone = model.Mobile,
+                                    CardHolderEmail = model.CardHolderMail,
+                                    CardHolderCardNumber = model.CardHolderCard,
+                                    Result = txnStatus,
+                                    Status = isSuccess,
+                                    CardBrand = cardBrand,
+                                    BankName = bankName,
+                                    CardType = cardType,
+                                    CardNo = cardNo,
+                                    PaymentId = model.PaymentId,
+                                    TaxNumber = model.OrderId,
+                                    Amount = amount,
+                                    PayInCommission = 0,
+                                    FCommission = isSuccess ? (model.Amount / 100) : 0,
+                                    Gateway = model.SelectedGateway,
+                                    Created = istNow,
+                                    UserTypeId = user.UserTypeId,
+                                    PatentTypeId = user.Id
+                                };
+
+                                await _db.fPayIns.AddAsync(distpayIn);
+                                await _db.SaveChangesAsync();
+
+                                if (isSuccess)
+                                {
+                                    decimal distibalance = await _dataUtils.GetWalletAmount(distribussionUser.UserPhone);
+                                    var history = new FPassbookHistory
+                                    {
+                                        UserId = distribussionUser.Id,
+                                        UserPhone = distribussionUser.UserPhone,
+                                        Name = model.CardHolderName,
+                                        TxnId = model.PaymentId,
+                                        AccountNumber = model.CardHolderCard,
+                                        Amount = amount,
+                                        TransactionType = "PayIn",
+                                        Status = isSuccess,
+                                        StatusMessage = remarks,
+                                        ParentId = distpayIn.Id,
+                                        Balance = distibalance,
+                                        CreatedAt = istNow,
+                                        UserTypeId = user.UserTypeId
+                                    };
+
+                                    await _db.fPassbookHistories.AddAsync(history);
+                                    await _db.SaveChangesAsync();
+                                }
                             }
+                        }
+                    }
 
-                            if (cardType == "business" || cardType == "BUSINESS")
+                    if (user.UserTypeId == 3)
+                    {
+                        var distibussionCommissssionUser = await _db.fUsers.FirstOrDefaultAsync(t => t.Id == user.ParentUserId);
+                        var superdistribussionUser = distibussionCommissssionUser != null
+                            ? await _db.fUsers.FirstOrDefaultAsync(t => t.Id == distibussionCommissssionUser.ParentUserId)
+                            : null;
+
+                        if (distibussionCommissssionUser != null && superdistribussionUser != null)
+                        {
+                            var lookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == distibussionCommissssionUser.UserPhone);
+                            decimal distributtercommission = ExtractPayInMargin(lookup, cardType);
+
+                            var distlookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == superdistribussionUser.UserPhone);
+                            decimal superDistibutioncommission = ExtractPayInMargin(distlookup, cardType);
+
+                            decimal distcomm = payInLimit - distributtercommission;
+                            decimal distamount = model.Amount * distcomm / 100;
+
+                            if (distamount > 0)
                             {
-                                distributtercommission = (decimal)3.6;
+                            
+
+                            var distpayIn = new FPayIn
+                            {
+                                UserId = distibussionCommissssionUser.Id,
+                                UserPhone = distibussionCommissssionUser.UserPhone,
+                                UserEmail = distibussionCommissssionUser.Email,
+                                CardHolderName = model.CardHolderName,
+                                CardHolderPhone = model.Mobile,
+                                CardHolderEmail = model.CardHolderMail,
+                                CardHolderCardNumber = model.CardHolderCard,
+                                Result = txnStatus,
+                                Status = isSuccess,
+                                CardBrand = cardBrand,
+                                BankName = bankName,
+                                CardType = cardType,
+                                CardNo = cardNo,
+                                PaymentId = model.PaymentId,
+                                TaxNumber = model.OrderId,
+                                Amount = distamount,
+                                PayInCommission = 0,
+                                FCommission = isSuccess ? (model.Amount / 100) : 0,
+                                Gateway = model.SelectedGateway,
+                                Created = istNow,
+                                UserTypeId = user.UserTypeId,
+                                PatentTypeId = user.Id
+                            };
+
+                            await _db.fPayIns.AddAsync(distpayIn);
+                            await _db.SaveChangesAsync();
+
+                            if (isSuccess)
+                            {
+                                decimal distibalance = await _dataUtils.GetWalletAmount(distibussionCommissssionUser.UserPhone);
+                                var history = new FPassbookHistory
+                                {
+                                    UserId = distibussionCommissssionUser.Id,
+                                    UserPhone = distibussionCommissssionUser.UserPhone,
+                                    Name = model.CardHolderName,
+                                    TxnId = model.PaymentId,
+                                    AccountNumber = model.CardHolderCard,
+                                    Amount = distamount,
+                                    TransactionType = "PayIn",
+                                    Status = isSuccess,
+                                    StatusMessage = remarks,
+                                    ParentId = distpayIn.Id,
+                                    Balance = distibalance,
+                                    CreatedAt = istNow,
+                                    UserTypeId = user.UserTypeId
+                                };
+
+                                await _db.fPassbookHistories.AddAsync(history);
+                                await _db.SaveChangesAsync();
                             }
                         }
 
+                            decimal superdistcomm = distributtercommission - superDistibutioncommission;
+                            decimal superamount = model.Amount * superdistcomm / 100;
+                            if (superamount > 0)
+                            {
+                                var superdistpayIn = new FPayIn
+                                {
+                                    UserId = superdistribussionUser.Id,
+                                    UserPhone = superdistribussionUser.UserPhone,
+                                    UserEmail = superdistribussionUser.Email,
+                                    CardHolderName = model.CardHolderName,
+                                    CardHolderPhone = model.Mobile,
+                                    CardHolderEmail = model.CardHolderMail,
+                                    CardHolderCardNumber = model.CardHolderCard,
+                                    Result = txnStatus,
+                                    Status = isSuccess,
+                                    CardBrand = cardBrand,
+                                    BankName = bankName,
+                                    CardType = cardType,
+                                    CardNo = cardNo,
+                                    PaymentId = model.PaymentId,
+                                    TaxNumber = model.OrderId,
+                                    Amount = superamount,
+                                    PayInCommission = 0,
+                                    FCommission = isSuccess ? (model.Amount / 100) : 0,
+                                    Gateway = model.SelectedGateway,
+                                    Created = istNow,
+                                    UserTypeId = distibussionCommissssionUser.UserTypeId,
+                                    PatentTypeId = distibussionCommissssionUser.Id
+                                };
+
+                                await _db.fPayIns.AddAsync(superdistpayIn);
+                                await _db.SaveChangesAsync();
+
+                                if (isSuccess)
+                                {
+                                    decimal superdistibalance = await _dataUtils.GetWalletAmount(superdistribussionUser.UserPhone);
+                                    var history = new FPassbookHistory
+                                    {
+                                        UserId = superdistribussionUser.Id,
+                                        UserPhone = superdistribussionUser.UserPhone,
+                                        Name = model.CardHolderName,
+                                        TxnId = model.PaymentId,
+                                        AccountNumber = model.CardHolderCard,
+                                        Amount = superamount,
+                                        TransactionType = "PayIn",
+                                        Status = isSuccess,
+                                        StatusMessage = remarks,
+                                        ParentId = superdistpayIn.Id,
+                                        Balance = superdistibalance,
+                                        CreatedAt = istNow,
+                                        UserTypeId = distibussionCommissssionUser.UserTypeId
+                                    };
+
+                                    await _db.fPassbookHistories.AddAsync(history);
+                                    await _db.SaveChangesAsync();
+                                }
+                            }
+                        }
                     }
-
-                    decimal distcomm = payInLimit - distributtercommission;
-
-                    decimal amount = model.Amount * distcomm / 100;
-
-                    var distpayIn = new FPayIn
-                    {
-                        UserId = distribussionUser.Id,
-                        UserPhone = distribussionUser.UserPhone,
-                        UserEmail = distribussionUser?.Email,
-                        CardHolderName = model.CardHolderName,
-                        CardHolderPhone = model.Mobile,
-                        CardHolderEmail = model.CardHolderMail,
-                        CardHolderCardNumber = model.CardHolderCard,
-
-                        Result = txnStatus,
-                        Status = isSuccess,
-
-                        CardBrand = cardBrand,
-                        BankName = bankName,
-                        CardType = cardType + "Super Distribution",
-                        CardNo = cardNo,
-
-                        PaymentId = model.PaymentId,
-                        TaxNumber = model.OrderId,
-                        Amount = amount,
-
-                        PayInCommission = 0,
-
-                        FCommission = isSuccess
-                      ? model.Amount / 100
-                      : 0,
-
-                        Gateway = model.SelectedGateway,
-                        Created = istNow
-                    };
-
-                    await _db.fPayIns.AddAsync(distpayIn);
-                    await _db.SaveChangesAsync();
-
-                    decimal distibalance = 0;
-
-                    if (isSuccess)
-                    {
-                        distibalance = await _dataUtils.GetWalletAmount(distribussionUser.UserPhone);
-                        var history = new FPassbookHistory
-                        {
-                            UserId = distribussionUser.Id,
-                            UserPhone = distribussionUser.UserPhone,
-                            Name = model.CardHolderName,
-                            TxnId = model.PaymentId,
-                            AccountNumber = model.CardHolderCard,
-                            Amount = amount,
-                            TransactionType = "PayIn",
-                            Status = isSuccess,
-                            StatusMessage = "PayIn Super Distribution Commission",//remarks,
-                            ParentId = distpayIn.Id,
-                            Balance = distibalance,
-                            CreatedAt = istNow
-                        };
-
-                        await _db.fPassbookHistories.AddAsync(history);
-                        await _db.SaveChangesAsync();
-
-                    }
-
-
                 }
 
-
-                if (user.UserTypeId == 3)
-                {
-                    decimal distributtercommission = 0;
-                    decimal superDistibutioncommission = 0;
-
-                    var distibussionCommissssionUser = _db.fUsers.FirstOrDefault(t => t.Id == user.ParentUserId);
-                    var superdistribussionUser = _db.fUsers.FirstOrDefault(t => t.Id == distibussionCommissssionUser.ParentUserId);
-
-                    var lookup = _db.fUserLookups
-                                .FirstOrDefault(x => x.UserPhone == distibussionCommissssionUser.UserPhone);
-
-                    if (lookup != null)
-                    {
-                        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-
-                        if (settings != null &&
-                            settings.ContainsKey("PayIn Margin"))
-                        {
-                            var value = settings["PayIn Margin"];
-
-                            if (value is JsonElement element)
-                            {
-                                if (element.ValueKind == JsonValueKind.String)
-                                    decimal.TryParse(element.GetString(), out distributtercommission);
-                                else if (element.ValueKind == JsonValueKind.Number)
-                                    distributtercommission = element.GetDecimal();
-                            }
-
-                            if (cardType == "business" || cardType == "BUSINESS")
-                            {
-                                distributtercommission = (decimal)3.6;
-                            }
-                        }
-
-                    }
-
-
-                    var distlookup = _db.fUserLookups
-                                .FirstOrDefault(x => x.UserPhone == superdistribussionUser.UserPhone);
-
-                    if (lookup != null)
-                    {
-                        var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-
-                        if (settings != null &&
-                            settings.ContainsKey("PayIn Margin"))
-                        {
-                            var value = settings["PayIn Margin"];
-
-                            if (value is JsonElement element)
-                            {
-                                if (element.ValueKind == JsonValueKind.String)
-                                    decimal.TryParse(element.GetString(), out superDistibutioncommission);
-                                else if (element.ValueKind == JsonValueKind.Number)
-                                    superDistibutioncommission = element.GetDecimal();
-                            }
-
-                            if (cardType == "business" || cardType == "BUSINESS")
-                            {
-                                superDistibutioncommission = (decimal)3.6;
-                            }
-                        }
-
-                    }
-
-                    decimal distcomm = payInLimit - distributtercommission;
-                    decimal distamount = model.Amount * distcomm / 100;
-
-                    var distpayIn = new FPayIn
-                    {
-                        UserId = distibussionCommissssionUser.Id,
-                        UserPhone = distibussionCommissssionUser.UserPhone,
-                        UserEmail = distibussionCommissssionUser?.Email,
-                        CardHolderName = model.CardHolderName,
-                        CardHolderPhone = model.Mobile,
-                        CardHolderEmail = model.CardHolderMail,
-                        CardHolderCardNumber = model.CardHolderCard,
-
-                        Result = txnStatus,
-                        Status = isSuccess,
-
-                        CardBrand = cardBrand,
-                        BankName = bankName,
-                        CardType = cardType + "Distribution Commission",
-                        CardNo = cardNo,
-
-                        PaymentId = model.PaymentId,
-                        TaxNumber = model.OrderId,
-                        Amount = distamount,
-
-                        PayInCommission =  0,
-
-                        FCommission = isSuccess
-                      ? model.Amount / 100
-                      : 0,
-
-                        Gateway = model.SelectedGateway,
-                        Created = istNow
-                    };
-
-                    await _db.fPayIns.AddAsync(distpayIn);
-                    await _db.SaveChangesAsync();
-
-                    decimal distibalance = 0;
-
-                    if (isSuccess)
-                    {
-                        distibalance = await _dataUtils.GetWalletAmount(distibussionCommissssionUser.UserPhone);
-                        var history = new FPassbookHistory
-                        {
-                            UserId = distibussionCommissssionUser.Id,
-                            UserPhone = distibussionCommissssionUser.UserPhone,
-                            Name = model.CardHolderName,
-                            TxnId = model.PaymentId,
-                            AccountNumber = model.CardHolderCard,
-                            Amount = distamount,
-                            TransactionType = "PayIn",
-                            Status = isSuccess,
-                            StatusMessage = "PayIn Distribution Commission",//remarks,
-                            ParentId = distpayIn.Id,
-                            Balance = distibalance,
-                            CreatedAt = istNow
-                        };
-
-                        await _db.fPassbookHistories.AddAsync(history);
-                        await _db.SaveChangesAsync();
-
-                    }
-
-
-                    decimal superdistcomm = distributtercommission - superDistibutioncommission;
-                    decimal superamount = model.Amount * superdistcomm / 100;
-
-                    var superdistpayIn = new FPayIn
-                    {
-                        UserId = superdistribussionUser.Id,
-                        UserPhone = superdistribussionUser.UserPhone,
-                        UserEmail = superdistribussionUser?.Email,
-                        CardHolderName = model.CardHolderName,
-                        CardHolderPhone = model.Mobile,
-                        CardHolderEmail = model.CardHolderMail,
-                        CardHolderCardNumber = model.CardHolderCard,
-
-                        Result = txnStatus,
-                        Status = isSuccess,
-
-                        CardBrand = cardBrand,
-                        BankName = bankName,
-                        CardType = cardType + "Super Distribution",
-                        CardNo = cardNo,
-
-                        PaymentId = model.PaymentId,
-                        TaxNumber = model.OrderId,
-                        Amount = superamount,
-
-                        PayInCommission =  0,
-
-                        FCommission = isSuccess
-                      ? model.Amount / 100
-                      : 0,
-
-                        Gateway = model.SelectedGateway,
-                        Created = istNow
-                    };
-
-                    await _db.fPayIns.AddAsync(distpayIn);
-                    await _db.SaveChangesAsync();
-
-                    decimal superdistibalance = 0;
-
-                    if (isSuccess)
-                    {
-                        superdistibalance = await _dataUtils.GetWalletAmount(superdistribussionUser.UserPhone);
-                        var history = new FPassbookHistory
-                        {
-                            UserId = superdistribussionUser.Id,
-                            UserPhone = superdistribussionUser.UserPhone,
-                            Name = model.CardHolderName,
-                            TxnId = model.PaymentId,
-                            AccountNumber = model.CardHolderCard,
-                            Amount = superamount,
-                            TransactionType = "PayIn Super Distribution Commission",
-                            Status = isSuccess,
-                            StatusMessage = remarks,
-                            ParentId = superdistpayIn.Id,
-                            Balance = superdistibalance,
-                            CreatedAt = istNow
-                        };
-
-                        await _db.fPassbookHistories.AddAsync(history);
-                        await _db.SaveChangesAsync();
-
-                    }
-
-
-
-
-                }
-
-
-
+                await transaction.CommitAsync();
             }
-            catch
+            catch (Exception ex)
             {
-                // Optional logging
+                await transaction.RollbackAsync();
+                return StatusCode(500, new { status = "FAILED", message = ex.Message });
             }
 
             if (isSuccess)
@@ -708,6 +577,32 @@ namespace Finocrat.Api.Controllers
                 status = "FAILED",
                 message = remarks
             });
+        }
+
+        private static decimal ExtractPayInMargin(FUserLookup? lookup, string cardType)
+        {
+            decimal margin = 0;
+            if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+                if (settings != null && settings.TryGetValue("PayIn Margin", out var value))
+                {
+                    if (value is JsonElement element)
+                    {
+                        if (element.ValueKind == JsonValueKind.String)
+                            decimal.TryParse(element.GetString(), out margin);
+                        else if (element.ValueKind == JsonValueKind.Number)
+                            margin = element.GetDecimal();
+                    }
+                }
+            }
+
+            if (string.Equals(cardType, "business", StringComparison.OrdinalIgnoreCase))
+            {
+                margin = 3.6m;
+            }
+
+            return margin;
         }
         private static string GenerateSignature(string payload, string secret)
         {
