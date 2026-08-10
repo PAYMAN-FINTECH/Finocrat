@@ -16,7 +16,7 @@ import { RouterModule } from '@angular/router';
       </div>
 
       <div class="footer-copy">
-        © 2026 Finocrat Edu. All rights reserved.
+        © 2026 Finocrat Solutions Pvt Ltd. All rights reserved.
       </div>
     </footer>
   `,
