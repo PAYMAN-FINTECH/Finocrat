@@ -29,7 +29,8 @@ export class WalletComponent implements OnInit {
     mobile: '',
     email: '',
     category: '',
-    amount: null
+    amount: null,
+    cardnum: ''
   };
 
   username: string = '';
@@ -129,7 +130,8 @@ loadGateways(): void {
       mobile: this.model.mobile,
       amount: this.model.amount,
       category: this.model.category,
-      userPhone: this.userPhone
+      userPhone: this.userPhone,
+      cardnum: this.model.cardnum || ''
     };
 
     const encodedData = btoa(JSON.stringify(payload));

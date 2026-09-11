@@ -92,7 +92,7 @@ updateProfile(payload: any): Observable<any> {
 
 getCurrentUser(userPhone: string) {
   return this.http.get<any>(
-    `${this.api}/auth/current-user?userPhone=${userPhone}`
+    `${this.baseUrl}/auth/current-user?userPhone=${userPhone}`
   );
 }
 
