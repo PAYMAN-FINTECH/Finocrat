@@ -12,6 +12,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Controllers
 builder.Services.AddControllers();
+builder.Services.AddHttpClient();
 
 // Database (SQL Server)
 builder.Services.AddDbContext<FinocratDbContext>(options =>
