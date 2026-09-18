@@ -45,6 +45,7 @@ export class SidebarComponent {
   isAdmin = false;
   isUserTypeId = 0;
   isCollapsed = false;
+  userpphone: string | null = null;
 
   // Icons
   LayoutDashboard = LayoutDashboard;
@@ -70,6 +71,7 @@ export class SidebarComponent {
      this.isAdmin = user.isAdmin || false;
 
   if (user?.userPhone) {
+    this.userpphone = user.userPhone;
     this.loadUser(user.userPhone);
   }
     
