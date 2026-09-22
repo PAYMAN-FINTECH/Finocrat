@@ -50,7 +50,12 @@ namespace Finocrat.Api.Controllers
                     x.PaymentId,
                     x.Created,
                     x.PayInCommission,
-                    x.CardType
+                    x.CardType,
+                    cardno = x.CardNo != null ? x.CardNo
+    : (x.CardHolderCardNumber != null && x.CardHolderCardNumber.Length >= 4
+        ? x.CardHolderCardNumber.Substring(x.CardHolderCardNumber.Length - 4)
+        : x.CardHolderCardNumber),
+        x.CardHolderPhone
                 })
                 .ToList();
 

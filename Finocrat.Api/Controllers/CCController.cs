@@ -322,102 +322,278 @@ namespace Finocrat.Api.Controllers
         }
 
        
-        
-        [HttpPost("ProcessPayment")]
-        public async Task<IActionResult> ProcessPayment([FromBody] PaymentRequestApp request)
+[HttpPost("ProcessPayment")]
+public async Task<IActionResult> ProcessPayment(
+    [FromBody] PaymentRequestApp request)
         {
+            // =========================================================
+            // 1. VALIDATE REQUEST
+            // =========================================================
+
             if (request == null ||
                 string.IsNullOrEmpty(request.CustomerMobile) ||
                 string.IsNullOrEmpty(request.EnquiryReferenceId) ||
                 request.Amount <= 0)
             {
-                return Ok(GenerateFailureResponse("Invalid request."));
+                return Ok(
+                    GenerateFailureResponse("Invalid request.")
+                );
             }
+
+            // =========================================================
+            // 2. GET USER
+            // =========================================================
 
             var userDetails = await _db.fUsers
                 .FirstOrDefaultAsync(t => t.UserPhone == request.Phone);
 
             if (userDetails == null)
-                return Ok(GenerateFailureResponse("User not found"));
+            {
+                return Ok(
+                    GenerateFailureResponse("User not found")
+                );
+            }
+
+            // =========================================================
+            // 3. PAN
+            // =========================================================
 
             var panNumber = "BRXPK7957B";
 
-            if (panNumber == null)
-                return Ok(GenerateFailureResponse("PAN details not found"));
+            if (string.IsNullOrEmpty(panNumber))
+            {
+                return Ok(
+                    GenerateFailureResponse("PAN details not found")
+                );
+            }
 
-            var walletBalance = await _dataUtils.GetWalletAmount(request.Phone);
+            // =========================================================
+            // 4. WALLET BALANCE CHECK
+            // =========================================================
+
+            var walletBalance =
+                await _dataUtils.GetWalletAmount(request.Phone);
 
             if (request.Amount > walletBalance)
-                return Ok(GenerateFailureResponse("Insufficient wallet balance"));
+            {
+                return Ok(
+                    GenerateFailureResponse(
+                        "Insufficient wallet balance"
+                    )
+                );
+            }
 
-            var ccamount = await _dataUtils.BalanceCheck();
+            // =========================================================
+            // 5. INSTANTPAY BALANCE CHECK
+            // =========================================================
 
-            // ✅ Safety check (API failure case)
+            var ccamount =
+                await _dataUtils.BalanceCheck();
+
             if (ccamount <= 0)
             {
-                return Ok(GenerateFailureResponse("Unable to fetch InstantPay balance. Try again."));
+                return Ok(
+                    GenerateFailureResponse(
+                        "Unable to fetch InstantPay balance. Try again."
+                    )
+                );
             }
 
-            // ✅ Rounded comparison (safe)
-            if (Math.Round(request.Amount, 2) > Math.Round(ccamount, 2))
+            if (Math.Round(request.Amount, 2) >
+                Math.Round(ccamount, 2))
             {
-                return Ok(GenerateFailureResponse("Insufficient InstantPay balance"));
+                return Ok(
+                    GenerateFailureResponse(
+                        "Insufficient InstantPay balance"
+                    )
+                );
             }
 
-            var externalRef = "FINOCART" + DateTime.Now.ToString("yyyyMMddHHmmss");
+            // =========================================================
+            // 6. GENERATE UNIQUE EXTERNAL REFERENCE
+            // =========================================================
 
-            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+            var istZone =
+                TimeZoneInfo.FindSystemTimeZoneById(
+                    "India Standard Time"
+                );
 
-            // ✅ CREATE PAYOUT OBJECT (NOT SAVED YET)
+            var istNow =
+                TimeZoneInfo.ConvertTimeFromUtc(
+                    DateTime.UtcNow,
+                    istZone
+                );
+
+            // Milliseconds added to reduce duplicate reference risk
+            var externalRef =
+                $"FINOCART{istNow:yyyyMMddHHmmssfff}";
+
+            // =========================================================
+            // 7. PAYMENT HOLDER DETAILS
+            // =========================================================
+
+            var holderMobile =
+                !string.IsNullOrEmpty(request.holderMobile)
+                    ? request.holderMobile
+                    : userDetails.UserPhone;
+
+            var holderName =
+                !string.IsNullOrEmpty(request.customerName)
+                    ? request.customerName
+                    : userDetails.UserName;
+
+            // =========================================================
+            // 8. CREATE PAYOUT RECORD FIRST
+            //
+            // IMPORTANT:
+            // We save this BEFORE calling InstantPay.
+            //
+            // This prevents the following problem:
+            //
+            // InstantPay SUCCESS
+            //       ↓
+            // Application exception
+            //       ↓
+            // No fPayout record
+            //
+            // =========================================================
+
             var payout = new FPayout
             {
                 UserId = userDetails.Id,
                 UserPhone = request.Phone,
+
                 ExternalRef = externalRef,
+
                 Amount = request.Amount,
+
                 PaoutCommission = 15,
+
                 Created = istNow,
+
                 Type = "CC Bill",
-                Status = false
+
+                Status = false,
+
+                Result = "INITIATED",
+
+                CustomerName = holderName,
+
+                CardNumber = request.Param1,
+
+                AccountNumber = request.Param2
             };
 
             try
             {
+                // =====================================================
+                // 9. SAVE INITIAL PAYOUT
+                // =====================================================
+
+                await _db.fPayouts.AddAsync(payout);
+
+                await _db.SaveChangesAsync();
+
+
+                // =====================================================
+                // 10. CREATE HTTP CLIENT
+                // =====================================================
+
                 using (HttpClient client = new HttpClient())
                 {
-                    client.DefaultRequestHeaders.Add("Accept", "application/json");
-                    client.DefaultRequestHeaders.Add("X-Ipay-Auth-Code", "1");
-                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Id", _configuration["InstantPay:X-Ipay-Client-Id"]);
-                    client.DefaultRequestHeaders.Add("X-Ipay-Client-Secret", _configuration["InstantPay:X-Ipay-Client-Secret"]);
-                    client.DefaultRequestHeaders.Add("X-Ipay-Endpoint-Ip", _configuration["InstantPay:X-Ipay-Endpoint-Ip"]);
-                    client.DefaultRequestHeaders.Add("X-Ipay-Outlet-Id", _configuration["InstantPay:X-Ipay-Outlet-Id"]);
+                    client.DefaultRequestHeaders.Add(
+                        "Accept",
+                        "application/json"
+                    );
+
+                    client.DefaultRequestHeaders.Add(
+                        "X-Ipay-Auth-Code",
+                        "1"
+                    );
+
+                    client.DefaultRequestHeaders.Add(
+                        "X-Ipay-Client-Id",
+                        _configuration[
+                            "InstantPay:X-Ipay-Client-Id"
+                        ]
+                    );
+
+                    client.DefaultRequestHeaders.Add(
+                        "X-Ipay-Client-Secret",
+                        _configuration[
+                            "InstantPay:X-Ipay-Client-Secret"
+                        ]
+                    );
+
+                    client.DefaultRequestHeaders.Add(
+                        "X-Ipay-Endpoint-Ip",
+                        _configuration[
+                            "InstantPay:X-Ipay-Endpoint-Ip"
+                        ]
+                    );
+
+                    client.DefaultRequestHeaders.Add(
+                        "X-Ipay-Outlet-Id",
+                        _configuration[
+                            "InstantPay:X-Ipay-Outlet-Id"
+                        ]
+                    );
+
+
+                    // =================================================
+                    // 11. PAYMENT INFORMATION
+                    // =================================================
 
                     object paymentInfo;
 
                     switch (request.PaymentMode?.ToUpper())
                     {
                         case "CASH":
-                            paymentInfo = new { Remarks = "CashPayment" };
+
+                            paymentInfo = new
+                            {
+                                Remarks = "CashPayment"
+                            };
+
                             break;
+
 
                         case "UPI":
-                            paymentInfo = new { remarks = "VPA", vpa = "9652724937@kotak" };
+
+                            paymentInfo = new
+                            {
+                                remarks = "VPA",
+                                vpa = "9652724937@kotak"
+                            };
+
                             break;
 
+
                         default:
-                            paymentInfo = new { walletName = "Forpay", mobileNo = userDetails.UserPhone };
+
+                            paymentInfo = new
+                            {
+                                walletName = "Forpay",
+                                mobileNo = userDetails.UserPhone
+                            };
+
                             break;
                     }
 
-                    var holderMobile = request.holderMobile ?? userDetails.UserPhone;
-                    var holderName = request.customerName ?? userDetails.UserName;
+
+                    // =================================================
+                    // 12. CREATE INSTANTPAY REQUEST
+                    // =================================================
 
                     var requestData = new
                     {
                         billerId = request.BillerId,
+
                         externalRef = externalRef,
-                        enquiryReferenceId = request.EnquiryReferenceId,
+
+                        enquiryReferenceId =
+                            request.EnquiryReferenceId,
+
                         initChannel = "AGT",
 
                         inputParameters = new
@@ -437,6 +613,7 @@ namespace Finocrat.Api.Controllers
                         },
 
                         paymentMode = request.PaymentMode,
+
                         paymentInfo = paymentInfo,
 
                         remarks = new
@@ -445,102 +622,333 @@ namespace Finocrat.Api.Controllers
                         },
 
                         transactionAmount = request.Amount,
+
                         customerPan = panNumber
                     };
 
-                    var json = JsonConvert.SerializeObject(requestData);
-                    var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                    var response = await client.PostAsync(
-                        "https://api.instantpay.in/marketplace/utilityPayments/payment",
-                        content
-                    );
+                    // =================================================
+                    // 13. SERIALIZE REQUEST
+                    // =================================================
 
-                    var responseContent = await response.Content.ReadAsStringAsync();
+                    var json =
+                        JsonConvert.SerializeObject(
+                            requestData
+                        );
+
+
+                    var content =
+                        new StringContent(
+                            json,
+                            Encoding.UTF8,
+                            "application/json"
+                        );
+
+
+                    // =================================================
+                    // 14. CALL INSTANTPAY
+                    // =================================================
+
+                    HttpResponseMessage response;
+
+                    try
+                    {
+                        response = await client.PostAsync(
+                            "https://api.instantpay.in/marketplace/utilityPayments/payment",
+                            content
+                        );
+                    }
+                    catch (Exception apiException)
+                    {
+                        // =============================================
+                        // INSTANTPAY CONNECTION EXCEPTION
+                        // =============================================
+
+                        payout.Result =
+                            "INSTANTPAY_CONNECTION_EXCEPTION: " +
+                            apiException.Message;
+
+                        payout.Status = false;
+
+                        await _db.SaveChangesAsync();
+
+
+
+                        return Ok(
+                            GenerateFailureResponse(
+                                "Unable to connect to InstantPay."
+                            )
+                        );
+                    }
+
+
+                    // =================================================
+                    // 15. READ RESPONSE
+                    // =================================================
+
+                    var responseContent =
+                        await response.Content.ReadAsStringAsync();
 
                     if (!response.IsSuccessStatusCode)
-                        return Ok(GenerateFailureResponse("InstantPay API failed"));
+                    {
+                        payout.Result =
+                            $"InstantPay HTTP Error: {response.StatusCode}";
 
-                    var transactionResponse =
-                        JsonConvert.DeserializeObject<TransactionResponse>(responseContent);
+                        payout.Status = false;
+
+                        await _db.SaveChangesAsync();
+
+
+                        return Ok(
+                            GenerateFailureResponse(
+                                "InstantPay API failed"
+                            )
+                        );
+                    }
+
+
+                    // =================================================
+                    // 18. DESERIALIZE RESPONSE
+                    // =================================================
+
+                    TransactionResponse transactionResponse;
+
+                    try
+                    {
+                        transactionResponse =
+                            JsonConvert.DeserializeObject<TransactionResponse>(
+                                responseContent
+                            );
+                    }
+                    catch (Exception deserializeException)
+                    {
+                        payout.Result =
+                            "DESERIALIZATION_EXCEPTION: " +
+                            deserializeException.Message;
+
+                        payout.Status = true;
+
+                        await _db.SaveChangesAsync();
+
+
+                        return Ok(
+                            GenerateFailureResponse(
+                                "Invalid InstantPay response."
+                            )
+                        );
+                    }
+
+
+                    // =================================================
+                    // 19. CHECK RESPONSE DATA
+                    // =================================================
 
                     if (transactionResponse?.Data == null)
-                        return Ok(GenerateFailureResponse("Transaction response invalid"));
-
-                    bool status =
-                        transactionResponse.Status == "Transaction Successful" ||
-                        transactionResponse.Status == "Transaction Under Process";
-
-                    // =========================
-                    // ✅ INSERT + UPDATE LOGIC
-                    // =========================
-
-                    if (status)
                     {
+                        payout.Result =
+                            "INVALID_TRANSACTION_RESPONSE";
+
                         payout.Status = true;
-                        payout.TxnReferenceId = transactionResponse.Data.TxnReferenceId;
-                        payout.OrderId = transactionResponse.Data.PoolReferenceId;
-                        payout.CustomerName = holderName;//transactionResponse.Data.BillDetails.CustomerName;
-                        payout.CardNumber = request.Param1;//transactionResponse.Data.BillDetails.CustomerParamsDetails[0].Value;
-                        payout.AccountNumber = request.Param2;// transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value;
-                        payout.Result = transactionResponse.Status;
-                    }
-                    else
-                    {
-                        payout.Result = transactionResponse.Status;
+
+                        await _db.SaveChangesAsync();
+
+
+                        return Ok(
+                            GenerateFailureResponse(
+                                "Transaction response invalid"
+                            )
+                        );
                     }
 
-                    // ✅ ADD PAYOUT
-                    await _db.fPayouts.AddAsync(payout);
+
+                    // =================================================
+                    // 20. DETERMINE TRANSACTION STATUS
+                    // =================================================
+
+                    bool isSuccess =
+    transactionResponse.Status == "Transaction Successful" ||
+    transactionResponse.Status == "Transaction Under Process";
+
+
+
+
+                    // =================================================
+                    // 21. UPDATE PAYOUT DETAILS
+                    // =================================================
+
+                    payout.TxnReferenceId =
+                        transactionResponse.Data.TxnReferenceId;
+
+                    payout.OrderId =
+                        transactionResponse.Data.PoolReferenceId;
+
+                    payout.CustomerName =
+                        holderName;
+
+                    payout.CardNumber =
+                        request.Param1;
+
+                    payout.AccountNumber =
+                        request.Param2;
+
+                    payout.Result =
+                        transactionResponse.Status;
+
+
+                    // IMPORTANT:
+                    //
+                    // Only actual SUCCESS gets Status = true.
+                    //
+                    // Under Process = false
+                    // Failed       = false
+
+                    payout.Status = isSuccess;
+
+
+                    // =================================================
+                    // 22. SAVE UPDATED PAYOUT
+                    // =================================================
+
                     await _db.SaveChangesAsync();
 
-                    // ✅ ADD HISTORY ONLY IF SUCCESS
-                    if (status)
+
+                    // =================================================
+                    // 23. INSERT PASSBOOK HISTORY ONLY FOR SUCCESS
+                    // =================================================
+
+                    if (isSuccess)
                     {
-                        var userbalance = await _dataUtils.GetWalletAmount(userDetails.UserPhone);
-
-                        var fhistory = new FPassbookHistory
+                        try
                         {
-                            UserId = userDetails.Id,
-                            UserPhone = userDetails.UserPhone,
-                            Name = holderName,//transactionResponse.Data.BillDetails.CustomerName,
-                            TxnId = transactionResponse.Data.TxnReferenceId,
-                            AccountNumber = request.Param2,//transactionResponse.Data.BillDetails.CustomerParamsDetails[1].Value,
-                            Amount = payout.Amount,
-                            TransactionType = "CC Bill",
-                            Status = true,
-                            StatusMessage = transactionResponse.Status,
-                            ParentId = payout.Id, // will be set after save
-                            Balance = userbalance,
-                            CreatedAt = istNow
-                        };
+                            var userbalance =
+                                await _dataUtils.GetWalletAmount(
+                                    userDetails.UserPhone
+                                );
 
-                        await _dataUtils.InsertFHistoryAsync(fhistory);
-                        await _db.SaveChangesAsync();
+
+                            var fhistory =
+                                new FPassbookHistory
+                                {
+                                    UserId =
+                                        userDetails.Id,
+
+                                    UserPhone =
+                                        userDetails.UserPhone,
+
+                                    Name =
+                                        holderName,
+
+                                    TxnId =
+                                        transactionResponse
+                                            .Data
+                                            .TxnReferenceId,
+
+                                    AccountNumber =
+                                        request.Param2,
+
+                                    Amount =
+                                        payout.Amount,
+
+                                    TransactionType =
+                                        "CC Bill",
+
+                                    Status =
+                                        true,
+
+                                    StatusMessage =
+                                        transactionResponse.Status,
+
+                                    ParentId =
+                                        payout.Id,
+
+                                    Balance =
+                                        userbalance,
+
+                                    CreatedAt =
+                                        istNow
+                                };
+
+
+                            await _dataUtils.InsertFHistoryAsync(
+                                fhistory
+                            );
+
+
+                            await _db.SaveChangesAsync();
+                        }
+                        catch (Exception historyException)
+                        {
+                        }
                     }
 
-                    // ✅ SINGLE SAVE (MOST IMPORTANT)
-                    
 
-                    return Ok(new PaymentResponseProcess
-                    {
-                        Success = status,
-                        Amount = payout.Amount.ToString(),//transactionResponse.Data.BillDetails?.BillAmount ?? "0",
-                        OrderId = transactionResponse.Data.TxnReferenceId,
-                        ReferenceId = transactionResponse.Data.ExternalRef,
-                        Category = "Credit Card",
-                        BillerName = holderName,//transactionResponse.Data.BillerDetails?.Name,
-                        Status = transactionResponse.Status,
-                        UserPhone = request.Phone,
-                        UserName = userDetails.UserName
-                    });
+                    // =================================================
+                    // 24. RESPONSE TO APP
+                    // =================================================
+
+                    return Ok(
+                        new PaymentResponseProcess
+                        {
+                            Success = isSuccess,
+
+                            Amount =
+                                payout.Amount.ToString(),
+
+                            OrderId =
+                                transactionResponse
+                                    .Data
+                                    .TxnReferenceId,
+
+                            ReferenceId =
+                                transactionResponse
+                                    .Data
+                                    .ExternalRef,
+
+                            Category =
+                                "Credit Card",
+
+                            BillerName =
+                                holderName,
+
+                            Status =
+                                transactionResponse.Status,
+
+                            UserPhone =
+                                request.Phone,
+
+                            UserName =
+                                userDetails.UserName
+                        }
+                    );
                 }
             }
             catch (Exception ex)
             {
-                return Ok(GenerateFailureResponse("Exception occurred: " + ex.Message));
+                
+
+                try
+                {
+                    payout.Result =
+                        "PROCESS_EXCEPTION: " +
+                        ex.Message;
+
+                    payout.Status = false;
+
+                    await _db.SaveChangesAsync();
+                }
+                catch (Exception dbException)
+                {
+                }
+
+
+                return Ok(
+                    GenerateFailureResponse(
+                        "Exception occurred while processing transaction."
+                    )
+                );
             }
         }
+
 
         [HttpGet("signup-initiate")]
         public async Task<IActionResult> SignupInitiate()

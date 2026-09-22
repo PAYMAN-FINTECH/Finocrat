@@ -120,7 +120,7 @@ namespace Finocrat.Api.Controllers
             // ✅ PAYIN TOTAL
             // =========================
             var payInTotal = await _db.fPayIns
-                .Where(x => x.Created >= startDate && x.Created < endDate && x.Status)
+                .Where(x => x.Created >= startDate && x.Created < endDate && x.Status && x.PayInCommission != 0)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
@@ -139,7 +139,7 @@ namespace Finocrat.Api.Controllers
                 {
                     x.UserName,
                     x.UserPhone
-                })
+                }).OrderBy(t=>t.UserName)
                 .ToListAsync();
 
             // =========================
@@ -160,7 +160,10 @@ namespace Finocrat.Api.Controllers
                             status = x.Status,
                             created = x.Created,
                             paymentid = x.PaymentId,
-                            cardno = x.CardNo,
+                            cardno = x.CardNo != null ? x.CardNo
+    : (x.CardHolderCardNumber != null && x.CardHolderCardNumber.Length >= 4
+        ? x.CardHolderCardNumber.Substring(x.CardHolderCardNumber.Length - 4)
+        : x.CardHolderCardNumber),
                             mode = "Pay In",
                             cardholdername = x.CardHolderName,
                             cardholderphone = x.CardHolderPhone,
@@ -584,6 +587,278 @@ namespace Finocrat.Api.Controllers
                 });
             }
         }
+
+
+        [HttpPost("data")]
+        public async Task<IActionResult> GetInvoiceData(
+    [FromBody] InvoiceDataRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.UserPhone))
+            {
+                return BadRequest(new
+                {
+                    message = "User is required."
+                });
+            }
+
+            if (request.FromDate.Date >
+                request.ToDate.Date)
+            {
+                return BadRequest(new
+                {
+                    message = "Invalid date range."
+                });
+            }
+
+            var fromDate =
+                request.FromDate.Date;
+
+            var toDate =
+                request.ToDate.Date.AddDays(1);
+
+
+            // =========================================
+            // USER
+            // =========================================
+
+            var user =
+                await _db.fUsers
+                    .FirstOrDefaultAsync(x =>
+                        x.UserPhone ==
+                        request.UserPhone);
+
+            var useraddress = await _db.fAadharDetails.FirstOrDefaultAsync(x => x.Phone == request.UserPhone);
+
+
+            if (user == null)
+            {
+                return NotFound(new
+                {
+                    message = "User not found."
+                });
+            }
+
+
+            // =========================================
+            // TRANSACTIONS
+            // =========================================
+
+            var transactions =
+                await _db.fPayouts
+                    .Where(x =>
+                        x.UserPhone ==
+                        request.UserPhone &&
+
+                        x.Created >=
+                        fromDate &&
+
+                        x.Created <
+                        toDate &&
+
+                        x.Status == true)
+                    .OrderBy(x => x.Created)
+                    .ToListAsync();
+
+
+            // =========================================
+            // RETURN JSON ONLY
+            // =========================================
+
+            var result =
+                transactions
+                .Select((tx, index) =>
+                {
+
+                    decimal amount =
+                        Convert.ToDecimal(
+                            tx.PaoutCommission);
+
+
+                    decimal gst =
+                        Math.Round(
+                            amount * 0.18m,
+                            2);
+
+
+                    decimal cgst =
+                        Math.Round(
+                            gst / 2,
+                            2);
+
+
+                    decimal sgst =
+                        Math.Round(
+                            gst / 2,
+                            2);
+
+
+                    decimal grandTotal =
+                        amount + gst;
+
+
+                    var invoiceNo =
+                        $"FN-INV-{tx.Created:yyMMddHHmmss}-{index + 1:D4}";
+
+                    var transactionId = tx.TxnReferenceId;
+
+
+                    return new
+                    {
+                        invoiceNo,
+
+                        transactionId =
+                            tx.TxnReferenceId,
+
+                        invoiceDate =
+                            tx.Created,
+
+                        customerName =
+                            user.UserName,
+
+                        customerPhone =
+                            user.UserPhone,
+
+                        customerAddress = useraddress.Address,
+
+                        paymentMode = "CC BILL",
+
+                        service =
+                            "Credit Card Bill Payment Service Fee",
+
+                        hsnSac =
+                            "997158",
+
+                        quantity = 1,
+
+                        amount,
+
+                        cgst,
+
+                        sgst,
+
+                        totalGst =
+                            gst,
+
+                        grandTotal,
+
+                        status =
+                            "PAID",
+
+                        verificationUrl =
+                                $"https://thefinocrat.com/invoice/verify/{Uri.EscapeDataString(invoiceNo)}/{Uri.EscapeDataString(transactionId)}"
+                };
+
+                })
+                .ToList();
+
+
+            return Ok(result);
+        }
+
+
+        [HttpGet("verify/{invoiceNo}/{transactionId}")]
+        public async Task<IActionResult> VerifyInvoice(
+    string invoiceNo, string transactionId)
+        {
+            var invoice =
+                await _db.fPayouts
+                    .FirstOrDefaultAsync(
+                        x =>
+                            x.TxnReferenceId ==
+                            transactionId);
+
+            if (invoice == null)
+            {
+                return NotFound(new
+                {
+                    message =
+                        "Invoice not found."
+                });
+            }
+
+            var user =
+               await _db.fUsers
+                   .FirstOrDefaultAsync(x =>
+                       x.UserPhone ==
+                       invoice.UserPhone);
+
+            var useraddress = await _db.fAadharDetails.FirstOrDefaultAsync(x => x.Phone == invoice.UserPhone);
+
+            decimal amount =
+                        Convert.ToDecimal(
+                            invoice.PaoutCommission);
+
+
+            decimal gst =
+                Math.Round(
+                    amount * 0.18m,
+                    2);
+
+
+            decimal cgst =
+                Math.Round(
+                    gst / 2,
+                    2);
+
+
+            decimal sgst =
+                Math.Round(
+                    gst / 2,
+                    2);
+
+
+            decimal grandTotal =
+                amount + gst;
+
+            return Ok(new
+            {
+                invoiceNo =
+                    invoiceNo,
+
+                transactionId =
+                    invoice.TxnReferenceId,
+
+                invoiceDate =
+                    invoice.Created,
+
+                customerName =
+                    user.UserName,
+
+                customerPhone =
+                    user.UserPhone,
+
+                customerAddress =
+                    useraddress.Address,
+
+                paymentMode =
+                    "CC Bill",
+
+                service = "Credit Card Bill Payment Service Fee",
+
+                hsnSac = "997158",
+
+                quantity =1,
+
+                amount =
+                    invoice.PaoutCommission,
+
+                cgst =
+                    cgst,
+
+                sgst =
+                    sgst,
+
+                totalGst =
+                    gst,
+
+                grandTotal =
+                    grandTotal,
+
+                status =
+                    invoice.Status
+            });
+        }
+
     }
     public class DashboardFilter
     {
@@ -633,5 +908,14 @@ namespace Finocrat.Api.Controllers
         public string UserPhone { get; set; }
         public string OldPin { get; set; }
         public string NewPin { get; set; }
+    }
+
+    public class InvoiceDataRequest
+    {
+        public DateTime FromDate { get; set; }
+
+        public DateTime ToDate { get; set; }
+
+        public string UserPhone { get; set; } = "";
     }
 }
