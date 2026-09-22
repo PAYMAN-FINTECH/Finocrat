@@ -140,6 +140,22 @@
             Please select a gateway
           </small>
         </div>
+
+        <div class="form-group">
+          <label>Card Number</label>
+          <div class="input-wrapper">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path d="M22 16.92V19C22 19.5304 21.7893 20.0391 21.4142 20.4142C21.0391 20.7893 20.5304 21 20 21C16.0999 20.763 12.4203 19.338 9.54013 16.9545C6.67918 14.5884 4.69473 11.3364 3.92 7.73001C3.78953 7.22467 3.82391 6.69351 4.01877 6.20691C4.21363 5.72031 4.55866 5.30385 5 5.01001C5.44703 4.70986 5.97397 4.55065 6.51 4.55001H8.5C9.0235 4.54316 9.52374 4.75757 9.8835 5.14263C10.2433 5.52769 10.4293 6.04406 10.4 6.57001C10.3467 7.40213 10.2087 8.22649 9.99 9.03001C9.85266 9.51249 9.58991 9.95102 9.23 10.3" stroke="currentColor" stroke-width="1.5"/>
+            </svg>
+            <input type="text" name="cardnum" [(ngModel)]="model.cardnum" required
+                   minlength="16" maxlength="16" pattern="^[0-9]{16}$"
+                   [disabled]="isLoading" #cardnum="ngModel"
+                   placeholder="Enter 16-digit card number">
+          </div>
+          <small *ngIf="cardnum.invalid && cardnum.touched" class="error-msg">
+            Enter valid 16-digit card number
+          </small>
+        </div>
       </div>
 
       <!-- AMOUNT SECTION -->

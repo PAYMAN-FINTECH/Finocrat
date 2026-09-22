@@ -56,6 +56,8 @@
             <th>Amount</th>
             <th>Commission</th>
             <th>Status</th>
+            <th>Card No</th>
+            <th>Card Holder No</th>
             <th>Transaction ID</th>
             <th>Date</th>
             <th>Receipt</th>
@@ -76,6 +78,8 @@
                 {{ item.status === true ? 'SUCCESS' : item.status === false ? 'FAILED' : 'PENDING' }}
               </span>
             </td>
+            <td>{{ item.cardno }}</td>
+            <td>{{ item.cardHolderPhone }}</td>
             <td>{{ item.paymentId }}</td>
             <td>{{ item.created | date:'medium' }}</td>
             <td>

@@ -125,6 +125,12 @@ export const routes: Routes = [
       { path: 'forgot-pin', component: ForgotPinComponent },
     ]
   },
+  {
+  path: 'invoice/verify/:invoiceNo/:transactionId',
+  loadComponent: () =>
+    import('./main/pages/invoice-verify/invoice-verify')
+      .then(m => m.InvoiceVerifyComponent)
+},
 
   // AUTHENTICATED APP (WITH SIDEBAR) - Requires PIN verification
   {

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
@@ -11,7 +11,10 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
   styleUrls: ['./bbps.css']
 })
 export class BbpsComponent implements OnInit {
-  constructor(private http: HttpClient) {}
+constructor(
+  private http: HttpClient,
+  private cdr: ChangeDetectorRef
+) {}
 
   apiUrl = "https://localhost:7081/api/BillPayments";
   apiUrl1 = "https://thefinocrat.com/api/BillPayments";
@@ -38,6 +41,9 @@ export class BbpsComponent implements OnInit {
   showCustomerCard = false;
   showFetchButton = false;
   showBillCard = false;
+  showComingSoonModal = false;
+
+comingSoonCategory = '';
 
   // Custom dropdown
   categoryDropdownOpen = false;
@@ -61,6 +67,7 @@ export class BbpsComponent implements OnInit {
   complaintStatusType = "";
   complaintStatusResult: any = null;
   loadingStatus = false;
+  loadingCategories = false;
 
   showPaymentReceipt = false;
   
@@ -125,43 +132,275 @@ export class BbpsComponent implements OnInit {
   selectCategory(category: string) {
     this.selectedCategory = category;
     this.categoryDropdownOpen = false;
-    this.onCategoryChange();
+    //this.onCategoryChange();
   }
 
   // ==================== API CALLS ====================
-  getCategories() {
-    this.http.get<any[]>(`${this.apiUrl1}/GetCategories`).subscribe({
-      next: (res) => this.categories = res,
-      error: () => this.showMessage('error', 'Failed to load categories')
-    });
-  }
+  getCategories(): void {
+  this.loadingCategories = true;
 
-  onCategoryChange() {
-    this.selectedBiller = "";
+  this.http.get<any[]>(
+    `${this.apiUrl1}/GetCategories`
+  ).subscribe({
+    next: (res) => {
+
+      console.log('GetCategories Response:', res);
+
+      this.categories = Array.isArray(res) ? res : [];
+
+      this.loadingCategories = false;
+
+      // Force Angular to update the UI immediately
+      this.cdr.detectChanges();
+
+      console.log('Categories:', this.categories);
+    },
+
+    error: (error) => {
+
+      console.error('GetCategories Error:', error);
+
+      this.categories = [];
+      this.loadingCategories = false;
+
+      this.cdr.detectChanges();
+
+      this.showMessage(
+        'error',
+        'Failed to load biller categories'
+      );
+    }
+  });
+}
+  // onCategoryChange() {
+  //   this.selectedBiller = "";
+  //   this.billers = [];
+  //   this.resetBillFlow();
+  //   if (!this.selectedCategory) return;
+  //   this.loadingBillers = true;
+  //   this.getBillers(this.selectedCategory);
+  // }
+
+ onCategoryClick(category: string): void {
+
+  console.log('Category clicked:', category);
+
+  // Credit Card is currently available
+  if (category === 'Credit Card') {
+
+    this.selectedCategory = category;
+    this.selectedBiller = '';
     this.billers = [];
-    this.resetBillFlow();
-    if (!this.selectedCategory) return;
+
+    this.billDetails = {};
+
+    this.showCustomerCard = false;
+    this.showFetchButton = false;
+    this.showBillCard = false;
+
     this.loadingBillers = true;
-    this.getBillers(this.selectedCategory);
+
+    // Immediately update active category
+    this.cdr.detectChanges();
+
+    // Load billers
+    this.getBillers(category);
+
+    return;
   }
 
-  getBillers(category: string) {
-    this.http.get<any>(`${this.apiUrl1}/GetBillers?billerId=${category}`).subscribe({
-      next: (res) => {
-        this.loadingBillers = false;
-        const billerData = res?.billerInfoResponse?.biller;
-        if (billerData) {
-          this.billers = Array.isArray(billerData) ? billerData : [billerData];
-        } else {
-          this.billers = [];
-        }
-      },
-      error: () => {
-        this.loadingBillers = false;
-        this.showMessage('error', 'Failed to load billers');
-      }
-    });
+  // Other categories
+  this.selectedCategory = '';
+  this.selectedBiller = '';
+
+  this.showComingSoon(category);
+
+  this.cdr.detectChanges();
+}
+
+showComingSoon(category: string): void {
+
+  this.comingSoonCategory = category;
+
+  this.showComingSoonModal = true;
+}
+
+closeComingSoon(): void {
+
+  this.showComingSoonModal = false;
+
+  this.comingSoonCategory = '';
+}
+
+getCategoryIcon(category: string): string {
+
+  const name = category.toLowerCase();
+
+
+  if (name.includes('agent')) {
+    return '👤';
   }
+
+  if (name.includes('broadband')) {
+    return '🌐';
+  }
+
+  if (name.includes('cable')) {
+    return '📺';
+  }
+
+  if (name.includes('credit card')) {
+    return '💳';
+  }
+
+  if (name.includes('dth')) {
+    return '📡';
+  }
+
+  if (name.includes('mobile')) {
+    return '📱';
+  }
+
+  if (name.includes('electric')) {
+    return '⚡';
+  }
+
+  if (name.includes('water')) {
+    return '💧';
+  }
+
+  if (name.includes('gas')) {
+    return '🔥';
+  }
+
+  if (name.includes('loan')) {
+    return '🏦';
+  }
+
+  if (name.includes('insurance')) {
+    return '🛡️';
+  }
+
+  if (name.includes('education')) {
+    return '🎓';
+  }
+
+  if (name.includes('fastag')) {
+    return '🚗';
+  }
+
+  if (name.includes('echallan')) {
+    return '🚘';
+  }
+
+  if (name.includes('challan')) {
+    return '🚘';
+  }
+
+  if (name.includes('tax')) {
+    return '🧾';
+  }
+
+  if (
+    name.includes('club') ||
+    name.includes('association')
+  ) {
+    return '🏢';
+  }
+
+  return '💰';
+}
+getBillers(category: string): void {
+
+  this.loadingBillers = true;
+
+  this.http.get<any>(
+    `${this.apiUrl1}/GetBillers?billerId=${encodeURIComponent(category)}`
+  ).subscribe({
+
+    next: (res) => {
+
+      console.log('GetBillers Response:', res);
+
+      const billerData =
+        res?.billerInfoResponse?.biller;
+
+      if (billerData) {
+
+        this.billers = Array.isArray(billerData)
+          ? billerData
+          : [billerData];
+
+      } else {
+
+        this.billers = [];
+      }
+
+      this.loadingBillers = false;
+
+      // Force UI update
+      this.cdr.detectChanges();
+
+      console.log(
+        'Billers loaded:',
+        this.billers.length
+      );
+
+      // Scroll AFTER Angular has rendered the billers
+      if (this.billers.length > 0) {
+
+        setTimeout(() => {
+
+          const element =
+            document.getElementById('creditCardBillers');
+
+          if (element) {
+
+            element.scrollIntoView({
+              behavior: 'smooth',
+              block: 'start'
+            });
+
+          }
+
+        }, 0);
+      }
+    },
+
+    error: (error) => {
+
+      console.error(
+        'GetBillers Error:',
+        error
+      );
+
+      this.loadingBillers = false;
+      this.billers = [];
+
+      this.cdr.detectChanges();
+
+      this.showMessage(
+        'error',
+        'Failed to load billers'
+      );
+    }
+  });
+}
+
+  selectBillerCard(biller: any): void {
+
+  this.selectedBiller = biller.billerId;
+
+  // Keep your existing biller-change logic
+  this.onBillerChange();
+}
+
+onBillerImageError(event: Event): void {
+
+  const img = event.target as HTMLImageElement;
+
+  img.src = 'assets/images/default-biller.png';
+}
 
   onBillerChange() {
     if (!this.selectedBiller) return;

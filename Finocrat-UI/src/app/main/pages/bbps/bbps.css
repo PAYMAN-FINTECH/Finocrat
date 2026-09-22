@@ -688,3 +688,714 @@ textarea.form-control {
     max-height: 200px;
   }
 }
+
+/* =========================================
+   BILLER CATEGORY
+========================================= */
+
+.category-section {
+  margin-top: 5px;
+}
+
+.category-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #0d2d57;
+  margin-bottom: 18px;
+}
+
+
+/* 5 CATEGORIES PER ROW */
+
+.category-tabs {
+  display: grid;
+
+  grid-template-columns: repeat(5, 1fr);
+
+  gap: 14px;
+
+  width: 100%;
+}
+
+
+.category-tab {
+
+  min-height: 108px;
+
+  padding: 14px 10px;
+
+  background: #ffffff;
+
+  border: 1px solid #dfe7f2;
+
+  border-radius: 18px;
+
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease;
+
+
+  &:hover {
+
+    transform: translateY(-2px);
+
+    border-color: #3d6eea;
+
+    box-shadow:
+      0 8px 22px rgba(37, 99, 235, 0.12);
+  }
+
+
+  &.active {
+
+    background: #23449a;
+
+    border-color: #23449a;
+
+    box-shadow:
+      0 8px 24px rgba(35, 68, 154, 0.25);
+
+
+    .category-icon {
+      background: #ffffff;
+    }
+
+
+    .category-name {
+      color: #ffffff;
+      font-weight: 600;
+    }
+  }
+}
+
+
+.category-icon {
+
+  width: 50px;
+
+  height: 50px;
+
+  border-radius: 15px;
+
+  background: #eef4ff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  margin-bottom: 10px;
+
+
+  span {
+
+    font-size: 25px;
+
+    line-height: 1;
+  }
+}
+
+
+.category-name {
+
+  font-size: 13px;
+
+  font-weight: 500;
+
+  color: #123b70;
+
+  text-align: center;
+
+  line-height: 17px;
+}
+
+/* =========================================
+   CREDIT CARD BILLERS
+========================================= */
+
+.biller-section {
+
+  margin-top: 28px;
+
+  padding-top: 25px;
+
+  border-top: 1px solid #edf1f7;
+}
+
+
+.biller-section-header {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+
+
+  h3 {
+
+    margin: 0 0 4px;
+
+    font-size: 20px;
+
+    font-weight: 700;
+
+    color: #0d2d57;
+  }
+
+
+  p {
+
+    margin: 0;
+
+    font-size: 13px;
+
+    color: #7a8799;
+  }
+}
+
+
+.biller-count {
+
+  padding: 7px 13px;
+
+  background: #eef4ff;
+
+  color: #2859c7;
+
+  border-radius: 20px;
+
+  font-size: 12px;
+
+  font-weight: 600;
+}
+
+
+/* BILLER GRID */
+
+.biller-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(3, 1fr);
+
+  gap: 14px;
+}
+
+
+/* BILLER CARD */
+
+.biller-card {
+
+  position: relative;
+
+  min-height: 90px;
+
+  padding: 14px;
+
+  background: #ffffff;
+
+  border: 1px solid #e1e8f2;
+
+  border-radius: 15px;
+
+  display: flex;
+
+  align-items: center;
+
+  gap: 13px;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+
+  &:hover {
+
+    border-color: #3d6eea;
+
+    box-shadow:
+      0 7px 20px rgba(37, 99, 235, 0.10);
+
+    transform: translateY(-2px);
+  }
+
+
+  &.selected {
+
+    border: 2px solid #2859c7;
+
+    background: #f5f8ff;
+
+
+    .biller-logo {
+
+      border-color: #c9d8ff;
+    }
+  }
+}
+
+
+/* BILLER LOGO */
+
+.biller-logo {
+
+  width: 52px;
+
+  height: 52px;
+
+  flex-shrink: 0;
+
+  border-radius: 13px;
+
+  background: #f7f9fc;
+
+  border: 1px solid #e8edf5;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+
+
+  img {
+
+    width: 100%;
+
+    height: 100%;
+
+    object-fit: contain;
+
+    padding: 7px;
+  }
+
+
+  span {
+
+    font-size: 25px;
+  }
+}
+
+
+/* BILLER DETAILS */
+
+.biller-info {
+
+  min-width: 0;
+
+  padding-right: 20px;
+}
+
+
+.biller-name {
+
+  font-size: 14px;
+
+  font-weight: 600;
+
+  color: #123b70;
+
+  line-height: 19px;
+
+  word-break: break-word;
+}
+
+
+.biller-subtitle {
+
+  margin-top: 4px;
+
+  font-size: 12px;
+
+  color: #8a96a8;
+}
+
+
+/* SELECTED CHECK */
+
+.biller-check {
+
+  position: absolute;
+
+  top: 9px;
+
+  right: 9px;
+
+  width: 22px;
+
+  height: 22px;
+
+  border-radius: 50%;
+
+  background: #2859c7;
+
+  color: #ffffff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 12px;
+
+  font-weight: 700;
+}
+
+/* =========================================
+   COMING SOON MODAL
+========================================= */
+
+.coming-soon-overlay {
+
+  position: fixed;
+
+  inset: 0;
+
+  z-index: 9999;
+
+  background: rgba(10, 25, 55, 0.48);
+
+  backdrop-filter: blur(6px);
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  padding: 20px;
+
+  animation: fadeIn 0.2s ease;
+}
+
+
+.coming-soon-modal {
+
+  position: relative;
+
+  width: 100%;
+
+  max-width: 400px;
+
+  padding: 38px 32px 32px;
+
+  background: #ffffff;
+
+  border-radius: 24px;
+
+  text-align: center;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.20);
+
+  animation: modalUp 0.25s ease;
+}
+
+
+/* CLOSE BUTTON */
+
+.coming-soon-close {
+
+  position: absolute;
+
+  top: 15px;
+
+  right: 17px;
+
+  width: 34px;
+
+  height: 34px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: #f1f4f8;
+
+  color: #667085;
+
+  font-size: 22px;
+
+  cursor: pointer;
+
+
+  &:hover {
+
+    background: #e7ebf1;
+  }
+}
+
+
+/* ICON */
+
+.coming-soon-icon {
+
+  width: 72px;
+
+  height: 72px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 22px;
+
+  background: #eef4ff;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  font-size: 34px;
+}
+
+
+/* TITLE */
+
+.coming-soon-modal h2 {
+
+  margin: 0;
+
+  color: #123b70;
+
+  font-size: 25px;
+
+  font-weight: 700;
+}
+
+
+/* CATEGORY */
+
+.coming-soon-category {
+
+  margin: 8px 0 12px;
+
+  color: #2859c7;
+
+  font-size: 15px;
+
+  font-weight: 600;
+}
+
+
+/* MESSAGE */
+
+.coming-soon-message {
+
+  margin: 0 auto 25px;
+
+  max-width: 300px;
+
+  color: #718096;
+
+  font-size: 14px;
+
+  line-height: 21px;
+}
+
+
+/* BUTTON */
+
+.coming-soon-button {
+
+  width: 100%;
+
+  height: 46px;
+
+  border: none;
+
+  border-radius: 12px;
+
+  background: #23449a;
+
+  color: #ffffff;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease;
+
+
+  &:hover {
+
+    background: #1c3984;
+  }
+}
+
+
+@keyframes fadeIn {
+
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+@keyframes modalUp {
+
+  from {
+
+    opacity: 0;
+
+    transform:
+      translateY(15px)
+      scale(0.97);
+  }
+
+  to {
+
+    opacity: 1;
+
+    transform:
+      translateY(0)
+      scale(1);
+  }
+}
+
+/* =========================================
+   RESPONSIVE
+========================================= */
+
+@media (max-width: 992px) {
+
+  .category-tabs {
+
+    grid-template-columns:
+      repeat(4, 1fr);
+  }
+
+  .biller-grid {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+}
+
+
+@media (max-width: 768px) {
+
+  .category-tabs {
+
+    grid-template-columns:
+      repeat(3, 1fr);
+
+    gap: 10px;
+  }
+
+
+  .category-tab {
+
+    min-height: 95px;
+
+    padding: 10px 7px;
+  }
+
+
+  .category-icon {
+
+    width: 42px;
+
+    height: 42px;
+
+
+    span {
+
+      font-size: 21px;
+    }
+  }
+
+
+  .category-name {
+
+    font-size: 12px;
+  }
+
+
+  .biller-grid {
+
+    grid-template-columns: 1fr;
+  }
+
+
+  .biller-section-header {
+
+    align-items: flex-start;
+
+    gap: 10px;
+  }
+}
+
+#creditCardBillers {
+  scroll-margin-top: 30px;
+}
+
+.category-loading {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  color: #64748b;
+  font-size: 14px;
+}
+
+.category-spinner {
+  width: 22px;
+  height: 22px;
+  border: 3px solid #e2e8f0;
+  border-top-color: #2563eb;
+  border-radius: 50%;
+  animation: categorySpin 0.8s linear infinite;
+}
+
+@keyframes categorySpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+@media (max-width: 480px) {
+
+  .category-tabs {
+
+    grid-template-columns:
+      repeat(2, 1fr);
+  }
+
+
+  .biller-section-header {
+
+    flex-direction: column;
+  }
+}

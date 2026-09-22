@@ -23,9 +23,10 @@
         <span class="menu-text">Dashboard</span>
       </div>
     </li>
-
+    
+    <ng-container *ngIf="this.userpphone !='9849800699'">
     <!-- WALLET - Add click handler -->
-    <li routerLink="/app/wallet" routerLinkActive="active" (click)="onLinkClick()">
+    <li routerLink="/app/wallet" routerLinkActive="active" (click)="onLinkClick()" >
       <div class="menu-left">
         <lucide-icon [img]="Wallet"></lucide-icon>
         <span class="menu-text">Wallet</span>
@@ -41,7 +42,12 @@
     </li>
 
 
-    <!-- <li routerLink="/app/bbps" routerLinkActive="active" (click)="onLinkClick()">
+   
+    </ng-container>
+
+    <ng-container *ngIf="this.userpphone == '9849800699'"> 
+
+     <li routerLink="/app/bbps" routerLinkActive="active" (click)="onLinkClick()">
   <div class="menu-left">
 
     <img 
@@ -52,7 +58,8 @@
 
     <span class="menu-text">Bill Payments</span>
   </div>
-</li> -->
+</li>
+    </ng-container>
 
     <!-- SERVICES - Add click handler -->
     <li routerLink="/app/services" routerLinkActive="active" (click)="onLinkClick()">
@@ -72,7 +79,8 @@
     </li>
 
     <ul *ngIf="reportsOpen && !isCollapsed" class="submenu">
-      <li routerLink="/app/payin-history" routerLinkActive="active" (click)="onLinkClick()">
+       <ng-container *ngIf="this.userpphone !='9849800699'">
+ <li routerLink="/app/payin-history" routerLinkActive="active" (click)="onLinkClick()">
         <lucide-icon [img]="ArrowDownCircle"></lucide-icon>
         <span>PayIn</span>
       </li>
@@ -80,13 +88,16 @@
         <lucide-icon [img]="ArrowUpCircle"></lucide-icon>
         <span>PayOut</span>
       </li>
+       </ng-container>
+     
+
       <li routerLink="/app/passbook" routerLinkActive="active" (click)="onLinkClick()">
       <lucide-icon [img]="BookText"></lucide-icon>
       <span>Passbook</span>
     </li>
     </ul>
 
-   <!-- ADMIN -->
+   <!-- ADMIN --><ng-container *ngIf="this.userpphone !='9849800699'">
 <ng-container *ngIf="isAdmin || this.isUserTypeId != 3">
   <li (click)="toggleAdmin()" class="parent">
     <div class="menu-left">
@@ -142,6 +153,8 @@
 
   </ul>
 </ng-container>
+   </ng-container>
+
 
     <!-- PROFILE - Add click handler -->
     <li routerLink="/app/profile" routerLinkActive="active" (click)="onLinkClick()">

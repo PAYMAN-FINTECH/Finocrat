@@ -35,31 +35,208 @@
         <div class="card-title">Biller Information</div>
 
         <!-- Custom Dropdown for Category -->
-        <div class="form-group">
-          <label>Biller Category <span class="required">*</span></label>
-          <div class="custom-dropdown" [class.open]="categoryDropdownOpen" (click)="toggleCategoryDropdown()" (document:click)="closeCategoryDropdown($event)">
-            <div class="dropdown-selected">
-              {{ selectedCategory || 'Select Category' }}
-              <span class="dropdown-arrow">▼</span>
-            </div>
-            <div class="dropdown-options" *ngIf="categoryDropdownOpen">
-              <div class="dropdown-option" *ngFor="let item of categories" (click)="selectCategory(item.categoryName); $event.stopPropagation()">
-                {{ item.categoryName }}
-              </div>
-            </div>
-          </div>
+        <!-- BILLER CATEGORY -->
+<div class="category-section">
+
+  <div class="category-title">
+    Biller Category <span class="required">*</span>
+  </div>
+
+<div class="category-tabs">
+
+  <!-- Loading -->
+  <div
+    class="category-loading"
+    *ngIf="loadingCategories"
+  >
+    <div class="category-spinner"></div>
+    <span>Loading biller categories...</span>
+  </div>
+
+  <!-- Categories -->
+  <ng-container *ngIf="!loadingCategories">
+
+    <div
+      class="category-tab"
+      *ngFor="let item of categories"
+      [class.active]="selectedCategory === item.categoryName"
+      (click)="onCategoryClick(item.categoryName)"
+    >
+
+      <div class="category-icon">
+        <span>
+          {{ getCategoryIcon(item.categoryName) }}
+        </span>
+      </div>
+
+      <div class="category-name">
+        {{ item.categoryName }}
+      </div>
+
+    </div>
+
+  </ng-container>
+
+</div>
+
+</div>
+
+        <!-- CREDIT CARD BILLERS -->
+<div
+  id="creditCardBillers"
+  class="biller-section"
+  *ngIf="selectedCategory === 'Credit Card' && billers.length"
+>
+
+  <div class="biller-section-header">
+
+    <div>
+      <h3>Select Credit Card Biller</h3>
+      <p>Choose your credit card provider</p>
+    </div>
+
+    <span class="biller-count">
+      {{ billers.length }} Billers
+    </span>
+
+  </div>
+
+
+  <div class="biller-grid">
+
+    <div
+      class="biller-card"
+      *ngFor="let biller of billers"
+
+      [class.selected]="
+        selectedBiller === biller.billerId
+      "
+
+      (click)="selectBillerCard(biller)"
+    >
+
+      <!-- LOGO -->
+      <div class="biller-logo">
+
+        <img
+          *ngIf="biller.iconUrl"
+          [src]="biller.iconUrl"
+          [alt]="biller.billerName"
+          (error)="onBillerImageError($event)"
+        />
+
+        <span *ngIf="!biller.iconUrl">
+          💳
+        </span>
+
+      </div>
+
+
+      <!-- BILLER DETAILS -->
+      <div class="biller-info">
+
+        <div class="biller-name">
+          {{ biller.billerName }}
         </div>
 
-        <div class="form-group" *ngIf="billers.length">
-          <label>Select Biller <span class="required">*</span></label>
-          <select class="form-control" [(ngModel)]="selectedBiller" [disabled]="disableBiller" (change)="onBillerChange()">
-            <option value="">Select Biller</option>
-            <option *ngFor="let biller of billers" [value]="biller.billerId">{{ biller.billerName }}</option>
-          </select>
+        <div class="biller-subtitle">
+          Credit Card
         </div>
-        <div class="loader-placeholder" *ngIf="loadingBillers">
-          <div class="spinner-border spinner-sm"></div> Loading billers...
-        </div>
+
+      </div>
+
+
+      <!-- SELECTED CHECK -->
+      <div
+        class="biller-check"
+        *ngIf="selectedBiller === biller.billerId"
+      >
+        ✓
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- LOADING BILLERS -->
+<div
+  class="biller-loading"
+  *ngIf="
+    selectedCategory === 'Credit Card'
+    && loadingBillers
+  "
+>
+
+  <div class="biller-spinner"></div>
+
+  <span>
+    Loading credit card billers...
+  </span>
+
+</div>
+
+<!-- COMING SOON MODAL -->
+<div
+  class="coming-soon-overlay"
+  *ngIf="showComingSoonModal"
+  (click)="closeComingSoon()"
+>
+
+  <div
+    class="coming-soon-modal"
+    (click)="$event.stopPropagation()"
+  >
+
+    <!-- CLOSE -->
+    <button
+      type="button"
+      class="coming-soon-close"
+      (click)="closeComingSoon()"
+    >
+      ×
+    </button>
+
+
+    <!-- ICON -->
+    <div class="coming-soon-icon">
+      🚀
+    </div>
+
+
+    <!-- TITLE -->
+    <h2>
+      Coming Soon
+    </h2>
+
+
+    <!-- CATEGORY -->
+    <p class="coming-soon-category">
+      {{ comingSoonCategory }}
+    </p>
+
+
+    <!-- MESSAGE -->
+    <p class="coming-soon-message">
+      We're working on this service and it will be
+      available soon. Please check back shortly.
+    </p>
+
+
+    <!-- BUTTON -->
+    <button
+      type="button"
+      class="coming-soon-button"
+      (click)="closeComingSoon()"
+    >
+      Got it
+    </button>
+
+  </div>
+
+</div>
       </div>
 
       <!-- Customer Information Card -->
