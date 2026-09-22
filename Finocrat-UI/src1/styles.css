@@ -1,0 +1,49 @@
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow-x: hidden;
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.toast-container {
+  z-index: 999999;
+}
+
+.toast-success {
+  font-size: 14px;
+}
+
+.toast-error {
+  font-size: 14px;
+}
+
+.app-container {
+  transition: filter 0.3s ease;
+  min-height: 100vh;
+}
+
+.app-blur {
+  filter: blur(5px);
+  pointer-events: none;
+}
+
+.no-scroll {
+  overflow: hidden;
+  height: 100vh;
+}
+
+
+/* FORCE TOAST TO TOP-RIGHT REGARDLESS OF LAYOUT */
+/* .toast-container.toast-top-right {
+  top: 16px !important;
+  right: 16px !important;
+  bottom: auto !important;
+  left: auto !important;
+  position: fixed !important;
+  z-index: 99999 !important;
+} */

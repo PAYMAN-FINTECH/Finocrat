@@ -1,0 +1,43 @@
+<div *ngIf="isLoading" class="loader">
+  Processing Payment...
+</div>
+
+<!-- SUCCESS SCREEN -->
+<div class="success-overlay" *ngIf="showSuccessScreen">
+  <div class="success-card">
+
+    <div class="success-animation">
+      <div class="checkmark-circle">
+        <div class="checkmark"></div>
+      </div>
+    </div>
+
+    <h2>Payment Successful 🎉</h2>
+    <p>Your wallet has been credited successfully.</p>
+
+    <button class="success-btn" (click)="goToDashboard()">
+      Go to Dashboard
+    </button>
+
+  </div>
+</div>
+
+<!-- FAILURE SCREEN -->
+<div class="failure-overlay" *ngIf="showFailureScreen">
+  <div class="failure-card">
+
+    <div class="failure-animation">
+      <div class="cross-circle">
+        <div class="cross"></div>
+      </div>
+    </div>
+
+    <h2>Payment Failed ❌</h2>
+    <p>Something went wrong. Please try again.</p>
+
+    <button class="failure-btn" (click)="goToDashboard()">
+      Try Again
+    </button>
+
+  </div>
+</div>

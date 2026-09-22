@@ -1,0 +1,23 @@
+<div class="learning-page">
+
+  <!-- Success Message -->
+  <!-- Bottom toast -->
+  <div class="toast-container" *ngIf="showSuccessMessage">
+    <div class="toast">
+      <span class="toast-icon">✅</span>
+      <span class="toast-text">{{ successMessage }}</span>
+    </div>
+  </div>
+
+  <h1>My Learning</h1>
+
+  <div class="learning-card" *ngIf="enrolledCourses.length === 0">
+    <p class="empty-text">
+      You haven't enrolled in any courses yet.
+    </p>
+
+    <button class="browse-btn" (click)="browseCourses()">
+      Browse Courses
+    </button>
+  </div>
+</div>

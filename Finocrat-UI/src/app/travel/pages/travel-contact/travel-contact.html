@@ -1,0 +1,370 @@
+
+
+<section class="contact-hero">
+
+  <div class="hero-bg"></div>
+
+  <div class="hero-content">
+
+    <span class="section-badge hero-badge">
+      <i class="fas fa-phone-alt"></i>
+      CONTACT US
+    </span>
+
+    <h1>
+      We're Here to Help -
+      <span>Reach Out Anytime</span>
+    </h1>
+
+    <p>
+      Get in touch with our team for any questions or support.
+    </p>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================
+     CONTACT INFORMATION
+========================================= -->
+
+<section class="contact-info-section">
+
+  <div class="section-heading">
+
+    <span class="section-badge">
+      <i class="fas fa-heart"></i>
+      GET IN TOUCH
+    </span>
+
+    <h2>
+      We'd Love to Hear From You
+    </h2>
+
+  </div>
+
+
+  <div class="contact-cards">
+
+
+    <!-- CALL US -->
+
+    <div class="contact-card">
+
+      <div class="contact-icon">
+        <i class="fas fa-phone-alt"></i>
+      </div>
+
+      <h3>Call Us</h3>
+
+      <p>
+        24/7 Customer Support
+      </p>
+
+      <a
+        href="tel:+917702205291"
+        class="contact-value">
+
+        +91 7702205291
+
+      </a>
+
+    </div>
+
+
+    <!-- EMAIL -->
+
+    <div class="contact-card">
+
+      <div class="contact-icon">
+        <i class="fas fa-envelope"></i>
+      </div>
+
+      <h3>Email Us</h3>
+
+      <p>
+        Send us your queries
+      </p>
+
+      <a
+        href="mailto:operations@thefinocrat.com"
+        class="contact-value">
+
+        operations@thefinocrat.com
+
+      </a>
+
+    </div>
+
+
+    <!-- VISIT -->
+
+    <div class="contact-card">
+
+      <div class="contact-icon">
+        <i class="fas fa-map-marker-alt"></i>
+      </div>
+
+      <h3>Visit Us</h3>
+
+      <p>
+        Our Office Location
+      </p>
+
+      <div class="address">
+        Premises bearing No H.No. 7-1-414/B,
+        Mankammathtoa,
+        Opp Shivani Degree College, Karimnagar,
+        Karimnagar, Telangana – 505001
+      </div>
+
+    </div>
+
+  </div>
+
+</section>
+
+
+<!-- =========================================
+     CONTACT FORM + MAP
+========================================= -->
+
+<section class="contact-main">
+
+  <div class="contact-main-container">
+
+    <div class="contact-grid">
+
+
+      <!-- =====================================
+           CONTACT FORM
+      ====================================== -->
+
+      <div class="form-area">
+
+        <span class="section-badge">
+          <i class="fas fa-paper-plane"></i>
+          SEND US A MESSAGE
+        </span>
+
+        <h3>
+          We'd love to hear from you
+        </h3>
+
+
+        <form
+          #contact="ngForm"
+          (ngSubmit)="submitForm()"
+          class="contact-form">
+
+
+          <!-- NAME + EMAIL -->
+
+          <div class="form-row">
+
+            <div class="form-group">
+
+              <label>
+                Your Name *
+              </label>
+
+              <input
+                type="text"
+                name="name"
+                [(ngModel)]="contactForm.name"
+                required
+                placeholder="John Doe">
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Your Email *
+              </label>
+
+              <input
+                type="email"
+                name="email"
+                [(ngModel)]="contactForm.email"
+                required
+                email
+                placeholder="john@example.com">
+
+            </div>
+
+          </div>
+
+
+          <!-- PHONE + SUBJECT -->
+
+          <div class="form-row">
+
+            <div class="form-group">
+
+              <label>
+                Phone Number
+              </label>
+
+              <input
+                type="tel"
+                name="phone"
+                [(ngModel)]="contactForm.phone"
+                placeholder="+91 98765 43210">
+
+            </div>
+
+
+            <div class="form-group">
+
+              <label>
+                Subject
+              </label>
+
+              <input
+                type="text"
+                name="subject"
+                [(ngModel)]="contactForm.subject"
+                placeholder="General Inquiry">
+
+            </div>
+
+          </div>
+
+
+          <!-- MESSAGE -->
+
+          <div class="form-group">
+
+            <label>
+              Your Message *
+            </label>
+
+            <textarea
+              name="message"
+              [(ngModel)]="contactForm.message"
+              required
+              rows="5"
+              placeholder="How can we help you?">
+            </textarea>
+
+          </div>
+
+
+          <!-- SUBMIT -->
+
+          <button
+            type="submit"
+            class="send-button"
+            [disabled]="!contact.valid">
+
+            <span>Send Message</span>
+
+            <i class="fas fa-arrow-right"></i>
+
+          </button>
+
+
+          <!-- SUCCESS -->
+
+          <div
+            *ngIf="submitted"
+            class="success-message">
+
+            <i class="fas fa-check-circle"></i>
+
+            Thank you! Your message has been received.
+
+          </div>
+
+
+        </form>
+
+      </div>
+
+
+      <!-- =====================================
+           MAP + BUSINESS HOURS
+      ====================================== -->
+
+      <div class="map-area">
+
+
+        <!-- MAP -->
+
+        <div class="map-section">
+
+          <span class="section-badge">
+            <i class="fas fa-map"></i>
+            FIND US ON MAP
+          </span>
+
+
+          <div class="map-container">
+
+            <iframe
+              src="https://www.google.com/maps?q=Nacharam,Hyderabad,Telangana&output=embed"
+              loading="lazy"
+              allowfullscreen>
+            </iframe>
+
+          </div>
+
+        </div>
+
+
+        <!-- BUSINESS HOURS -->
+
+        <div class="hours-card">
+
+          <span class="section-badge">
+            <i class="fas fa-clock"></i>
+            BUSINESS HOURS
+          </span>
+
+
+          <div class="hours-content">
+
+            <div class="hours-item">
+
+              <h4>
+                Customer Support
+              </h4>
+
+              <p>
+                Available 24/7 for your assistance
+              </p>
+
+            </div>
+
+
+            <div class="hours-item">
+
+              <h4>
+                Office Hours
+              </h4>
+
+              <p>
+                Monday - Saturday:
+                9:00 AM - 6:00 PM
+              </p>
+
+              <p>
+                Sunday: Closed
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</section>

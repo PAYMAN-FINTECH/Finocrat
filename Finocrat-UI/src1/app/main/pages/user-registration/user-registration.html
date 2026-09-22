@@ -1,0 +1,64 @@
+<div class="fintech-wrapper">
+
+  <div class="card fintech-card">
+    <div class="card-header fintech-header">
+      <h2>Create User Account</h2>
+      <p>Secure Fintech Registration</p>
+    </div>
+
+    <form [formGroup]="registerForm" (ngSubmit)="submit()">
+
+      <div class="row">
+        <div class="col">
+          <label>First Name</label>
+          <input type="text" formControlName="firstName">
+        </div>
+
+        <div class="col">
+          <label>Last Name</label>
+          <input type="text" formControlName="lastName">
+        </div>
+      </div>
+
+      <label>Email Address</label>
+      <input type="email" formControlName="email">
+
+      <label>Phone Number</label>
+      <input type="text" formControlName="phone">
+
+      <label>Gender</label>
+      <select formControlName="gender">
+        <option value="">Select</option>
+        <option>Male</option>
+        <option>Female</option>
+        <option>Other</option>
+      </select>
+
+      <label>Margin Plan</label>
+      <select formControlName="marginId">
+        <option value="">Select Plan</option>
+        <option *ngFor="let m of margins" [value]="m.id">
+          {{m.marginName}} ({{m.percentage}}%)
+        </option>
+      </select>
+
+      <div class="checkbox-group">
+        <label>
+          <input type="checkbox" formControlName="isRazorpayEnabled">
+          Enable Razorpay Payments
+        </label>
+
+        <label>
+          <input type="checkbox" formControlName="isActive">
+          Active Account
+        </label>
+      </div>
+
+      <button type="submit" [disabled]="registerForm.invalid">
+        Create Account
+      </button>
+
+    </form>
+  </div>
+
+</div>

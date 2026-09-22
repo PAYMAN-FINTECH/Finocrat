@@ -34,6 +34,7 @@ export class App implements OnInit, OnDestroy {
 
   isEdu = window.location.hostname.startsWith('edu.');
   isFastag = window.location.hostname.startsWith('fastag');
+  isTravel = window.location.hostname.startsWith('travel.');
   
   showFooter = true;
   showGlobalPin = false;

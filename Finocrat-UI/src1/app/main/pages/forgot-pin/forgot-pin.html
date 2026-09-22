@@ -1,0 +1,102 @@
+<div class="forgot-pin-container">
+  <div class="forgot-pin-card">
+    
+    <!-- Header -->
+    <div class="header">
+      <div class="lock-icon">🔐</div>
+      <h2>Forgot PIN?</h2>
+      <p>Reset your PIN in 2 simple steps</p>
+    </div>
+
+    <!-- Step Progress Indicator -->
+    <div class="step-indicator">
+      <div class="step" [class.active]="step >= 1" [class.completed]="step > 1">
+        {{ step > 1 ? '✓' : '1' }}
+      </div>
+      <div class="step-line" [class.active]="step > 1"></div>
+      <div class="step" [class.active]="step >= 2">
+        2
+      </div>
+    </div>
+
+    <!-- STEP 1: Enter User ID -->
+    <div *ngIf="step === 1" class="step-container">
+      <h3>Verify Your Identity</h3>
+      <p class="step-description">Enter your registered mobile number or email address</p>
+      
+      <div class="form-group">
+        <label>📱 Mobile Number / Email</label>
+        <input 
+          type="text" 
+          [(ngModel)]="userId" 
+          placeholder="e.g., 9876543210 or user@example.com"
+          class="form-control"
+          [disabled]="isLoading"
+          (keyup.enter)="sendOtp()"
+          autofocus
+        >
+      </div>
+      
+      <div class="error-message" *ngIf="errorMessage">
+        <span class="error-icon">⚠️</span> {{ errorMessage }}
+      </div>
+      
+      <button 
+        class="btn-primary" 
+        (click)="sendOtp()" 
+        [disabled]="isLoading || !userId">
+        {{ isLoading ? 'Sending OTP...' : 'Send OTP' }}
+      </button>
+      
+      <button class="btn-link" (click)="goToLogin()">
+        ← Back to Login
+      </button>
+    </div>
+
+    <!-- STEP 2: Verify OTP -->
+    <div *ngIf="step === 2" class="step-container">
+      <h3>Enter Verification Code</h3>
+      <p class="step-description">We've sent a 6-digit OTP to your registered contact</p>
+      
+      <div class="otp-container">
+        <input 
+          type="text" 
+          [(ngModel)]="otp" 
+          placeholder="••••••"
+          maxlength="6"
+          class="otp-input"
+          inputmode="numeric"
+          pattern="\d*"
+          [disabled]="isLoading"
+          (keyup.enter)="verifyOtp()"
+          autofocus
+        >
+      </div>
+      
+      <div class="error-message" *ngIf="errorMessage">
+        <span class="error-icon">⚠️</span> {{ errorMessage }}
+      </div>
+      
+      <button 
+        class="btn-primary" 
+        (click)="verifyOtp()" 
+        [disabled]="isLoading || otp.length < 4">
+        {{ isLoading ? 'Verifying...' : 'Verify & Set New PIN' }}
+      </button>
+      
+      <div class="resend-container">
+        <button 
+          class="btn-resend" 
+          (click)="resendOtp()" 
+          [disabled]="timer > 0">
+          {{ timer > 0 ? `Resend OTP in ${timer}s` : 'Resend OTP' }}
+        </button>
+      </div>
+      
+      <button class="btn-link" (click)="goBack()">
+        ← Back
+      </button>
+    </div>
+
+  </div>
+</div>

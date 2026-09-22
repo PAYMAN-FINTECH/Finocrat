@@ -1,0 +1,74 @@
+
+<div class="contact-page">
+
+  <!-- Header -->
+  <div class="contact-header">
+    <h1>Contact Us</h1>
+    <p>
+      Have questions? We'd love to hear from you.
+      Send us a message and we'll respond as soon as possible.
+    </p>
+  </div>
+
+  <!-- Content -->
+  <div class="container contact-container">
+
+    <!-- Left: Contact Info -->
+    <div class="contact-info">
+      <div class="info-card">
+        <h4>📍 Address</h4>
+        <p>{{ contactInfo.address }}</p>
+      </div>
+
+      <div class="info-card">
+        <h4>📧 Email</h4>
+        <p>{{ contactInfo.email }}</p>
+      </div>
+
+      <div class="info-card">
+        <h4>📞 Phone</h4>
+        <p *ngFor="let phone of contactInfo.phones">
+          {{ phone }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Right: Contact Form -->
+    <div class="contact-form">
+      <h3>Send Your Message</h3>
+
+      <form [formGroup]="contactForm" (ngSubmit)="submitForm()">
+
+        <input
+          type="text"
+          placeholder="Your Name"
+          formControlName="name"
+        />
+
+        <input
+          type="email"
+          placeholder="Email Address"
+          formControlName="email"
+        />
+
+        <input
+          type="text"
+          placeholder="Mobile Number"
+          formControlName="mobile"
+        />
+
+        <textarea
+          rows="4"
+          placeholder="Write your message..."
+          formControlName="message">
+        </textarea>
+
+        <button type="submit" [disabled]="isSubmitting">
+          {{ isSubmitting ? 'Sending...' : 'Send Message' }}
+        </button>
+
+      </form>
+    </div>
+
+  </div>
+</div>

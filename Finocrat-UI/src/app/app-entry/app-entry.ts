@@ -23,6 +23,9 @@ export class AppEntryComponent implements OnInit {
     
     // Check for FASTag in URL path or subdomain
     const isFastagDomain = hostname.startsWith('fastag.');
+
+    // Check for TRAVEL in URL path or subdomain
+    const isTravelDomain = hostname.startsWith('travel.');
     
     
     if (isEduDomain) {
@@ -32,6 +35,11 @@ export class AppEntryComponent implements OnInit {
     
     if (isFastagDomain) {
       this.router.navigateByUrl('/fastag');
+      return;
+    }
+    
+    if (isTravelDomain) {
+      this.router.navigateByUrl('/travel');
       return;
     }
     

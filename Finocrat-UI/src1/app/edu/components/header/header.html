@@ -1,0 +1,22 @@
+<header class="navbar">
+  <div class="logo" routerLink="/edu">
+    🎓 Finocrat Edu
+  </div>
+
+  <nav>
+    <a routerLink="/edu">Home</a>
+    <a routerLink="/edu/courses">Courses</a>
+
+    @if (!isLoggedIn) {
+      <a routerLink="/edu/login">Login</a>
+      <a routerLink="/edu/signup" class="btn">Sign Up</a>
+    }
+
+    @if (isLoggedIn) {
+      <a routerLink="/edu/my-learning">My Learning</a>
+      <a (click)="logout()" class="logout">
+        ⎋ Logout
+      </a>
+    }
+  </nav>
+</header>

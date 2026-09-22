@@ -1,0 +1,78 @@
+<div class="faq-container">
+  
+  <!-- Header Section -->
+  <section class="header-section">
+    <div class="header-content">
+      <div class="header-icon">❓</div>
+      <h1>Frequently Asked Questions</h1>
+      <p class="description">
+        Find answers to common questions about FASTag recharge, payments, and our services.
+        Can't find what you're looking for? Contact our support team.
+      </p>
+    </div>
+  </section>
+
+  <!-- Category Tabs -->
+  <div class="category-tabs">
+    <button 
+      *ngFor="let category of categories"
+      class="tab-btn"
+      [class.active]="activeCategory === category.id"
+      (click)="setCategory(category.id)">
+      <span class="tab-icon">{{ category.icon }}</span>
+      <span>{{ category.name }}</span>
+    </button>
+  </div>
+
+  <!-- FAQ Accordion -->
+  <div class="faq-section">
+    <div class="faq-list">
+      <div 
+        *ngFor="let faq of getCurrentFaqs()" 
+        class="faq-item"
+        [class.active]="activeQuestion === faq.id">
+        
+        <div class="faq-question" (click)="toggleQuestion(faq.id)">
+          <span class="question-icon">{{ activeQuestion === faq.id ? '▼' : '▶' }}</span>
+          <h3>{{ faq.question }}</h3>
+        </div>
+        
+        <div class="faq-answer" *ngIf="activeQuestion === faq.id">
+          <p>{{ faq.answer }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Still Have Questions -->
+  <div class="support-section">
+    <div class="support-card">
+      <div class="support-icon">💬</div>
+      <h3>Still Have Questions?</h3>
+      <p>Can't find the answer you're looking for? Please contact our support team.</p>
+      <div class="support-buttons">
+        <a routerLink="/fastag/contact" class="btn-contact">Contact Support →</a>
+        <a href="mailto:operations@thefinocrat.com" class="btn-email">📧 Email Us</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick Links -->
+  <div class="quick-links">
+    <h3>Quick Links</h3>
+    <div class="links-grid">
+      <a routerLink="/fastag" class="quick-link">🚗 Recharge Now</a>
+      <a routerLink="/fastag/privacy-policy" class="quick-link">🔒 Privacy Policy</a>
+      <a routerLink="/fastag/refund-policy" class="quick-link">🔄 Refund Policy</a>
+      <a routerLink="/fastag/terms" class="quick-link">📜 Terms & Conditions</a>
+      <a routerLink="/fastag/about" class="quick-link">ℹ️ About Us</a>
+      <a routerLink="/fastag/contact" class="quick-link">📞 Contact Us</a>
+    </div>
+  </div>
+
+  <!-- Back to Home -->
+  <div class="back-to-home">
+    <a routerLink="/fastag" class="btn-home">← Back to Home</a>
+  </div>
+
+</div>

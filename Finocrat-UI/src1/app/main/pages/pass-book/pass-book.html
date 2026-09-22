@@ -1,0 +1,45 @@
+<div class="passbook-container">
+
+  <!-- 🔍 FILTER -->
+  <div class="filter-box">
+    <input type="date" [(ngModel)]="fromDate">
+    <input type="date" [(ngModel)]="toDate">
+    <button (click)="applyFilter()">Filter</button>
+  </div>
+
+  <!-- 📄 PASSBOOK -->
+  <div *ngFor="let date of objectKeys(groupedData)">
+
+    <div class="date-header">{{ date }}</div>
+
+    <div *ngFor="let tx of groupedData[date]" class="txn-card">
+
+      <!-- LEFT -->
+      <div class="left">
+        <div class="name">{{ tx.name }}</div>
+        <div class="type">{{ tx.transactionType }}</div>
+        <div class="txn-id">Txn: {{ tx.txnId }}</div>
+      </div>
+
+      <!-- RIGHT -->
+      <div class="right">
+        <div [ngClass]="tx.amountClass">
+          {{ tx.displayAmount }}
+        </div>
+
+        <div class="balance">
+          Bal: ₹{{ tx.balance }}
+        </div>
+
+        <div class="status" 
+             [class.success]="tx.status" 
+             [class.failed]="!tx.status">
+          {{ tx.statusText }}
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>

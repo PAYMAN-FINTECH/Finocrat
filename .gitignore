@@ -266,6 +266,10 @@ ServiceFabricBackup/
 *.ldf
 *.ndf
 
+# ASP.NET local settings
+appsettings.Development.json
+appsettings.Local.json
+
 # Business Intelligence projects
 *.rdl.data
 *.bim.layout

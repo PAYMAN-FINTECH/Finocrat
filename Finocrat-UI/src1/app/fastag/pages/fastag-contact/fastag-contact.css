@@ -1,0 +1,498 @@
+.contact-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Header Section */
+.header-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 30px;
+  padding: 50px 40px;
+  margin-bottom: 40px;
+  text-align: center;
+  color: white;
+}
+
+.header-icon {
+  font-size: 64px;
+  margin-bottom: 15px;
+}
+
+.header-content h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 15px;
+}
+
+.description {
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 600px;
+  margin: 0 auto;
+  opacity: 0.95;
+}
+
+/* Contact Grid */
+.contact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+/* Contact Form Card */
+.contact-form-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.form-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.form-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.form-header h2 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.form-header p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #334155;
+  font-size: 14px;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 14px;
+  font-size: 18px;
+  color: #94a3b8;
+}
+
+.input-wrapper input,
+.input-wrapper textarea {
+  width: 100%;
+  padding: 14px 14px 14px 45px;
+  border: 2px solid #e2e8f0;
+  border-radius: 14px;
+  font-size: 14px;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.input-wrapper textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.input-wrapper input:focus,
+.input-wrapper textarea:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+/* Submit Button */
+.submit-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.submit-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Success Message */
+.success-message {
+  margin-top: 20px;
+  padding: 12px;
+  background: #f0fdf4;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #166534;
+  font-size: 14px;
+}
+
+.success-icon {
+  width: 22px;
+  height: 22px;
+  background: #22c55e;
+  color: white;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: bold;
+}
+
+/* Contact Info Card */
+.contact-info-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.info-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.info-icon {
+  font-size: 48px;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.info-header h2 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 8px;
+}
+
+.info-header p {
+  font-size: 14px;
+  color: #64748b;
+}
+
+/* Info Items */
+.info-details {
+  margin-bottom: 30px;
+}
+
+.info-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.info-item:last-child {
+  border-bottom: none;
+}
+
+.info-item-icon {
+  font-size: 24px;
+  min-width: 40px;
+}
+
+.info-item-content h4 {
+  font-size: 16px;
+  color: #1e293b;
+  margin: 0 0 5px 0;
+}
+
+.info-item-content p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.info-item-content a {
+  color: #667eea;
+  text-decoration: none;
+}
+
+.info-item-content a:hover {
+  text-decoration: underline;
+}
+
+.hours {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 4px;
+}
+
+/* Social Section */
+.social-section {
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e2e8f0;
+}
+
+.social-section h4 {
+  font-size: 16px;
+  color: #1e293b;
+  margin-bottom: 15px;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 40px;
+  text-decoration: none;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.social-link.facebook {
+  background: #1877f2;
+  color: white;
+}
+
+.social-link.twitter {
+  background: #1da1f2;
+  color: white;
+}
+
+.social-link.linkedin {
+  background: #0077b5;
+  color: white;
+}
+
+.social-link.instagram {
+  background: #e4405f;
+  color: white;
+}
+
+.social-link:hover {
+  transform: translateY(-3px);
+  opacity: 0.9;
+}
+
+/* Map Section */
+.map-section {
+  margin-bottom: 30px;
+}
+
+.map-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.map-card h3 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 20px;
+}
+
+.map-placeholder iframe {
+  width: 100%;
+  height: 300px;
+  border-radius: 16px;
+}
+
+.map-note {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.map-note p {
+  font-size: 14px;
+  color: #64748b;
+  margin: 0;
+}
+
+/* FAQ Section */
+.faq-section {
+  margin-bottom: 30px;
+}
+
+.faq-card {
+  background: white;
+  border-radius: 24px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.faq-card h3 {
+  font-size: 20px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.faq-item {
+  padding: 15px;
+  background: #f8fafc;
+  border-radius: 16px;
+}
+
+.faq-item h4 {
+  font-size: 15px;
+  color: #1e293b;
+  margin: 0 0 8px 0;
+}
+
+.faq-item p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Back to Home */
+.back-to-home {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.btn-home {
+  display: inline-block;
+  padding: 12px 30px;
+  background: #64748b;
+  color: white;
+  text-decoration: none;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-home:hover {
+  background: #475569;
+  transform: translateY(-2px);
+}
+
+/* Spinner */
+.spinner {
+  width: 18px;
+  height: 18px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  display: inline-block;
+  animation: spin 0.6s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 992px) {
+  .contact-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .faq-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-content h1 {
+    font-size: 32px;
+  }
+  
+  .description {
+    font-size: 14px;
+  }
+  
+  .contact-form-card,
+  .contact-info-card,
+  .map-card,
+  .faq-card {
+    padding: 20px;
+  }
+  
+  .info-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .info-item-icon {
+    min-width: auto;
+  }
+  
+  .social-links {
+    gap: 10px;
+  }
+  
+  .social-link span {
+    display: none;
+  }
+  
+  .social-link {
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-container {
+    padding: 20px 15px;
+  }
+  
+  .header-section {
+    padding: 30px 20px;
+  }
+  
+  .header-content h1 {
+    font-size: 28px;
+  }
+  
+  .form-header h2,
+  .info-header h2 {
+    font-size: 20px;
+  }
+}

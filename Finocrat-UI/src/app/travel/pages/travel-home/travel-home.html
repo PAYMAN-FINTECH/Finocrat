@@ -1,0 +1,1703 @@
+<div class="travel-page">
+
+  <!-- =====================================================
+       HERO
+  ====================================================== -->
+
+  <section class="hero">
+
+    <div class="hero-overlay"></div>
+
+    <div class="hero-content">
+
+      <div class="hero-badge">
+        <span class="badge-dot"></span>
+        Smart travel made simple
+      </div>
+
+      <h1>
+        Travel smarter.
+        <br>
+
+        <span>Travel better.</span>
+      </h1>
+
+      <p class="hero-description">
+        Discover convenient, affordable and comfortable
+        bus journeys across Telangana.
+      </p>
+
+      <div class="hero-actions">
+
+        <button
+          class="primary-btn"
+          (click)="openBookingModal()"
+        >
+          Book Your Journey
+          <span>→</span>
+        </button>
+
+        <button
+          class="secondary-btn"
+          (click)="scrollTo('about')"
+        >
+          Explore PayWoo
+        </button>
+
+      </div>
+
+      <div class="hero-trust">
+
+        <div class="avatar-stack">
+
+          <div class="avatar">R</div>
+          <div class="avatar">P</div>
+          <div class="avatar">A</div>
+          <div class="avatar">S</div>
+
+        </div>
+
+        <div>
+          <strong>10,000+ travellers</strong>
+          <span>trust our platform</span>
+        </div>
+
+      </div>
+
+    </div>
+
+    <div class="hero-image">
+
+      <img
+        src="/assets/images/travel/ts1.webp"
+        alt="Travel"
+      />
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       FIND ROUTE
+  ====================================================== -->
+
+  <section
+    class="route-section"
+    id="booking"
+  >
+
+    <div class="section-container">
+
+      <div class="section-heading center">
+
+        <span class="section-label">
+          FIND YOUR ROUTE
+        </span>
+
+        <h2>
+          Where do you want to go?
+        </h2>
+
+        <p>
+          Select your pickup and destination
+          to start your journey.
+        </p>
+
+      </div>
+
+
+      <div class="route-card">
+
+        <!-- PICKUP -->
+
+        <div
+          class="location-box"
+          (click)="openLocationModal('pickup')"
+        >
+
+          <div class="location-icon pickup-icon">
+            <span>●</span>
+          </div>
+
+          <div class="location-content">
+
+            <span class="location-label">
+              PICKUP LOCATION
+            </span>
+
+            <strong>
+              {{
+                pickupLocation ||
+                'Select pickup location'
+              }}
+            </strong>
+
+          </div>
+
+          <span class="location-arrow">
+            →
+          </span>
+
+        </div>
+
+
+        <div class="route-line">
+
+          <span></span>
+
+        </div>
+
+
+        <!-- DROP OFF -->
+
+        <div
+          class="location-box"
+          (click)="openLocationModal('dropoff')"
+        >
+
+          <div class="location-icon dropoff-icon">
+            <span>●</span>
+          </div>
+
+          <div class="location-content">
+
+            <span class="location-label">
+              DROP-OFF LOCATION
+            </span>
+
+            <strong>
+              {{
+                dropoffLocation ||
+                'Select destination'
+              }}
+            </strong>
+
+          </div>
+
+          <span class="location-arrow">
+            →
+          </span>
+
+        </div>
+
+
+        <button
+          class="search-route-btn"
+          (click)="openBookingModal()"
+        >
+          <span>Search Buses</span>
+          <span>→</span>
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       LOCATION MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="locationModalOpen"
+    (click)="closeLocationModal()"
+  >
+
+    <div
+      class="location-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <div class="modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            SELECT LOCATION
+          </span>
+
+          <h3>
+            {{
+              locationType === 'pickup'
+                ? 'Where will you board?'
+                : 'Where are you going?'
+            }}
+          </h3>
+
+        </div>
+
+        <button
+          class="close-btn"
+          (click)="closeLocationModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <div class="location-search">
+
+        <span>⌕</span>
+
+        <input
+          type="text"
+          [(ngModel)]="locationSearch"
+          placeholder="Search location..."
+        />
+
+      </div>
+
+
+      <div class="location-list">
+
+        <button
+          *ngFor="let location of filteredLocations"
+          class="location-option"
+          (click)="selectLocation(location)"
+        >
+
+          <span class="option-icon">
+            ●
+          </span>
+
+          <span>
+            {{ location }}
+          </span>
+
+          <span class="option-arrow">
+            →
+          </span>
+
+        </button>
+
+
+        <div
+          class="empty-location"
+          *ngIf="filteredLocations.length === 0"
+        >
+          No locations found.
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       BOOKING MODAL
+  ====================================================== -->
+
+  <div
+    class="modal-backdrop"
+    *ngIf="bookingModalOpen"
+    (click)="closeBookingModal()"
+  >
+
+    <div
+      class="booking-modal"
+      (click)="$event.stopPropagation()"
+    >
+
+      <!-- HEADER -->
+
+      <div class="booking-modal-header">
+
+        <div>
+
+          <span class="modal-label">
+            PAYWOO TRAVEL
+          </span>
+
+          <h3>
+            {{
+              bookingStep === 1
+                ? 'Search buses'
+                : bookingStep === 2
+                ? 'Choose your bus'
+                : bookingStep === 3
+                ? 'Passenger details'
+                : 'Booking confirmed'
+            }}
+          </h3>
+
+        </div>
+
+        <button
+          class="close-btn"
+          (click)="closeBookingModal()"
+        >
+          ×
+        </button>
+
+      </div>
+
+
+      <!-- PROGRESS -->
+
+      <div
+        class="booking-progress"
+        *ngIf="bookingStep !== 4"
+      >
+
+        <div
+          class="progress-item"
+          [class.active]="bookingStep >= 1"
+        >
+          <span>1</span>
+          Search
+        </div>
+
+        <div class="progress-line"></div>
+
+        <div
+          class="progress-item"
+          [class.active]="bookingStep >= 2"
+        >
+          <span>2</span>
+          Bus
+        </div>
+
+        <div class="progress-line"></div>
+
+        <div
+          class="progress-item"
+          [class.active]="bookingStep >= 3"
+        >
+          <span>3</span>
+          Details
+        </div>
+
+      </div>
+
+
+      <!-- STEP 1 -->
+
+      <div
+        class="booking-content"
+        *ngIf="bookingStep === 1"
+      >
+
+        <div class="form-grid">
+
+          <div class="form-group">
+
+            <label>
+              Pickup District
+            </label>
+
+            <select
+              [(ngModel)]="pickupDistrict"
+            >
+
+              <option value="">
+                Select pickup
+              </option>
+
+              <option
+                *ngFor="let district of districts"
+                [value]="district"
+              >
+                {{ district }}
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Drop-off District
+            </label>
+
+            <select
+              [(ngModel)]="dropoffDistrict"
+            >
+
+              <option value="">
+                Select destination
+              </option>
+
+              <option
+                *ngFor="let district of districts"
+                [value]="district"
+              >
+                {{ district }}
+              </option>
+
+            </select>
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Journey Date
+            </label>
+
+            <input
+              type="date"
+              [(ngModel)]="journeyDate"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Journey Time
+            </label>
+
+            <select
+              [(ngModel)]="journeyTime"
+            >
+
+              <option value="">
+                Select time
+              </option>
+
+              <option
+                *ngFor="let time of availableTimes"
+                [value]="time"
+              >
+                {{ time }}
+              </option>
+
+            </select>
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="booking-error"
+          *ngIf="paymentError"
+        >
+          {{ paymentError }}
+        </div>
+
+
+        <button
+          class="modal-primary-btn"
+          (click)="searchBuses()"
+        >
+          Search Available Buses
+          <span>→</span>
+        </button>
+
+      </div>
+
+
+      <!-- STEP 2 -->
+
+      <div
+        class="booking-content"
+        *ngIf="bookingStep === 2"
+      >
+
+        <div class="search-summary">
+
+          <div>
+            <span>FROM</span>
+            <strong>
+              {{ pickupDistrict }}
+            </strong>
+          </div>
+
+          <div class="summary-arrow">
+            →
+          </div>
+
+          <div>
+            <span>TO</span>
+            <strong>
+              {{ dropoffDistrict }}
+            </strong>
+          </div>
+
+          <div>
+            <span>DATE</span>
+            <strong>
+              {{ journeyDate }}
+            </strong>
+          </div>
+
+        </div>
+
+
+        <div class="bus-list">
+
+          <div
+            class="bus-card"
+            *ngFor="let bus of availableBuses"
+          >
+
+            <div class="bus-main">
+
+              <div class="bus-icon">
+                🚌
+              </div>
+
+              <div class="bus-details">
+
+                <span class="bus-operator">
+                  {{ bus.operator }}
+                </span>
+
+                <h4>
+                  {{ bus.busNumber }}
+                </h4>
+
+                <span class="bus-type">
+                  {{ bus.type }}
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <div class="bus-time">
+
+              <strong>
+                {{ bus.departure }}
+              </strong>
+
+              <span>
+                {{ bus.duration }}
+              </span>
+
+              <strong>
+                {{ bus.arrival }}
+              </strong>
+
+            </div>
+
+
+            <div class="bus-seats">
+
+              <span>
+                {{ bus.seats }} seats
+              </span>
+
+              <strong>
+                {{ formatCurrency(bus.fare) }}
+              </strong>
+
+            </div>
+
+
+            <button
+              class="select-bus-btn"
+              (click)="selectBus(bus)"
+            >
+              Select
+            </button>
+
+          </div>
+
+
+          <div
+            class="no-buses"
+            *ngIf="availableBuses.length === 0"
+          >
+            No buses available.
+          </div>
+
+        </div>
+
+
+        <button
+          class="back-btn"
+          (click)="backToSearch()"
+        >
+          ← Modify Search
+        </button>
+
+      </div>
+
+
+      <!-- STEP 3 -->
+
+      <div
+        class="booking-content"
+        *ngIf="bookingStep === 3"
+      >
+
+        <div class="selected-bus-summary">
+
+          <div class="selected-bus-icon">
+            🚌
+          </div>
+
+          <div>
+
+            <span>
+              {{ selectedBus?.operator }}
+            </span>
+
+            <strong>
+              {{ selectedBus?.busNumber }}
+            </strong>
+
+            <small>
+              {{ selectedBus?.departure }}
+              →
+              {{ selectedBus?.arrival }}
+            </small>
+
+          </div>
+
+          <div class="selected-price">
+
+            <span>
+              Fare
+            </span>
+
+            <strong>
+              {{ formatCurrency(amount) }}
+            </strong>
+
+          </div>
+
+        </div>
+
+
+        <div class="form-grid">
+
+          <div class="form-group full">
+
+            <label>
+              Passenger Name
+            </label>
+
+            <input
+              type="text"
+              [(ngModel)]="customerName"
+              placeholder="Enter passenger name"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Mobile Number
+            </label>
+
+            <input
+              type="tel"
+              maxlength="10"
+              [(ngModel)]="customerMobile"
+              placeholder="10 digit mobile"
+            />
+
+          </div>
+
+
+          <div class="form-group">
+
+            <label>
+              Email
+            </label>
+
+            <input
+              type="email"
+              [(ngModel)]="customerEmail"
+              placeholder="Email address"
+            />
+
+          </div>
+
+        </div>
+
+
+        <div
+          class="booking-error"
+          *ngIf="paymentError"
+        >
+          {{ paymentError }}
+        </div>
+
+
+        <div class="payment-note">
+
+          <span class="secure-icon">
+            🔒
+          </span>
+
+          <div>
+            <strong>
+              Secure payment
+            </strong>
+
+            <p>
+              You will be redirected to our secure
+              payment gateway.
+            </p>
+          </div>
+
+        </div>
+
+
+        <div class="modal-actions">
+
+          <button
+            class="back-btn"
+            (click)="backToBuses()"
+            [disabled]="paymentLoading"
+          >
+            ← Back
+          </button>
+
+          <button
+            class="modal-primary-btn"
+            (click)="submitPayment()"
+            [disabled]="paymentLoading"
+          >
+
+            <span
+              *ngIf="!paymentLoading"
+            >
+              Pay
+              {{ formatCurrency(amount) }}
+              →
+            </span>
+
+            <span
+              class="payment-spinner"
+              *ngIf="paymentLoading"
+            >
+              Processing...
+            </span>
+
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- STEP 4 -->
+
+      <div
+        class="booking-success"
+        *ngIf="bookingStep === 4"
+      >
+
+        <div class="success-icon">
+          ✓
+        </div>
+
+        <h2>
+          Booking confirmed!
+        </h2>
+
+        <p>
+          Your travel booking has been successfully
+          processed.
+        </p>
+
+        <div
+          class="payment-reference"
+          *ngIf="paymentId"
+        >
+          Payment ID:
+          <strong>
+            {{ paymentId }}
+          </strong>
+        </div>
+
+        <button
+          class="modal-primary-btn"
+          (click)="bookAnother()"
+        >
+          Book Another Journey
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =====================================================
+       ABOUT
+  ====================================================== -->
+
+  <section
+    class="about-section"
+    id="about"
+  >
+
+    <div class="section-container two-column">
+
+      <div class="about-image">
+
+        <img
+          src="/assets/images/travel/ad-img1.png"
+          alt="Travel with PayWoo"
+        />
+
+        <div class="floating-card">
+
+          <strong>
+            10K+
+          </strong>
+
+          <span>
+            Happy travellers
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="about-content">
+
+        <span class="section-label">
+          ABOUT PAYWOO
+        </span>
+
+        <h2>
+          Making every journey
+          <span>simple.</span>
+        </h2>
+
+        <p>
+          PayWoo is built to make everyday travel
+          simpler, smarter and more accessible.
+          From finding the right bus to completing
+          your payment, everything is designed around
+          your convenience.
+        </p>
+
+        <p>
+          Whether you are travelling for work,
+          visiting family or exploring a new place,
+          we help you move with confidence.
+        </p>
+
+
+        <div class="about-points">
+
+          <div>
+            <span>✓</span>
+            Easy online booking
+          </div>
+
+          <div>
+            <span>✓</span>
+            Transparent pricing
+          </div>
+
+          <div>
+            <span>✓</span>
+            Convenient travel options
+          </div>
+
+          <div>
+            <span>✓</span>
+            Secure payments
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       WHY CHOOSE US
+  ====================================================== -->
+
+  <section
+    class="why-section"
+    id="why-us"
+  >
+
+    <div class="section-container">
+
+      <div class="section-heading center">
+
+        <span class="section-label">
+          WHY CHOOSE US
+        </span>
+
+        <h2>
+          Built around your journey.
+        </h2>
+
+        <p>
+          Everything you need for a comfortable
+          and stress-free travel experience.
+        </p>
+
+      </div>
+
+
+      <div class="feature-grid">
+
+        <div class="feature-card">
+
+          <div class="feature-image">
+
+            <img
+              src="/assets/images/travel/ts8.jpg"
+              alt="Easy booking"
+            />
+
+          </div>
+
+          <div class="feature-content">
+
+            <span class="feature-number">
+              01
+            </span>
+
+            <h3>
+              Easy booking
+            </h3>
+
+            <p>
+              Search routes, compare buses and
+              book your journey in just a few steps.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="feature-card">
+
+          <div class="feature-image">
+
+            <img
+              src="/assets/images/travel/ts9.jpg"
+              alt="Comfortable travel"
+            />
+
+          </div>
+
+          <div class="feature-content">
+
+            <span class="feature-number">
+              02
+            </span>
+
+            <h3>
+              Comfortable travel
+            </h3>
+
+            <p>
+              Choose from multiple bus options
+              based on your preferred timing and comfort.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="feature-card">
+
+          <div class="feature-image">
+
+            <img
+              src="/assets/images/travel/ts10.jpg"
+              alt="Secure payments"
+            />
+
+          </div>
+
+          <div class="feature-content">
+
+            <span class="feature-number">
+              03
+            </span>
+
+            <h3>
+              Secure payments
+            </h3>
+
+            <p>
+              Complete your booking through a
+              secure payment gateway.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="feature-card">
+
+          <div class="feature-image">
+
+            <img
+              src="/assets/images/travel/ts11.jpg"
+              alt="Customer support"
+            />
+
+          </div>
+
+          <div class="feature-content">
+
+            <span class="feature-number">
+              04
+            </span>
+
+            <h3>
+              Traveller first
+            </h3>
+
+            <p>
+              A travel experience designed around
+              the needs of everyday travellers.
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       ADVERTISING
+  ====================================================== -->
+
+  <section
+    class="advertising-section"
+    id="business"
+  >
+
+    <div class="section-container">
+
+      <div class="advertising-intro">
+
+        <div>
+
+          <span class="section-label">
+            FOR BUSINESS
+          </span>
+
+          <h2>
+            Put your brand
+            <span>on the move.</span>
+          </h2>
+
+        </div>
+
+        <p>
+          Connect your brand with travellers through
+          high-visibility advertising opportunities
+          across our travel network.
+        </p>
+
+      </div>
+
+
+      <div class="advertising-grid">
+
+        <div class="ad-card large">
+
+          <img
+            src="/assets/images/travel/ts12.jpg"
+            alt="Bus advertising"
+          />
+
+          <div class="ad-overlay">
+
+            <span>
+              01
+            </span>
+
+            <h3>
+              On-Bus Advertising
+            </h3>
+
+            <p>
+              Turn everyday journeys into
+              meaningful brand impressions.
+            </p>
+
+          </div>
+
+        </div>
+
+
+        <div class="ad-card">
+
+          <img
+            src="/assets/images/travel/ts13.jpg"
+            alt="Travel advertising"
+          />
+
+          <div class="ad-overlay">
+
+            <span>
+              02
+            </span>
+
+            <h3>
+              High Visibility
+            </h3>
+
+          </div>
+
+        </div>
+
+
+        <div class="ad-card">
+
+          <img
+            src="/assets/images/travel/ts14.jpg"
+            alt="Brand advertising"
+          />
+
+          <div class="ad-overlay">
+
+            <span>
+              03
+            </span>
+
+            <h3>
+              Reach Travellers
+            </h3>
+
+          </div>
+
+        </div>
+
+
+        <div class="ad-card wide">
+
+          <img
+            src="/assets/images/travel/ts16.jpg"
+            alt="Brand campaign"
+          />
+
+          <div class="ad-overlay">
+
+            <span>
+              04
+            </span>
+
+            <h3>
+              Build Brand Recall
+            </h3>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       SUSTAINABILITY
+  ====================================================== -->
+
+  <section class="sustainability-section">
+
+    <div class="section-container sustainability-wrapper">
+
+      <div class="sustainability-image">
+
+        <img
+          src="/assets/images/travel/ts3.webp"
+          alt="Sustainable travel"
+        />
+
+      </div>
+
+
+      <div class="sustainability-content">
+
+        <span class="section-label">
+          BETTER FOR TOMORROW
+        </span>
+
+        <h2>
+          Travel with a
+          <span>lighter footprint.</span>
+        </h2>
+
+        <p>
+          Shared travel can help make transportation
+          more efficient while giving people a
+          convenient alternative for everyday journeys.
+        </p>
+
+
+        <div class="sustainability-stats">
+
+          <div>
+
+            <strong>
+              Shared
+            </strong>
+
+            <span>
+              journeys
+            </span>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Smarter
+            </strong>
+
+            <span>
+              mobility
+            </span>
+
+          </div>
+
+          <div>
+
+            <strong>
+              Better
+            </strong>
+
+            <span>
+              tomorrow
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       HOW IT WORKS
+  ====================================================== -->
+
+  <section
+    class="how-section"
+    id="how-it-works"
+  >
+
+    <div class="section-container">
+
+      <div class="section-heading center">
+
+        <span class="section-label">
+          HOW IT WORKS
+        </span>
+
+        <h2>
+          Your journey starts here.
+        </h2>
+
+        <p>
+          Four simple steps from search to destination.
+        </p>
+
+      </div>
+
+
+      <div class="steps-grid">
+
+        <div class="step-card">
+
+          <div class="step-image">
+
+            <img
+              src="/assets/images/travel/ts4.jpg"
+              alt="Search"
+            />
+
+            <span class="step-number">
+              01
+            </span>
+
+          </div>
+
+          <h3>
+            Search
+          </h3>
+
+          <p>
+            Enter your pickup and destination.
+          </p>
+
+        </div>
+
+
+        <div class="step-card">
+
+          <div class="step-image">
+
+            <img
+              src="/assets/images/travel/ts5.jpg"
+              alt="Choose"
+            />
+
+            <span class="step-number">
+              02
+            </span>
+
+          </div>
+
+          <h3>
+            Choose
+          </h3>
+
+          <p>
+            Compare available buses and fares.
+          </p>
+
+        </div>
+
+
+        <div class="step-card">
+
+          <div class="step-image">
+
+            <img
+              src="/assets/images/travel/ts7.jpg"
+              alt="Book"
+            />
+
+            <span class="step-number">
+              03
+            </span>
+
+          </div>
+
+          <h3>
+            Book
+          </h3>
+
+          <p>
+            Enter your details and complete payment.
+          </p>
+
+        </div>
+
+
+        <div class="step-card">
+
+          <div class="step-image">
+
+            <img
+              src="/assets/images/travel/ts3.webp"
+              alt="Travel"
+            />
+
+            <span class="step-number">
+              04
+            </span>
+
+          </div>
+
+          <h3>
+            Travel
+          </h3>
+
+          <p>
+            Sit back and enjoy your journey.
+          </p>
+
+        </div>
+
+      </div>
+
+
+      <div class="how-action">
+
+        <button
+          class="primary-btn dark"
+          (click)="openBookingModal()"
+        >
+          Start Booking
+          <span>→</span>
+        </button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       TESTIMONIALS
+  ====================================================== -->
+
+  <section class="testimonial-section">
+
+    <div class="section-container">
+
+      <div class="section-heading center">
+
+        <span class="section-label">
+          TRAVELLER STORIES
+        </span>
+
+        <h2>
+          Loved by travellers.
+        </h2>
+
+      </div>
+
+
+      <div class="testimonial-wrapper">
+
+        <button
+          class="testimonial-arrow"
+          (click)="previousTestimonial()"
+        >
+          ←
+        </button>
+
+
+        <div class="testimonial-card">
+
+          <div class="quote-icon">
+            “
+          </div>
+
+          <p>
+            {{
+              testimonials[currentTestimonial].message
+            }}
+          </p>
+
+
+          <div class="rating">
+
+            <span
+              *ngFor="
+                let star of [1,2,3,4,5]
+              "
+            >
+              ★
+            </span>
+
+          </div>
+
+
+          <div class="testimonial-person">
+
+            <div class="testimonial-avatar">
+
+              {{
+                testimonials[currentTestimonial]
+                  .name
+                  .charAt(0)
+              }}
+
+            </div>
+
+            <div>
+
+              <strong>
+                {{
+                  testimonials[currentTestimonial]
+                    .name
+                }}
+              </strong>
+
+              <span>
+                {{
+                  testimonials[currentTestimonial]
+                    .role
+                }}
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <button
+          class="testimonial-arrow"
+          (click)="nextTestimonial()"
+        >
+          →
+        </button>
+
+      </div>
+
+
+      <div class="testimonial-dots">
+
+        <button
+          *ngFor="
+            let testimonial of testimonials;
+            let i = index
+          "
+          [class.active]="
+            i === currentTestimonial
+          "
+          (click)="currentTestimonial = i"
+        ></button>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       FAQ
+  ====================================================== -->
+
+  <section
+    class="faq-section"
+    id="faq"
+  >
+
+    <div class="section-container faq-wrapper">
+
+      <div class="faq-intro">
+
+        <span class="section-label">
+          FAQ
+        </span>
+
+        <h2>
+          Questions?
+          <span>We've got answers.</span>
+        </h2>
+
+        <p>
+          Find answers to the most common questions
+          about booking and travelling with PayWoo.
+        </p>
+
+        <button
+          class="primary-btn dark"
+          (click)="openBookingModal()"
+        >
+          Book Your Journey
+          <span>→</span>
+        </button>
+
+      </div>
+
+
+      <div class="faq-list">
+
+        <div
+          class="faq-item"
+          *ngFor="
+            let faq of faqs;
+            let i = index
+          "
+          [class.open]="faq.open"
+        >
+
+          <button
+            class="faq-question"
+            (click)="toggleFaq(i)"
+          >
+
+            <span>
+              {{ faq.question }}
+            </span>
+
+            <span class="faq-plus">
+              {{ faq.open ? '−' : '+' }}
+            </span>
+
+          </button>
+
+
+          <div
+            class="faq-answer"
+            *ngIf="faq.open"
+          >
+
+            <p>
+              {{ faq.answer }}
+            </p>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       FINAL CTA
+  ====================================================== -->
+
+  <section class="final-cta">
+
+    <div class="cta-background"></div>
+
+    <div class="section-container cta-content">
+
+      <span class="section-label">
+        READY TO GO?
+      </span>
+
+      <h2>
+        Your next journey
+        starts with PayWoo.
+      </h2>
+
+      <p>
+        Find your route. Choose your bus.
+        Start travelling.
+      </p>
+
+      <button
+        class="cta-button"
+        (click)="openBookingModal()"
+      >
+        Book Your Journey
+        <span>→</span>
+      </button>
+
+    </div>
+
+  </section>
+
+</div>

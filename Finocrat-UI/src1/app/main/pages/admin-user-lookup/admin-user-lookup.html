@@ -1,0 +1,84 @@
+<div class="lookup-card">
+
+  <!-- HEADER -->
+  <div class="header">
+    <h2>Admin + User Configuration</h2>
+
+    <button class="btn primary"
+            (click)="save()"
+            [disabled]="loading || !selectedUserPhone">
+      Save
+    </button>
+  </div>
+
+  <!-- USER SELECT -->
+  <div class="user-select">
+    <label>Select User</label>
+
+    <select [(ngModel)]="selectedUserPhone"
+            (change)="onUserChange()">
+
+      <option value="">-- Select User --</option>
+
+      <option *ngFor="let u of users" [value]="u.userPhone">
+        {{ u.name }} ({{ u.userPhone }})
+      </option>
+
+    </select>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader">Loading...</div>
+
+  <!-- SETTINGS -->
+  <div *ngIf="!loading && selectedUserPhone">
+
+    <div class="setting-row" *ngFor="let key of keys">
+
+      <label>{{ key }}</label>
+
+      <div *ngIf="isBoolean(settings[key]); else inputBlock">
+        <label class="switch">
+          <input type="checkbox" [(ngModel)]="settings[key]">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+      <ng-template #inputBlock>
+        <input type="text" [(ngModel)]="settings[key]" />
+      </ng-template>
+
+    </div>
+
+    <!-- ADD -->
+    <button class="btn secondary" (click)="toggleAdd()">
+      + Add Setting
+    </button>
+
+    <div *ngIf="showAddSection" class="add-section">
+      <input [(ngModel)]="newKey" placeholder="Key" />
+
+      <select [(ngModel)]="newValueType">
+        <option value="string">String</option>
+        <option value="number">Number</option>
+        <option value="boolean">Boolean</option>
+      </select>
+
+      <input *ngIf="newValueType !== 'boolean'" [(ngModel)]="newValue" />
+
+      <select *ngIf="newValueType === 'boolean'" [(ngModel)]="newValue">
+        <option [ngValue]="true">True</option>
+        <option [ngValue]="false">False</option>
+      </select>
+
+      <button class="btn primary" (click)="addSetting()">Add</button>
+    </div>
+
+    <!-- SUCCESS -->
+    <div *ngIf="message" class="toast">
+      ✔ {{ message }}
+    </div>
+
+  </div>
+
+</div>

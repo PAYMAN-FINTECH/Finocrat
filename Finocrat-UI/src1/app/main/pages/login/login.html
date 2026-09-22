@@ -1,0 +1,70 @@
+<div class="login-wrapper">
+
+  <div class="login-left">
+    <div class="overlay-text">
+      <h2>Simple. Secure. Smart.</h2>
+      <p>
+        Access customer transactions and manage your daily activities with ease.
+      </p>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="login-card">
+
+      <img src="assets/images/main/finocrat-logo.png"
+           class="logo"
+           alt="Finocrat" />
+
+      <h1>Welcome Back 👋</h1>
+      <p class="subtitle">
+        Sign in to continue to your dashboard.
+      </p>
+
+      <form [formGroup]="loginForm" (ngSubmit)="onLogin()">
+
+        <!-- USER ID -->
+        <div class="form-group">
+          <label>User ID</label>
+          <input
+            type="text"
+            formControlName="userId"
+            placeholder="Enter your user id"
+          />
+        </div>
+
+        <!-- PASSWORD -->
+        <div class="form-group password-box">
+          <label>Password</label>
+          <input
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            placeholder="Enter your password"
+          />
+          <span class="eye" (click)="togglePassword()">👁</span>
+        </div>
+
+        <div class="forgot">
+          <a href="/dashboard/forgot-password">Forgot password?</a>
+        </div>
+
+        <!-- BUTTON -->
+        <button 
+          type="submit" 
+          [disabled]="isDisabled()">
+
+          <span *ngIf="!loading()">Log in</span>
+          <span *ngIf="loading()" class="spinner"></span>
+
+        </button>
+
+      </form>
+
+      <p class="footer-text">
+        © 2026 Finocrat Solutions Pvt Ltd. All rights reserved.
+      </p>
+
+    </div>
+  </div>
+
+</div>

@@ -59,6 +59,13 @@ import { FastagContactComponent } from './fastag/pages/fastag-contact/fastag-con
 import { FastagFaqComponent } from './fastag/pages/fastag-faq/fastag-faq';
 import { FastagSupportComponent } from './fastag/pages/fastag-support/fastag-support';
 import { BbpsComponent } from './main/pages/bbps/bbps';
+import { TravelLayout } from './travel/components/travel-layout/travel-layout';
+import { TravelHome } from './travel/pages/travel-home/travel-home';
+import { TravelAbout } from './travel/pages/travel-about/travel-about';
+import { TravelContact } from './travel/pages/travel-contact/travel-contact';
+import { TravelTerms } from './travel/pages/travel-terms/travel-terms';
+import { TravelPrivacyPolicy } from './travel/pages/travel-privacy-policy/travel-privacy-policy';
+import { TravelRefundPolicy } from './travel/pages/travel-refund-policy/travel-refund-policy';
 
 export const routes: Routes = [
   // ENTRY POINT (decides based on domain)
@@ -102,6 +109,20 @@ export const routes: Routes = [
       { path: 'faq', component: FastagFaqComponent },                         // /fastag/faq
       { path: 'support', component: FastagSupportComponent },                 // /fastag/support
       //{ path: 'support', component: FastagSupportComponent }, // Optional
+    ]
+  },
+
+  // Travel ROUTES (Similar to EDU)
+  {
+    path: 'travel',
+    component: TravelLayout,
+    children: [ 
+      { path: '', component: TravelHome },
+      { path: 'about', component: TravelAbout },
+      { path: 'contact', component: TravelContact },
+      { path: 'terms', component: TravelTerms },
+      { path: 'privacy', component: TravelPrivacyPolicy },
+      { path: 'refund', component: TravelRefundPolicy },
     ]
   },
 

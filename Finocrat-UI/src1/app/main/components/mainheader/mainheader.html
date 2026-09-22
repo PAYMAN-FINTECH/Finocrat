@@ -1,0 +1,59 @@
+<header class="navbar">
+  <div class="nav-container">
+
+    <!-- LOGO -->
+    <div class="logo" (click)="goHome()">
+      <img src="assets/images/main/finocrat-logo.png" alt="Finocrat" />
+      <span>Finocrat</span>
+    </div>
+
+    <!-- NAV LINKS -->
+    <nav class="nav-links" [class.open]="isMenuOpen" *ngIf="!isLoggedIn()">
+      <a routerLink="/dashboard">Home</a>
+      <a routerLink="/dashboard/about">About</a>
+      <a routerLink="/dashboard/services">Services</a>
+      <a routerLink="/dashboard/contact">Contact</a>
+    </nav>
+
+    <!-- RIGHT ACTION -->
+    <div class="nav-actions">
+
+      <!-- HAMBURGER -->
+      <div class="hamburger" (click)="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <!-- CTA -->
+      <button
+        *ngIf="!isLoggedIn()"
+        class="cta-btn"
+        routerLink="/dashboard/login">
+        Get Started
+      </button>
+
+      <!-- PROFILE -->
+      <div *ngIf="isLoggedIn()" class="profile">
+
+        <!-- IMAGE -->
+        <img *ngIf="!imageError"
+             [src]="profileImage"
+             class="avatar"
+             (error)="onImageError()">
+
+        <!-- FALLBACK -->
+        <div *ngIf="imageError" class="avatar-fallback">
+          {{ username ? username.charAt(0) : '👤' }}
+        </div>
+
+        <div class="profile-info">
+          <strong>{{ username }}</strong>
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+</header>

@@ -1,0 +1,431 @@
+.refund-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px;
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+/* Header Section */
+.header-section {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  border-radius: 30px;
+  padding: 50px 40px;
+  margin-bottom: 30px;
+  text-align: center;
+  color: white;
+}
+
+.header-icon {
+  font-size: 64px;
+  margin-bottom: 15px;
+}
+
+.header-content h1 {
+  font-size: 42px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.subtitle {
+  font-size: 16px;
+  opacity: 0.95;
+  margin-bottom: 10px;
+}
+
+.effective-date {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+/* Content Sections */
+.content-section {
+  margin-bottom: 25px;
+}
+
+.content-card {
+  background: white;
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease;
+}
+
+.content-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.section-icon {
+  font-size: 32px;
+  margin-bottom: 15px;
+}
+
+.content-card h2 {
+  font-size: 24px;
+  color: #1e293b;
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #ef4444;
+  display: inline-block;
+}
+
+.content-card p {
+  font-size: 15px;
+  line-height: 1.7;
+  color: #475569;
+  margin-bottom: 15px;
+}
+
+/* Warning Box */
+.warning-box {
+  background: #fef3c7;
+  border-left: 4px solid #f59e0b;
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+}
+
+.warning-icon {
+  font-size: 24px;
+}
+
+.warning-box span:last-child {
+  font-size: 14px;
+  font-weight: 500;
+  color: #92400e;
+}
+
+/* Info Box */
+.info-box {
+  display: flex;
+  gap: 20px;
+  margin-top: 15px;
+}
+
+.info-item {
+  flex: 1;
+  background: #f0fdf4;
+  padding: 15px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.info-icon {
+  font-size: 24px;
+}
+
+/* Verification Checklist */
+.verification-checklist {
+  background: #eff6ff;
+  padding: 20px;
+  border-radius: 16px;
+  margin-top: 15px;
+}
+
+.verification-checklist h4 {
+  margin: 0 0 12px 0;
+  color: #1e40af;
+  font-size: 16px;
+}
+
+.verification-checklist ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.verification-checklist li {
+  padding: 6px 0;
+  color: #1e3a8a;
+  font-size: 14px;
+}
+
+/* Refund Requirements */
+.refund-requirements {
+  margin: 20px 0;
+}
+
+.requirement-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px;
+  background: #f8fafc;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: all 0.3s ease;
+}
+
+.requirement-item:hover {
+  background: #f1f5f9;
+  transform: translateX(5px);
+}
+
+.req-icon {
+  font-size: 24px;
+  min-width: 40px;
+}
+
+.requirement-item div {
+  flex: 1;
+}
+
+.requirement-item strong {
+  display: block;
+  font-size: 14px;
+  color: #1e293b;
+  margin-bottom: 4px;
+}
+
+.requirement-item span:last-child {
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* Sample Email */
+.sample-email {
+  margin-top: 20px;
+}
+
+.sample-email h4 {
+  font-size: 14px;
+  color: #475569;
+  margin-bottom: 10px;
+}
+
+.email-template {
+  background: #f1f5f9;
+  padding: 15px;
+  border-radius: 12px;
+  border-left: 4px solid #667eea;
+}
+
+.email-template p {
+  margin: 5px 0;
+  font-size: 13px;
+  font-family: monospace;
+}
+
+/* Dispute Note */
+.dispute-note {
+  background: #fef2f2;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-top: 15px;
+}
+
+.dispute-note p {
+  margin: 0;
+  font-size: 13px;
+  color: #991b1b;
+}
+
+/* Contact Card */
+.contact-card {
+  background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+}
+
+.contact-info {
+  margin-top: 20px;
+}
+
+.contact-item {
+  display: flex;
+  gap: 15px;
+  padding: 15px 0;
+  border-bottom: 1px solid #cbd5e1;
+}
+
+.contact-item:last-child {
+  border-bottom: none;
+}
+
+.contact-icon {
+  font-size: 24px;
+  min-width: 40px;
+}
+
+.contact-item div {
+  font-size: 15px;
+  color: #334155;
+  line-height: 1.6;
+}
+
+.contact-item a {
+  color: #667eea;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.contact-item a:hover {
+  color: #764ba2;
+  text-decoration: underline;
+}
+
+.email-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.email-link:hover {
+  text-decoration: underline;
+}
+
+/* Office Hours */
+.office-hours {
+  margin-top: 20px;
+  padding: 15px;
+  background: white;
+  border-radius: 12px;
+}
+
+.office-hours h4 {
+  margin: 0 0 10px 0;
+  color: #1e293b;
+  font-size: 14px;
+}
+
+.office-hours p {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+}
+
+/* Note Card */
+.note-card {
+  background: #fefce8;
+}
+
+.custom-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0;
+}
+
+.custom-list li {
+  padding: 8px 0;
+  font-size: 14px;
+  color: #475569;
+  position: relative;
+  padding-left: 24px;
+}
+
+.custom-list li:before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #22c55e;
+  font-weight: bold;
+}
+
+/* Back to Home */
+.back-to-home {
+  text-align: center;
+  margin-top: 30px;
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-home, .btn-contact {
+  display: inline-block;
+  padding: 12px 30px;
+  text-decoration: none;
+  border-radius: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.btn-home {
+  background: #64748b;
+  color: white;
+}
+
+.btn-home:hover {
+  background: #475569;
+  transform: translateY(-2px);
+}
+
+.btn-contact {
+  background: #667eea;
+  color: white;
+}
+
+.btn-contact:hover {
+  background: #764ba2;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .header-content h1 {
+    font-size: 32px;
+  }
+  
+  .info-box {
+    flex-direction: column;
+  }
+  
+  .content-card {
+    padding: 20px;
+  }
+  
+  .content-card h2 {
+    font-size: 20px;
+  }
+  
+  .requirement-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .req-icon {
+    min-width: auto;
+  }
+  
+  .contact-item {
+    flex-direction: column;
+    gap: 8px;
+  }
+  
+  .contact-icon {
+    min-width: auto;
+  }
+  
+  .back-to-home {
+    flex-direction: column;
+  }
+  
+  .btn-home, .btn-contact {
+    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .refund-container {
+    padding: 20px 15px;
+  }
+  
+  .header-section {
+    padding: 30px 20px;
+  }
+  
+  .header-content h1 {
+    font-size: 28px;
+  }
+  
+  .warning-box {
+    flex-direction: column;
+    text-align: center;
+  }
+}

@@ -1,0 +1,260 @@
+<div class="fastag-container">
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <h1 class="hero-title">FASTag Recharge Made Easy 🚗💨</h1>
+    <p class="hero-subtitle">
+      Recharge your FASTag instantly with Finocrat.
+      Secure payments, instant updates, and hassle-free transactions.
+    </p>
+  </section>
+
+  <!-- Main Card -->
+  <div class="main-card">
+    <div class="card-header">
+      <div class="header-left">
+        <span class="header-icon">⚡</span>
+        <h3>FASTag Recharge</h3>
+      </div>
+      <button class="history-btn" (click)="openHistory()" *ngIf="isLoggedIn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+          <path d="M12 8V12L15 15M12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12C21 16.9706 16.9706 21 12 21Z" stroke="currentColor" stroke-width="1.5"/>
+        </svg>
+        History
+      </button>
+    </div>
+
+    <div class="card-body">
+      <!-- Row 1 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>FASTag Provider</label>
+          <select #fastTagProvider class="form-control" (change)="onProviderChange($event)">
+            <option value="">-- Select Provider --</option>
+            <option *ngFor="let p of providers" [value]="p.billerId">
+              {{ p.billerName }}
+            </option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Vehicle Number</label>
+          <input type="text" class="form-control" [(ngModel)]="model.vehicleNumber" placeholder="Enter vehicle number" autocomplete="off">
+        </div>
+      </div>
+
+      <!-- Row 2 -->
+      <div class="form-row">
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" class="form-control" [(ngModel)]="model.mobileNumber" placeholder="Enter mobile number" maxlength="10" autocomplete="off">
+        </div>
+        <div class="form-group" *ngIf="showAmountField">
+          <label>Recharge Amount</label>
+          <input type="number" class="form-control" [(ngModel)]="model.amount" placeholder="Enter amount" min="100">
+        </div>
+      </div>
+
+      <!-- Customer Details -->
+      <div class="customer-card" *ngIf="showCustomerDetails">
+        <div class="customer-header">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M20 21V19C20 16.8 18.2 15 16 15H8C5.8 15 4 16.8 4 19V21" stroke="currentColor" stroke-width="1.5"/>
+            <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="1.5"/>
+          </svg>
+          <h5>Customer Details</h5>
+        </div>
+        <div class="customer-details">
+          <div class="detail-item">
+            <span>Name:</span>
+            <strong>{{ customerDetails?.name }}</strong>
+          </div>
+          <div class="detail-item">
+            <span>FASTag Balance:</span>
+            <strong>₹ {{ customerDetails?.balance | number }}</strong>
+          </div>
+          <div class="detail-item">
+            <span>Max Recharge:</span>
+            <strong>₹ {{ customerDetails?.maxRecharge | number }}</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="button-group">
+        <button class="btn-fetch" *ngIf="showFetchBill" (click)="fetchBill()" [disabled]="isLoading">
+          <span *ngIf="!isLoading">🔍 Fetch Bill</span>
+          <span *ngIf="isLoading" class="spinner"></span>
+        </button>
+        <button class="btn-pay" *ngIf="showProcessPay" (click)="processPayment()" [disabled]="isProcessing">
+          <span *ngIf="!isProcessing">💰 Proceed to Pay ₹ {{ model.amount | number }}</span>
+          <span *ngIf="isProcessing" class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Info Cards -->
+  <div class="info-cards">
+    <div class="info-card">
+      <div class="info-icon">⚡</div>
+      <h5>Instant Recharge</h5>
+      <p>Recharge your FASTag in just a few clicks with real-time confirmation.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🔒</div>
+      <h5>100% Secure Payments</h5>
+      <p>Your transactions are protected with bank-grade security and encryption.</p>
+    </div>
+    <div class="info-card">
+      <div class="info-icon">🕐</div>
+      <h5>24/7 Availability</h5>
+      <p>Recharge anytime, anywhere – no waiting, no queues, no delays.</p>
+    </div>
+  </div>
+
+  <!-- How It Works -->
+  <section class="how-it-works">
+    <h3 class="section-title">How FASTag Recharge Works?</h3>
+    <div class="steps">
+      <div class="step">
+        <div class="step-icon">🚗</div>
+        <p>Step 1: Enter Vehicle & Mobile</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-icon">💳</div>
+        <p>Step 2: Enter Amount</p>
+      </div>
+      <div class="step-arrow">→</div>
+      <div class="step">
+        <div class="step-icon">✅</div>
+        <p>Step 3: Pay Securely & Recharge</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Trust Section -->
+  <section class="trust-section">
+    <h5 class="trust-title">We support major FASTag providers</h5>
+    <div class="provider-logos">
+      <img src="https://static.instantpay.in/assets/logo/products/HDFC00000NAT5K.svg" height="40" alt="HDFC">
+      <img src="https://static.instantpay.in/assets/logo/products/TOLL00000NAT72.svg" height="40" alt="ICICI">
+      <img src="https://static.instantpay.in/assets/logo/products/AXIS00000NAT31.svg" height="40" alt="Axis">
+      <img src="https://static.instantpay.in/assets/logo/products/PAYT00000NATTQ.svg" height="40" alt="Paytm">
+    </div>
+    <p class="trust-text">Finocrat is RBI compliant and ensures secure FASTag recharges.</p>
+  </section>
+
+</div>
+
+<!-- Login Modal -->
+<div class="modal-overlay" *ngIf="showLoginModal" (click)="closeModals()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Login to Your Account</h3>
+      <button class="close-btn" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onLogin()">
+        <div class="form-group">
+          <label>Email / Mobile Number</label>
+          <input type="text" [(ngModel)]="loginData.email" name="email" required placeholder="Enter email or mobile">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" [(ngModel)]="loginData.password" name="password" required placeholder="Enter password">
+        </div>
+        <div class="form-footer">
+          <a (click)="openForgotPassword()">Forgot Password?</a>
+        </div>
+        <button type="submit" class="btn-submit" [disabled]="isProcessing">
+          {{ isProcessing ? 'Logging in...' : 'Login' }}
+        </button>
+        <p class="switch-auth">
+          Don't have an account? 
+          <a (click)="switchToSignup()">Sign Up</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Signup Modal -->
+<div class="modal-overlay" *ngIf="showSignupModal" (click)="closeModals()">
+  <div class="modal-container" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Create New Account</h3>
+      <button class="close-btn" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onSignup()">
+        <div class="form-row">
+          <div class="form-group">
+            <label>First Name</label>
+            <input type="text" [(ngModel)]="signupData.firstName" name="firstName" required placeholder="First name">
+          </div>
+          <div class="form-group">
+            <label>Last Name</label>
+            <input type="text" [(ngModel)]="signupData.lastName" name="lastName" required placeholder="Last name">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Email Address</label>
+          <input type="email" [(ngModel)]="signupData.email" name="email" required placeholder="Enter email">
+        </div>
+        <div class="form-group">
+          <label>Mobile Number</label>
+          <input type="tel" [(ngModel)]="signupData.phone" name="phone" maxlength="10" required placeholder="10-digit mobile number">
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" [(ngModel)]="signupData.password" name="password" required placeholder="Create password">
+        </div>
+        <div class="form-group">
+          <label>Confirm Password</label>
+          <input type="password" [(ngModel)]="signupData.confirmPassword" name="confirmPassword" required placeholder="Confirm password">
+        </div>
+        <div class="form-group">
+          <label>Gender</label>
+          <select [(ngModel)]="signupData.gender" name="gender">
+            <option value="">Select</option>
+            <option value="Male">Male</option>
+            <option value="Female">Female</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <button type="submit" class="btn-submit" [disabled]="isProcessing">
+          {{ isProcessing ? 'Creating Account...' : 'Sign Up' }}
+        </button>
+        <p class="switch-auth">
+          Already have an account? 
+          <a (click)="switchToLogin()">Login</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal-overlay" *ngIf="showForgotModal" (click)="closeModals()">
+  <div class="modal-container small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h3>Reset Password</h3>
+      <button class="close-btn" (click)="closeModals()">✕</button>
+    </div>
+    <div class="modal-body">
+      <form (ngSubmit)="onForgotPassword()">
+        <div class="form-group">
+          <label>Email / Mobile Number</label>
+          <input type="text" [(ngModel)]="forgotData.email" name="email" required placeholder="Enter registered email or mobile">
+        </div>
+        <button type="submit" class="btn-submit" [disabled]="isProcessing">
+          {{ isProcessing ? 'Sending...' : 'Send Reset Link' }}
+        </button>
+        <p class="switch-auth">
+          <a (click)="switchToLogin()">Back to Login</a>
+        </p>
+      </form>
+    </div>
+  </div>
+</div>

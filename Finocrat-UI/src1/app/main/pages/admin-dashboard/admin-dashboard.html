@@ -1,0 +1,345 @@
+<div class="admin-container">
+
+  <!-- FILTER -->
+  <div class="filter-bar">
+    <input type="date" [(ngModel)]="fromDate">
+    <input type="date" [(ngModel)]="toDate">
+    <button (click)="loadData()">Filter</button>
+  </div>
+
+  <!-- LOADER -->
+  <div *ngIf="loading" class="loader">Loading...</div>
+
+  <!-- ERROR -->
+  <div *ngIf="errorMsg" class="error">{{ errorMsg }}</div>
+
+  <div *ngIf="!loading">
+
+    <!-- SUMMARY CARDS -->
+    <div class="cards">
+      <div class="card green">
+        <h3>PayIn</h3>
+        <p>₹ {{ data?.summary?.payInTotal }}</p>
+      </div>
+
+      <div class="card red">
+        <h3>PayOut</h3>
+        <p>₹ {{ data?.summary?.payOutTotal }}</p>
+      </div>
+
+      <div class="card blue">
+        <h3>Balance</h3>
+        <p>₹ {{ data?.summary?.totalBalance }}</p>
+      </div>
+    </div>
+
+    <!-- ================= USER SUMMARY ================= -->
+<div class="accordion-item">
+
+  <div class="accordion-header user-header-main" (click)="toggle('users')">
+    <h3>👥 User Summary</h3>
+    <span>{{ active === 'users' ? '-' : '+' }}</span>
+  </div>
+
+  <div class="accordion-body" *ngIf="active === 'users'">
+
+    <table class="user-table">
+      <thead>
+        <tr>
+          <th>User</th>
+          <th>Phone</th>
+          <th>PayIn</th>
+          <th>PayOut</th>
+          <th>Balance</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let u of data?.users">
+
+          <td class="name">
+            {{ u.userName }}
+          </td>
+
+          <td>{{ u.userPhone }}</td>
+
+          <td class="credit">
+            ₹ {{ u.payIn }}
+          </td>
+
+          <td class="debit">
+            ₹ {{ u.payOut }}
+          </td>
+
+          <td class="balance">
+            ₹ {{ u.balance }}
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+    <!-- ================= PAYIN ================= -->
+    <div class="accordion-item">
+
+      <div class="accordion-header payin-header" (click)="toggle('payin')">
+        <h3>💰 PayIn Transactions</h3>
+        <span>{{ active === 'payin' ? '-' : '+' }}</span>
+      </div>
+
+      <div class="accordion-body" *ngIf="active === 'payin'">
+
+        <div *ngFor="let group of data?.payIns" class="group-box">
+
+          <div class="user-header payin-user">
+            <div>
+              <strong>{{ getUserName (group.userPhone) }}</strong>
+              <small>{{ group.userPhone }}</small>
+            </div>
+            <div class="amount">₹ {{ group.total }}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Card</th>
+                <th>Holder</th>
+                <th>Mobile</th>
+                <th>Commission</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let tx of group.transactions">
+                <td>₹ {{tx.amount}}</td>
+
+                <td>
+                  <span class="status success" *ngIf="tx.status">Success</span>
+                  <span class="status failed" *ngIf="!tx.status">Failed</span>
+                </td>
+
+                <td>{{tx.cardno}}</td>
+                <td>{{tx.cardholdername}}</td>
+                <td>{{tx.cardholderphone}}</td>
+                <td>₹ {{tx.payincommission}}</td>
+                <td>{{tx.created | date:'short'}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= PAYOUT ================= -->
+    <div class="accordion-item">
+
+      <div class="accordion-header payout-header" (click)="toggle('payout')">
+        <h3>🏦 PayOut Transactions</h3>
+        <span>{{ active === 'payout' ? '-' : '+' }}</span>
+      </div>
+
+      <div class="accordion-body" *ngIf="active === 'payout'">
+
+        <div *ngFor="let group of data?.payOuts" class="group-box">
+
+          <div class="user-header payout-user">
+            <div>
+              <strong>{{ getUserName (group.userPhone) }}</strong>
+              <small>{{ group.userPhone }}</small>
+            </div>
+            <div class="amount">₹ {{ group.total }}</div>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>TxnId</th>
+                <th>Mode</th>
+                <th>Name</th>
+                <th>Account</th>
+                <th>Commission</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              <tr *ngFor="let tx of group.transactions">
+                <td>₹ {{tx.amount}}</td>
+
+                <td>
+                  <span class="status success" *ngIf="tx.status">Success</span>
+                  <span class="status failed" *ngIf="!tx.status">Failed</span>
+                </td>
+
+                <td>{{tx.txnId}}</td>
+                <td>{{tx.mode}}</td>
+                <td>{{tx.customername}}</td>
+                <td>{{tx.customerNumber}}</td>
+                <td>₹ {{tx.paoutcommition}}</td>
+                <td>{{tx.created | date:'short'}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ================= INVOICE DOWNLOAD ================= -->
+
+<div class="accordion-item invoice-section">
+
+  <div
+    class="accordion-header invoice-header"
+    (click)="toggle('invoice')">
+
+    <h3>
+      📄 Invoice Download
+    </h3>
+
+    <span>
+      {{ active === 'invoice' ? '-' : '+' }}
+    </span>
+
+  </div>
+
+
+  <div
+    class="accordion-body"
+    *ngIf="active === 'invoice'">
+
+    <div class="invoice-filter">
+
+      <!-- START DATE -->
+
+      <div class="filter-field">
+
+        <label>
+          Start Date
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="invoiceFromDate">
+
+      </div>
+
+
+      <!-- END DATE -->
+
+      <div class="filter-field">
+
+        <label>
+          End Date
+        </label>
+
+        <input
+          type="date"
+          [(ngModel)]="invoiceToDate">
+
+      </div>
+
+
+      <!-- USER -->
+
+      <div class="filter-field">
+
+        <label>
+          User
+        </label>
+
+        <select
+          [(ngModel)]="invoiceUserPhone">
+
+          <option value="">
+            -- Select User --
+          </option>
+
+          <option
+            *ngFor="let u of data?.users"
+            [value]="u.userPhone">
+
+            {{ u.userName }}
+            -
+            {{ u.userPhone }}
+
+          </option>
+
+        </select>
+
+      </div>
+
+
+      <!-- BUTTON -->
+
+      <div class="filter-button">
+
+        <button
+          class="generate-btn"
+          [disabled]="invoiceLoading"
+          (click)="generateInvoices()">
+
+          <span
+            *ngIf="!invoiceLoading">
+
+            📥 Generate & Download
+
+          </span>
+
+          <span
+            *ngIf="invoiceLoading">
+
+            ⏳ Generating
+            {{ invoiceCount }}...
+
+          </span>
+
+        </button>
+
+      </div>
+
+    </div>
+
+
+    <!-- ERROR -->
+
+    <div
+      class="invoice-error"
+      *ngIf="invoiceError">
+
+      {{ invoiceError }}
+
+    </div>
+
+
+    <!-- INFO -->
+
+    <div
+      class="invoice-info"
+      *ngIf="!invoiceError && !invoiceLoading">
+
+      Select Start Date, End Date and User.
+      All successful transactions will be
+      generated as individual PDF invoices
+      and downloaded as one ZIP file.
+
+    </div>
+
+  </div>
+
+</div>
+
+  </div>
+
+</div>
