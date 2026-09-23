@@ -269,7 +269,6 @@ ServiceFabricBackup/
 # ASP.NET local settings
 appsettings.Development.json
 appsettings.Local.json
-Finocrat.Api/appsettings.json
 
 # Business Intelligence projects
 *.rdl.data

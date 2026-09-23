@@ -24,6 +24,8 @@ builder.Services.AddDbContext<FinocratDbContext>(options =>
 // JWT Helper
 builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<DataUtils>();
+builder.Services
+    .AddHttpClient<HdfcSmartGatewayService>();
 
 // -------------------- CORS --------------------
 // 🔥 Allow Angular (change origin when deploying)

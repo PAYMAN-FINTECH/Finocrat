@@ -6,6 +6,7 @@ import { Router } from '@angular/router';
 import { ToastrService } from 'ngx-toastr';
 import { CashfreeService } from '../../../services/mainservices/cashfreeService';
 import { load } from '@cashfreepayments/cashfree-js';
+import { HdfcPaymentService } from '../../../services/eduservices/hdfc-payment.service';
 
 
 declare var Razorpay: any;
@@ -31,7 +32,9 @@ export class EduWalletComponent implements OnInit {
     private razorService: RazorPaymentService,
     private router: Router,
     private toastr: ToastrService,
-    private cashfreeService: CashfreeService
+    private cashfreeService: CashfreeService,
+     private hdfcPaymentService: HdfcPaymentService
+
   ) {}
 
   ngOnInit(): void {
@@ -147,6 +150,10 @@ export class EduWalletComponent implements OnInit {
 
     if(this.gateway === 'CEducation'){
       this.startCashfreePayment();
+    }
+
+     if(this.gateway === 'HEducation'){
+      this.HdfcSmartpayment();
     }
   }
 
@@ -311,6 +318,143 @@ export class EduWalletComponent implements OnInit {
 
   });
 }
+
+ // =====================================================
+  // PAY NOW
+  // =====================================================
+ HdfcSmartpayment(): void {
+
+    //this.errorMessage = '';
+
+
+    // ---------------------------------------------------
+    // Validate amount
+    // ---------------------------------------------------
+
+    if (!this.model.amount ||
+        this.model.amount <= 0) {
+
+      // this.errorMessage =
+      //   'Please enter a valid amount.';
+
+      return;
+    }
+
+
+   // this.loading = true;
+
+
+    // ---------------------------------------------------
+    // Customer details
+    // ---------------------------------------------------
+
+    const customerId =
+      'testing-customer-one1';
+
+
+    const request = {
+
+      amount:
+        Number(this.model.amount),
+
+      customerId:
+        customerId,
+
+      customerEmail: this.model.email,
+
+      customerPhone:
+        this.model.mobile,
+
+      firstName: this.model.name,
+
+      lastName:
+        '',
+      selectedGateway: this.model.category,
+      loggedInUserPhone: this.userPhone,
+      cardnum: this.model.cardnum || ''
+
+    };
+
+
+    console.log(
+      'Creating HDFC payment:',
+      request
+    );
+
+
+    // ---------------------------------------------------
+    // Create HDFC Session
+    // ---------------------------------------------------
+
+    this.hdfcPaymentService
+      .createPayment(request)
+      .subscribe({
+
+        next: (response) => {
+
+          console.log(
+            'HDFC Create Response:',
+            response
+          );
+
+
+          //this.loading = false;
+
+
+          if (
+            response.success &&
+            response.paymentUrl
+          ) {
+
+            // ------------------------------------------------
+            // Save order information locally
+            // ------------------------------------------------
+
+            sessionStorage.setItem(
+              'hdfc_order_id',
+              response.orderId
+            );
+
+
+            sessionStorage.setItem(
+              'hdfc_customer_id',
+              customerId
+            );
+
+
+            // ------------------------------------------------
+            // Redirect to HDFC
+            // ------------------------------------------------
+
+            window.location.href =
+              response.paymentUrl;
+
+          }
+          else {
+
+            // this.errorMessage =
+            //   'HDFC payment link was not generated.';
+          }
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'HDFC payment error:',
+            error
+          );
+
+
+          //this.loading = false;
+
+
+          // this.errorMessage =
+          //   error?.error?.message ||
+          //   'Unable to create payment.';
+        }
+      });
+  }
 
 verifyCashfreePayment(orderId: string): void {
 
