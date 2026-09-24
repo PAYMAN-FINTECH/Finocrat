@@ -23,6 +23,9 @@ export class WalletComponent implements OnInit {
   ccBalance: number = 0;
   isLoading: boolean = false;
   showSuccessScreen: boolean = false;
+ randomAmounts: number[] = [];
+selectedAmount: number | null = null;
+amountInput: number | null = null;
 
   model: any = {
     name: '',
@@ -72,6 +75,100 @@ loadGateways(): void {
     },
     error: (err) => console.error('Gateway load error', err)
   });
+}
+
+selectAmount(amount: number): void {
+  this.selectedAmount = amount;
+  this.model.amount = amount;
+}
+
+
+onAmountChange(value: number | string): void {
+
+  if (value === null || value === undefined || value === '') {
+    this.randomAmounts = [];
+    this.selectedAmount = null;
+    this.model.amount = null;
+    return;
+  }
+
+  const amount = Number(value);
+
+  // Invalid number
+  if (isNaN(amount)) {
+    this.randomAmounts = [];
+    this.selectedAmount = null;
+    this.model.amount = null;
+    return;
+  }
+
+  // Maximum allowed input
+  if (amount > 49999) {
+    this.randomAmounts = [];
+    this.selectedAmount = null;
+
+    // Don't modify input while typing.
+    // Just let HTML max validation handle it.
+    return;
+  }
+
+  // Minimum validation
+  if (amount < 1) {
+    this.randomAmounts = [];
+    this.selectedAmount = null;
+    return;
+  }
+
+  // User changed the amount after selecting a suggestion.
+  // Therefore previous selection is no longer valid.
+  this.selectedAmount = null;
+
+  // --------------------------------------------------
+  // Generate suggestions
+  // --------------------------------------------------
+  const upperLimit = amount - 1;
+  const lowerLimit = Math.max(1, amount - 99);
+
+  const suggestions = new Set<number>();
+
+  // Prevent infinite loop for very small amounts
+  const possibleNumbers: number[] = [];
+
+  for (
+    let i = lowerLimit;
+    i <= upperLimit;
+    i++
+  ) {
+    // Don't allow numbers ending in 0
+    if (i % 10 !== 0) {
+      possibleNumbers.push(i);
+    }
+  }
+
+  // Shuffle
+  for (
+    let i = possibleNumbers.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j = Math.floor(
+      Math.random() * (i + 1)
+    );
+
+    [
+      possibleNumbers[i],
+      possibleNumbers[j]
+    ] = [
+      possibleNumbers[j],
+      possibleNumbers[i]
+    ];
+  }
+
+  // Take maximum 5 suggestions
+  this.randomAmounts =
+    possibleNumbers
+      .slice(0, 5)
+      .sort((a, b) => a - b);
 }
 
 
@@ -124,7 +221,26 @@ loadGateways(): void {
       return;
     }
 
-    const payload = {
+    this.homeService.checkDailyCardTransactionLimit(this.userPhone,this.model.cardnum)
+      .subscribe({
+        next: (res: any) => {
+
+          // -----------------------------------------
+        // Backend says daily limit reached
+        // -----------------------------------------
+        if (!res.allowed) {
+
+          this.isLoading = false;
+
+          alert(
+            res.message ||
+            'You have reached the maximum of 2 card transactions for today.'
+          );
+
+          return;
+        }
+
+ const payload = {
       name: this.model.name,
       email: this.model.email,
       mobile: this.model.mobile,
@@ -138,7 +254,12 @@ loadGateways(): void {
 
     window.location.href =
       `https://edu.thefinocrat.com/edu/edu-wallet?data=${encodedData}`;
-  }
+ 
+
+        },
+      });
+
+    }
 
   // addFunds(form: any): void {
 

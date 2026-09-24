@@ -120,6 +120,12 @@ namespace Finocrat.Api.Controllers
             if (settings.ContainsKey("CEducation Enabled") && (bool)settings["CEducation Enabled"])
                 gateways.Add(new { id = id++, name = "CEducation" });
 
+            if (settings.ContainsKey("HEducation Enabled") && (bool)settings["HEducation Enabled"])
+            {
+                gateways.Add(new { id = id++, name = "HEducation" });
+            }
+                
+
             //if (settings.ContainsKey("CC Enabled") && (bool)settings["CC Enabled"])
             //    gateways.Add(new { id = id++, name = "Credit Card" });
 

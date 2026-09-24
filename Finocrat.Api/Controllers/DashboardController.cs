@@ -859,6 +859,51 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        [HttpGet("check-daily-card-limit")]
+        public async Task<IActionResult> CheckDailyCardLimit([FromQuery] string userPhone,[FromQuery] string cardNum)
+        {
+            if (string.IsNullOrWhiteSpace(userPhone))
+            {
+                return BadRequest(new
+                {
+                    allowed = false,
+                    message = "User phone number is required."
+                });
+            }
+
+            var today = DateTime.Today;
+            var tomorrow = today.AddDays(1);
+
+            var transactionCount = await _db.fPayIns
+                .Where(x =>
+                    x.UserPhone == userPhone && x.CardHolderCardNumber == cardNum &&
+                    x.Created >= today &&
+                    x.Created < tomorrow &&
+                    x.Status == true)
+                .CountAsync();
+
+            if (transactionCount >= 2)
+            {
+                return Ok(new
+                {
+                    allowed = false,
+                    count = transactionCount,
+                    limit = 2,
+                    message =
+                        "You have already completed 2 card transactions today. Please try again tomorrow."
+                });
+            }
+
+            return Ok(new
+            {
+                allowed = true,
+                count = transactionCount,
+                remaining = 2 - transactionCount,
+                limit = 2
+            });
+        }
+
+
     }
     public class DashboardFilter
     {

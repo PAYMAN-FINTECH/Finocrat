@@ -650,7 +650,7 @@ namespace Finocrat.Api.Data
             if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
             {
                 var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-                if (settings != null && settings.TryGetValue("PayIn Margin", out var value))
+                if (settings != null && settings.TryGetValue("HEducation PayIn Margin", out var value))
                 {
                     if (value is JsonElement element)
                     {

@@ -27,6 +27,21 @@ export class HomeService {
     return this.http.get<any>(`${this.api}/wallet-balance`, { params });
   }
 
+  checkDailyCardTransactionLimit(
+  userPhone: string,
+  cardNum: string
+) {
+  return this.http.get<any>(
+    `${this.api}/check-daily-card-limit`,
+    {
+      params: {
+        userPhone: userPhone,
+        cardNum: cardNum
+      }
+    }
+  );
+}
+
   // ============================
   // 🔥 GET USER LIST (NEW)
   // ============================

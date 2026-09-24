@@ -158,37 +158,106 @@
         </div>
       </div>
 
-      <!-- AMOUNT SECTION -->
-      <div class="amount-section">
-        <label>Enter Amount</label>
-        <div class="amount-input">
-          <span class="currency-symbol">₹</span>
-          <input type="number" name="amount" [(ngModel)]="model.amount" required
-                 min="1" max="99999" [disabled]="isLoading" #amount="ngModel"
-                 placeholder="0.00">
-        </div>
-        <div class="amount-errors">
-          <small *ngIf="amount.errors?.['required'] && amount.touched" class="error-msg">
-            Amount is required
-          </small>
-          <small *ngIf="amount.errors?.['min'] && amount.touched" class="error-msg">
-            Minimum amount is ₹1
-          </small>
-          <small *ngIf="amount.errors?.['max'] && amount.touched" class="error-msg">
-            Maximum allowed ₹99,999
-          </small>
-        </div>
-        <div class="quick-amounts">
-          <button type="button" class="quick-amount" (click)="model.amount = 100" [disabled]="isLoading">₹100</button>
-          <button type="button" class="quick-amount" (click)="model.amount = 500" [disabled]="isLoading">₹500</button>
-          <button type="button" class="quick-amount" (click)="model.amount = 1000" [disabled]="isLoading">₹1,000</button>
-          <button type="button" class="quick-amount" (click)="model.amount = 5000" [disabled]="isLoading">₹5,000</button>
-        </div>
-      </div>
+     <!-- AMOUNT SECTION -->
+<div class="amount-section">
+
+  <label>Enter Amount</label>
+
+  <div class="amount-input">
+
+    <span class="currency-symbol">₹</span>
+
+    <input
+      type="number"
+      name="amount"
+      [(ngModel)]="model.amount"
+      (ngModelChange)="onAmountChange($event)"
+      required
+      min="1"
+      max="49999"
+      step="1"
+      [disabled]="isLoading"
+      #amount="ngModel"
+      placeholder="Enter amount"
+    />
+
+  </div>
+
+
+  <!-- VALIDATION -->
+  <div class="amount-errors">
+
+    <small
+      *ngIf="amount.errors?.['required'] && amount.touched"
+      class="error-msg">
+      Amount is required
+    </small>
+
+    <small
+      *ngIf="amount.errors?.['min'] && amount.touched"
+      class="error-msg">
+      Minimum amount is ₹1
+    </small>
+
+    <small
+      *ngIf="amount.errors?.['max'] && amount.touched"
+      class="error-msg">
+      Maximum allowed ₹49,999
+    </small>
+
+  </div>
+
+
+  <!-- SUGGESTION MESSAGE -->
+  <small
+    class="suggestion-message"
+    *ngIf="amount.valid && randomAmounts.length > 0 && selectedAmount === null">
+
+    Please select one of the suggested amounts
+
+  </small>
+
+
+  <!-- RANDOM SUGGESTIONS -->
+  <div
+    class="quick-amounts"
+    *ngIf="randomAmounts.length > 0">
+
+    <button
+      type="button"
+      class="quick-amount"
+      *ngFor="let value of randomAmounts"
+      [class.selected]="selectedAmount === value"
+      (click)="selectAmount(value)"
+      [disabled]="isLoading">
+
+      ₹{{ value | number }}
+
+    </button>
+
+  </div>
+
+
+  <!-- SELECTED AMOUNT -->
+  <small
+    class="selected-amount-message"
+    *ngIf="selectedAmount !== null">
+
+    Selected amount: ₹{{ selectedAmount | number }}
+
+  </small>
+
+</div>
 
       <!-- SUBMIT BUTTON -->
       <button type="submit" class="primary-btn" 
-              [disabled]="fundForm.invalid || model.amount > payInLimit || !payInEnabled || isLoading">
+               [disabled]="
+    fundForm.invalid ||
+    selectedAmount === null ||
+    selectedAmount > payInLimit ||
+    !payInEnabled ||
+    isLoading
+  ">
         <span *ngIf="!isLoading" class="btn-content">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
             <path d="M12 1V23M12 1L8 5M12 1L16 5" stroke="white" stroke-width="1.5"/>
