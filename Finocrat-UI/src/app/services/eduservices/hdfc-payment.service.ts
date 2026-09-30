@@ -50,7 +50,7 @@ export interface HdfcStatusResponse {
 export class HdfcPaymentService {
 
   private apiUrl =
-    'https://thefinocrat.com/api/HdfcPayment';
+    'https://edu.thefinocrat.com/api/HdfcPayment';
 
 
   constructor(

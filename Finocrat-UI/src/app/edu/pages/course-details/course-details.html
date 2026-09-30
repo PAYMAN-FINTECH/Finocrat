@@ -98,17 +98,46 @@
 </div>
 
 <!-- MODAL -->
+<!-- MODAL -->
 <div class="modal-backdrop" *ngIf="showModal">
   <div class="modal">
     <h2>Complete Your Purchase</h2>
+
     <p>This is a demo payment. Click confirm to continue.</p>
 
     <p><b>Course:</b> {{ course.title }}</p>
     <p><b>Price:</b> Rs. {{ course.price }}</p>
 
+    <!-- Payment Gateway -->
+    <div class="gateway-section">
+      <label for="gateway">
+        <b>Select Payment Gateway</b>
+      </label>
+
+      <select
+        id="gateway"
+        [(ngModel)]="selectedGateway"
+        class="gateway-select">
+
+        <option value="">-- Select Gateway --</option>
+        <option value="REduction">REduction</option>
+        <option value="HEduction">HEduction</option>
+      </select>
+    </div>
+
     <div class="actions">
-      <button class="cancel" (click)="closeModal()">Cancel</button>
-      <button class="confirm" (click)="confirmPurchase()">Confirm Purchase</button>
+      <button
+        class="cancel"
+        (click)="closeModal()">
+        Cancel
+      </button>
+
+      <button
+        class="confirm"
+        [disabled]="!selectedGateway"
+        (click)="confirmPurchase()">
+        Confirm Purchase
+      </button>
     </div>
   </div>
 </div>

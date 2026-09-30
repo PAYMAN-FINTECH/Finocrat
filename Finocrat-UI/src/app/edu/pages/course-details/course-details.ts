@@ -5,12 +5,14 @@ import { AuthService } from '../../../services/eduservices/auth.service';
 import { RazorPaymentService } from '../../../services/mainservices/razorpayment.service';
 import { form } from '@angular/forms/signals';
 import { ToastrService } from 'ngx-toastr';
+import { FormsModule } from '@angular/forms';
+import { HdfcPaymentService } from '../../../services/eduservices/hdfc-payment.service';
 
 declare var Razorpay: any;
 @Component({
   selector: 'edu-course-details',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FormsModule],
   templateUrl: './course-details.html',
   styleUrls: ['./course-details.css']
 })
@@ -21,16 +23,21 @@ export class CourseDetailsComponent implements OnInit {
   isLoggedIn = false;
   showModal = false;
 
+  selectedGateway: string = '';
+
   showSuccessScreen = false;
   showFailureScreen = false;
 
+ 
 
   buyCourse() {
+    this.selectedGateway = '';
     this.showModal = true;
   }
 
   closeModal() {
     this.showModal = false;
+    this.selectedGateway = '';
   }
 goToDashboard(): void {
   this.showSuccessScreen = false;
@@ -40,7 +47,15 @@ goToDashboard(): void {
 }
 
   confirmPurchase() {
-    this.razorService.createOrder(this.course.price)
+
+     if (!this.selectedGateway) {
+    return;
+  }
+
+  console.log('Selected Gateway:', this.selectedGateway);
+
+  if(this.selectedGateway === 'REduction') {
+     this.razorService.createOrder(this.course.price)
       .subscribe({
         next: (res) => {
           debugger;
@@ -113,9 +128,156 @@ goToDashboard(): void {
           alert("Unable to create payment order");
         }
       });
+
+  }
+
+  if(this.selectedGateway == 'HEduction'){
+    this.HdfcSmartpayment();
+
+  }
+
+   
+
     // alert('✅ Purchase successful (Demo)');
     // this.showModal = false;
     // this.router.navigate(['/edu']);
+  }
+
+   // =====================================================
+  // PAY NOW
+  // =====================================================
+ HdfcSmartpayment(): void {
+
+    //this.errorMessage = '';
+
+
+    // ---------------------------------------------------
+    // Validate amount
+    // ---------------------------------------------------
+
+    if (!this.course.price ||
+        this.course.price <= 0) {
+
+      // this.errorMessage =
+      //   'Please enter a valid amount.';
+
+      return;
+    }
+
+
+   // this.loading = true;
+
+
+    // ---------------------------------------------------
+    // Customer details
+    // ---------------------------------------------------
+
+    const customerId =
+      'testingcustomerone1hhh';
+
+
+    const request = {
+
+      amount:
+        Number(this.course.price),
+
+      customerId:
+        customerId,
+
+      customerEmail: 'edudemo@gmail.com',
+
+      customerPhone:
+        '9849800697',
+
+      firstName: 'jurra',
+
+      lastName:
+        'EduTest',
+      selectedGateway: 'HEducationedu',
+      loggedInUserPhone: '9849800697',
+      cardnum: '433333333333333'
+
+    };
+
+
+    console.log(
+      'Creating HDFC payment:',
+      request
+    );
+
+
+    // ---------------------------------------------------
+    // Create HDFC Session
+    // ---------------------------------------------------
+
+    this.hdfcPaymentService
+      .createPayment(request)
+      .subscribe({
+
+        next: (response) => {
+
+          console.log(
+            'HDFC Create Response:',
+            response
+          );
+
+
+          //this.loading = false;
+
+
+          if (
+            response.success &&
+            response.paymentUrl
+          ) {
+
+            // ------------------------------------------------
+            // Save order information locally
+            // ------------------------------------------------
+
+            sessionStorage.setItem(
+              'hdfc_order_id',
+              response.orderId
+            );
+
+
+            sessionStorage.setItem(
+              'hdfc_customer_id',
+              customerId
+            );
+
+
+            // ------------------------------------------------
+            // Redirect to HDFC
+            // ------------------------------------------------
+
+            window.location.href =
+              response.paymentUrl;
+
+          }
+          else {
+
+            // this.errorMessage =
+            //   'HDFC payment link was not generated.';
+          }
+        },
+
+
+        error: (error) => {
+
+          console.error(
+            'HDFC payment error:',
+            error
+          );
+
+
+          //this.loading = false;
+
+
+          // this.errorMessage =
+          //   error?.error?.message ||
+          //   'Unable to create payment.';
+        }
+      });
   }
 
   courses = [
@@ -291,7 +453,7 @@ goToDashboard(): void {
 
   ];
 
-  constructor(private route: ActivatedRoute,private authService: AuthService,private router: Router,  private razorService: RazorPaymentService, private toastr: ToastrService,) {}
+  constructor(private route: ActivatedRoute,private authService: AuthService,private router: Router,  private razorService: RazorPaymentService, private toastr: ToastrService,private hdfcPaymentService: HdfcPaymentService) {}
 
   ngOnInit(): void {
     this.isLoggedIn = this.authService.isLoggedIn();

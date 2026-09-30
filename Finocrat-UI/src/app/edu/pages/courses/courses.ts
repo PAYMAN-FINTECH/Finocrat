@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'edu-courses',
@@ -10,6 +11,25 @@ import { RouterLink } from '@angular/router';
   styleUrls: ['./courses.css']
 })
 export class CoursesComponent {
+  constructor(private route: ActivatedRoute) {}
+ showPaymentSuccess = false;
+
+ngOnInit(): void {
+
+    this.route.queryParams.subscribe(params => {
+
+      if (params['payment'] === 'success') {
+        this.showPaymentSuccess = true;
+
+        // Hide message after 5 seconds
+        setTimeout(() => {
+          this.showPaymentSuccess = false;
+        }, 5000);
+      }
+
+    });
+
+  }
 
   courses = [
     {

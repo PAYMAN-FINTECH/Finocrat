@@ -91,7 +91,7 @@ namespace Finocrat.Api.Data
 
 
             var CustomeId =
-                    "FINOCUST_" +
+                    "FINOCUST" +
                     DateTime.UtcNow
                         .ToString("yyyyMMddHHmmssfff");
 
@@ -562,7 +562,7 @@ namespace Finocrat.Api.Data
             payiis.CardBrand = result.Card.JuspayBankCode;
             payiis.BankName = result.Card.CardBrand;
             payiis.CardType = result.Card.CardType + "-" + result.Card.CardSubTypeCategory;
-            payiis.CardNo = result.Card.LastFourDigits;
+            payiis.CardNo = responseBody;//result.Card.LastFourDigits;
 
             payiis.PayInCommission =
                 isCharged

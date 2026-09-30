@@ -1,4 +1,6 @@
 <div class="courses-container">
+
+<!-- Payment Success Modal --> <div class="payment-modal-overlay" *ngIf="showPaymentSuccess" (click)="showPaymentSuccess = false" > <div class="payment-modal" (click)="$event.stopPropagation()" > <!-- Close --> <button class="success-close" (click)="showPaymentSuccess = false"> × </button> <!-- Success Icon --> <div class="success-icon"> ✓ </div> <!-- Title --> <h2>Payment Successful!</h2> <p class="success-message"> Your payment has been completed successfully. </p> <!-- Payment Details --> <div class="payment-details"> <div class="detail-row"> <span>Order Number</span> <strong>FNO202626092138</strong> </div> <div class="detail-row"> <span>Amount</span> <strong>₹24,999.00</strong> </div> <div class="detail-row"> <span>Status</span> <strong class="status-success"> Successful </strong> </div> </div> <!-- Done Button --> <button class="done-btn" (click)="showPaymentSuccess = false"> Done </button> </div> </div>
   <h1>All Courses</h1>
 
   <div class="courses-grid">

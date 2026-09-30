@@ -122,3 +122,347 @@ h1 {
   color: #222;
 }
 
+.payment-success {
+  position: fixed;
+  top: 25px;
+  right: 25px;
+  z-index: 9999;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 350px;
+  padding: 16px 20px;
+
+  background: #ffffff;
+  border-left: 5px solid #22c55e;
+  border-radius: 10px;
+
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+
+  animation: slideIn 0.35s ease;
+}
+
+.success-icon {
+  width: 40px;
+  height: 40px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: #22c55e;
+  color: #ffffff;
+
+  font-size: 22px;
+  font-weight: bold;
+}
+
+.payment-success strong {
+  display: block;
+  color: #166534;
+  font-size: 16px;
+}
+
+.payment-success p {
+  margin: 3px 0 0;
+  color: #555;
+  font-size: 13px;
+}
+
+.success-close {
+  margin-left: auto;
+
+  border: none;
+  background: transparent;
+
+  font-size: 24px;
+  color: #777;
+
+  cursor: pointer;
+}
+
+.success-close:hover {
+  color: #222;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+
+/* =========================================
+   PAYMENT SUCCESS MODAL
+========================================= */
+
+.payment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.55);
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 9999;
+
+  padding: 20px;
+
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+
+/* Modal */
+.payment-modal {
+  position: relative;
+
+  width: 100%;
+  max-width: 430px;
+
+  background: #ffffff;
+
+  border-radius: 18px;
+
+  padding: 35px 30px 30px;
+
+  text-align: center;
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.25);
+
+  animation: modalSlideUp 0.25s ease-out;
+}
+
+
+/* Close Button */
+.success-close {
+  position: absolute;
+
+  top: 12px;
+  right: 15px;
+
+  width: 32px;
+  height: 32px;
+
+  border: none;
+  background: transparent;
+
+  font-size: 27px;
+  line-height: 32px;
+
+  color: #777;
+
+  cursor: pointer;
+
+  border-radius: 50%;
+
+  transition: 0.2s;
+}
+
+.success-close:hover {
+  background: #f3f3f3;
+  color: #222;
+}
+
+
+/* Success Icon */
+.success-icon {
+  width: 72px;
+  height: 72px;
+
+  margin: 0 auto 18px;
+
+  border-radius: 50%;
+
+  background: #e9f9ef;
+
+  color: #16a34a;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 42px;
+  font-weight: 700;
+
+  border: 5px solid #d3f3df;
+}
+
+
+/* Heading */
+.payment-modal h2 {
+  margin: 0;
+
+  font-size: 25px;
+  font-weight: 700;
+
+  color: #1f2937;
+}
+
+
+/* Message */
+.success-message {
+  margin: 8px 0 25px;
+
+  color: #6b7280;
+
+  font-size: 14px;
+
+  line-height: 1.5;
+}
+
+
+/* Payment Details Box */
+.payment-details {
+  background: #f8fafc;
+
+  border: 1px solid #e5e7eb;
+
+  border-radius: 12px;
+
+  padding: 5px 16px;
+
+  text-align: left;
+
+  margin-bottom: 25px;
+}
+
+
+/* Detail Row */
+.detail-row {
+  display: flex;
+
+  justify-content: space-between;
+  align-items: center;
+
+  gap: 15px;
+
+  padding: 15px 0;
+
+  border-bottom: 1px solid #e5e7eb;
+
+  font-size: 14px;
+}
+
+.detail-row:last-child {
+  border-bottom: none;
+}
+
+.detail-row span {
+  color: #6b7280;
+}
+
+.detail-row strong {
+  color: #111827;
+
+  font-weight: 600;
+
+  text-align: right;
+}
+
+
+/* Success Status */
+.status-success {
+  color: #16a34a !important;
+}
+
+
+/* Done Button */
+.done-btn {
+  width: 100%;
+
+  border: none;
+
+  background: #2563eb;
+
+  color: #ffffff;
+
+  padding: 13px 20px;
+
+  border-radius: 9px;
+
+  font-size: 15px;
+
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition: 0.2s;
+}
+
+.done-btn:hover {
+  background: #1d4ed8;
+}
+
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+
+@keyframes modalSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================
+   MOBILE
+========================================= */
+
+@media (max-width: 480px) {
+
+  .payment-modal {
+    max-width: 100%;
+
+    padding: 30px 20px 22px;
+
+    border-radius: 15px;
+  }
+
+  .success-icon {
+    width: 62px;
+    height: 62px;
+
+    font-size: 35px;
+  }
+
+  .payment-modal h2 {
+    font-size: 22px;
+  }
+
+  .detail-row {
+    font-size: 13px;
+  }
+}
+
