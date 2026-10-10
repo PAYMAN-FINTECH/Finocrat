@@ -13,6 +13,8 @@ import { ActivatedRoute } from '@angular/router';
 export class CoursesComponent {
   constructor(private route: ActivatedRoute) {}
  showPaymentSuccess = false;
+ paymentamount = "0";
+ paymentorderid = "";
 
 ngOnInit(): void {
 
@@ -20,6 +22,9 @@ ngOnInit(): void {
 
       if (params['payment'] === 'success') {
         this.showPaymentSuccess = true;
+        this.paymentamount = params['amount'] || "0";
+        this.paymentorderid = params['orderId'] || "";
+
 
         // Hide message after 5 seconds
         setTimeout(() => {

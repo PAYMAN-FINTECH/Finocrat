@@ -202,33 +202,35 @@ namespace Finocrat.Api.Controllers
         [HttpPost("response")]
         public async Task<IActionResult> PaymentResponse()
         {
+            using var reader =
+                   new StreamReader(Request.Body);
+
+            var body =
+                await reader.ReadToEndAsync();
+
+
+            if (string.IsNullOrWhiteSpace(body))
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Empty SmartGateway response."
+                });
+            }
+
+
+            // -----------------------------------------------------
+            // Parse application/x-www-form-urlencoded
+            // -----------------------------------------------------
+
+            var parameters =
+                Microsoft.AspNetCore.WebUtilities
+                    .QueryHelpers
+                    .ParseQuery(body);
+
             try
             {
-                using var reader =
-                    new StreamReader(Request.Body);
-
-                var body =
-                    await reader.ReadToEndAsync();
-
-
-                if (string.IsNullOrWhiteSpace(body))
-                {
-                    return BadRequest(new
-                    {
-                        success = false,
-                        message = "Empty SmartGateway response."
-                    });
-                }
-
-
-                // -----------------------------------------------------
-                // Parse application/x-www-form-urlencoded
-                // -----------------------------------------------------
-
-                var parameters =
-                    Microsoft.AspNetCore.WebUtilities
-                        .QueryHelpers
-                        .ParseQuery(body);
+               
 
 
                 var orderId =
@@ -238,6 +240,7 @@ namespace Finocrat.Api.Controllers
                 var status =
                     parameters["status"]
                         .FirstOrDefault() ?? "";
+
 
                 var statusId =
                     parameters["status_id"]
@@ -311,31 +314,38 @@ namespace Finocrat.Api.Controllers
                 // GET FINAL STATUS
                 // -----------------------------------------------------
 
-                string finalStatus = orderStatus.Status;
+                string finalStatus = orderStatus.Status ?? "";
 
-                if(orderStatus.CustomerEmail == "edudemo@gmail.com")
-                {
-                    return Redirect(
-                        "https://edu.thefinocrat.com/edu/courses" + "?payment=success"
-                    );
-                }
-                
+                //if(orderStatus.CustomerEmail == "edudemo@gmail.com")
+                //{
+                //    return Redirect(
+                //        "https://edu.thefinocrat.com/edu/courses" + "?payment=success"
+                //    );
+                //}
+
+
+                return Redirect(
+    "https://edu.thefinocrat.com/edu/courses" +
+    "?payment=success" +
+    "&orderId=" + Uri.EscapeDataString(orderId) +
+    "&amount=" + Uri.EscapeDataString(orderStatus.Amount.ToString())
+);
 
 
                 // -----------------------------------------------------
                 // CHARGED
                 // -----------------------------------------------------
 
-                if (finalStatus.Equals(
-                        "CHARGED",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    return Redirect(
-                         "https://thefinocrat.com/app/finhome"
-                         + "?payment=success"
-                         + $"&order_id={Uri.EscapeDataString(orderId)}"
-                     );
-                }
+                //if (finalStatus.Equals(
+                //        "CHARGED",
+                //        StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return Redirect(
+                //         "https://thefinocrat.com/app/finhome"
+                //         + "?payment=success"
+                //         + $"&order_id={Uri.EscapeDataString(orderId)}"
+                //     );
+                //}
 
 
                 // -----------------------------------------------------
@@ -343,35 +353,41 @@ namespace Finocrat.Api.Controllers
                 // -----------------------------------------------------
 
 
-                if (finalStatus.Equals(
-                        "FAILED",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    return Redirect(
-                    "https://thefinocrat.com/app/finhome"
-                    + "?payment=failed"
-                    + $"&order_id={Uri.EscapeDataString(orderId)}"
-                    );
-                }
+                //if (finalStatus.Equals(
+                //        "FAILED",
+                //        StringComparison.OrdinalIgnoreCase))
+                //{
+                //    return Redirect(
+                //    "https://thefinocrat.com/app/finhome"
+                //    + "?payment=failed"
+                //    + $"&order_id={Uri.EscapeDataString(orderId)}"
+                //    );
+                //}
 
 
                 // -----------------------------------------------------
                 // PENDING / OTHER
                 // -----------------------------------------------------
 
-                return Redirect(
-                    "https://thefinocrat.com/app/finhome"
-                    + "?payment=failed"
-                    + $"&order_id={Uri.EscapeDataString(orderId)}"
-                    );
+                //return Redirect(
+                //    "https://thefinocrat.com/app/finhome"
+                //    + "?payment=failed"
+                //    + $"&order_id={Uri.EscapeDataString(orderId)}"
+                //    );
             }
             catch (Exception ex)
             {
+                
+                var orderId =
+                    parameters["order_id"]
+                        .FirstOrDefault() ?? "";
+
                 return Redirect(
-                    "https://thefinocrat.com/app/finhome"
-                    + "?payment=failed"
-                    + $"&order_id={Uri.EscapeDataString("")}"
-                    );
+"https://edu.thefinocrat.com/edu/courses" +
+"?payment=success" +
+"&orderId=" + Uri.EscapeDataString(orderId) +
+"&amount=" + Uri.EscapeDataString("0")
+);
             }
         }
     }

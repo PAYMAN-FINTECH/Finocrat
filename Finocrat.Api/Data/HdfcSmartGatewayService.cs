@@ -559,9 +559,12 @@ namespace Finocrat.Api.Data
             payiis.Amount =
                 result.Amount;
 
-            payiis.CardBrand = result.Card.JuspayBankCode;
-            payiis.BankName = result.Card.CardBrand;
-            payiis.CardType = result.Card.CardType + "-" + result.Card.CardSubTypeCategory;
+            var jds = result.Card?.CardType ?? "";
+            var hd =  result.Card?.CardSubTypeCategory ?? "";
+
+            payiis.CardBrand = result.Card?.JuspayBankCode ?? "";
+            payiis.BankName = result.Card?.CardBrand ?? "";
+            payiis.CardType = jds + "_" + hd;
             payiis.CardNo = responseBody;//result.Card.LastFourDigits;
 
             payiis.PayInCommission =
