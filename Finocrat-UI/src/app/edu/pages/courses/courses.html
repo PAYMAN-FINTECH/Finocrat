@@ -1,11 +1,52 @@
 <div class="courses-container">
 
 <!-- Payment Success Modal --> <div class="payment-modal-overlay" *ngIf="showPaymentSuccess" (click)="showPaymentSuccess = false" > <div class="payment-modal" (click)="$event.stopPropagation()" > <!-- Close --> <button class="success-close" (click)="showPaymentSuccess = false"> × </button> <!-- Success Icon --> <div class="success-icon"> ✓ </div> <!-- Title --> <h2>Payment Successful!</h2> <p class="success-message"> Your payment has been completed successfully. </p> <!-- Payment Details --> <div class="payment-details"> <div class="detail-row"> <span>Order Number</span> <strong>{{ paymentorderid }}</strong> </div> <div class="detail-row"> <span>Amount</span> <strong>₹{{ paymentamount }}</strong> </div> <div class="detail-row"> <span>Status</span> <strong class="status-success"> Successful </strong> </div> </div> <!-- Done Button --> <button class="done-btn" (click)="showPaymentSuccess = false"> Done </button> </div> </div>
-  <h1>All Courses</h1>
+  <h1>Course Catalogue</h1>
+  <p class="catalogue-subtitle">Explore our comprehensive library of {{ totalCount }}+ professional industry-aligned courses.</p>
+
+  <div class="catalogue-toolbar">
+    <input
+      type="text"
+      class="search-input"
+      placeholder="Search by topic, instructor, level..."
+      [(ngModel)]="searchTerm"
+      (ngModelChange)="onSearchChange()"
+    />
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">TOPIC / TRACK</span>
+    <div class="filter-chips">
+      <button
+        *ngFor="let topic of topics"
+        class="chip"
+        [class.active]="selectedTopic === topic.name"
+        (click)="selectTopic(topic.name)"
+      >
+        {{ topic.name }}
+        <span class="chip-count">{{ topic.name === 'All' ? totalCount : topic.count }}</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="filter-group">
+    <span class="filter-label">EXPERIENCE LEVEL</span>
+    <div class="filter-chips">
+      <button
+        *ngFor="let level of levels"
+        class="chip chip-dark"
+        [class.active]="selectedLevel === level.name"
+        (click)="selectLevel(level.name)"
+      >
+        {{ level.name }}
+        <span class="chip-count">{{ level.name === 'All Levels' ? totalCount : level.count }}</span>
+      </button>
+    </div>
+  </div>
 
   <div class="courses-grid">
 
-    <div class="course-card" *ngFor="let course of courses">
+    <div class="course-card" *ngFor="let course of visibleCourses">
       <img [src]="course.image" [alt]="course.title" />
 
       <div class="card-body">
@@ -40,4 +81,15 @@
     </div>
 
   </div>
+
+  <div class="load-more-wrapper" *ngIf="visibleCourses.length < filteredCourses.length">
+    <button class="load-more-btn" (click)="loadMore()">
+      Load More ({{ filteredCourses.length - visibleCourses.length }} remaining)
+    </button>
+  </div>
+
+  <p class="no-results" *ngIf="filteredCourses.length === 0">
+    No courses match your search/filters.
+  </p>
 </div>
+
