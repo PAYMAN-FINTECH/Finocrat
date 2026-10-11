@@ -2,43 +2,80 @@
   max-width: 1200px;
   margin: 40px auto;
   padding: 20px;
+  width: 100%;
 }
 
 h1 {
   font-size: 32px;
-  margin-bottom: 30px;
+  margin: 0 0 8px;
   color: #0b3c5d;
 }
 
 .catalogue-subtitle {
-  margin-top: -20px;
-  margin-bottom: 20px;
+  margin: 0;
   color: #5b6b7a;
   font-size: 15px;
 }
 
-.catalogue-toolbar {
+.catalogue-header {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 20px;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.catalogue-heading {
+  flex: 1;
+  min-width: 260px;
+}
+
+.catalogue-toolbar {
+  position: relative;
+  flex: 0 1 380px;
+  min-width: 260px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 14px;
+  opacity: 0.5;
+  pointer-events: none;
 }
 
 .search-input {
   width: 100%;
-  max-width: 420px;
-  padding: 12px 18px;
+  padding: 12px 18px 12px 40px;
   border: 1px solid #e0e0e0;
   border-radius: 24px;
   font-size: 14px;
   outline: none;
+  background: #fff;
 }
 
 .search-input:focus {
   border-color: #0b3c5d;
+  box-shadow: 0 0 0 3px rgba(11, 60, 93, 0.1);
+}
+
+.filter-panel {
+  background: #f8f9fb;
+  border: 1px solid #edf0f3;
+  border-radius: 16px;
+  padding: 20px 24px;
+  margin-bottom: 28px;
 }
 
 .filter-group {
   margin-bottom: 18px;
+}
+
+.filter-group:last-child {
+  margin-bottom: 0;
 }
 
 .filter-label {
@@ -564,6 +601,10 @@ h1 {
 ========================================= */
 
 @media (max-width: 480px) {
+
+  .catalogue-toolbar {
+    flex-basis: 100%;
+  }
 
   .payment-modal {
     max-width: 100%;
