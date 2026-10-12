@@ -454,6 +454,19 @@ namespace Finocrat.Api.Controllers
             var responseJson = JsonSerializer.Serialize(response);
 
 
+            var model = JsonSerializer.Deserialize<TAPayResponse>(
+    responseJson,
+    new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    });
+
+            // FIRST: Check actual status from gateway
+            var status = await CheckPaymentStatusAsync(
+                model.order_id,
+                model.transaction_id);
+
+
 
             return Redirect(
                 "https://thefinocrat.com/app/finhome"

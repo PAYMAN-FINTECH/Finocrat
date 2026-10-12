@@ -294,12 +294,12 @@ goToDashboard(): void {
 
   const request = {
     amount: Number(this.course.price),
-    email: 'test@example.com',
-    phone: '9999999999',
+    email: 'jurrajanardhan@gmail.com',
+    phone: '9849800697',
     name: 'Test User',
     selectedGateway: 'TA PAY',
     loggedInUserPhone: '9849800697',
-    cardnum: '4111111111111111' 
+    cardnum: '6527658900001005' 
   };
 
   this.hdfcPaymentService.createTAPayment(request)
