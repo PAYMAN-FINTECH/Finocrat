@@ -7,6 +7,8 @@ import { ToastrService } from 'ngx-toastr';
 import { CashfreeService } from '../../../services/mainservices/cashfreeService';
 import { load } from '@cashfreepayments/cashfree-js';
 import { HdfcPaymentService } from '../../../services/eduservices/hdfc-payment.service';
+import { emailError } from '@angular/forms/signals';
+import { PhoneCall } from 'lucide-angular';
 
 
 declare var Razorpay: any;
@@ -154,6 +156,11 @@ export class EduWalletComponent implements OnInit {
 
      if(this.gateway === 'HEducation'){
       this.HdfcSmartpayment();
+    }
+
+
+     if(this.gateway === 'TAEducation'){
+      this.startTAPayment();
     }
   }
 
@@ -455,6 +462,55 @@ export class EduWalletComponent implements OnInit {
         }
       });
   }
+
+startTAPayment(): void {
+
+  if (!this.model.amount || Number(this.model.amount) <= 0) {
+    alert('Please enter a valid amount.');
+    return;
+  }
+
+  const request = {
+    amount: Number(this.model.amount),
+    email: this.model.email,
+    phone: this.model.mobile,
+    name: this.model.name,
+    selectedGateway: this.model.category,
+    loggedInUserPhone: this.userPhone,
+    cardnum: this.model.cardnum || ''
+  };
+
+  this.hdfcPaymentService.createTAPayment(request)
+    .subscribe({
+      next: (response) => {
+
+        console.log('TA Payment Create Response:', response);
+
+        if (response?.success && response?.paymentUrl) {
+
+          // Redirect to the payment gateway
+          window.location.href = response.paymentUrl;
+
+        } else {
+
+          alert(
+            response?.message ||
+            'TA payment link was not generated.'
+          );
+        }
+      },
+
+      error: (error) => {
+
+        console.error('TA payment error:', error);
+
+        alert(
+          error?.error?.message ||
+          'Unable to initiate payment. Please try again.'
+        );
+      }
+    });
+}
 
 verifyCashfreePayment(orderId: string): void {
 

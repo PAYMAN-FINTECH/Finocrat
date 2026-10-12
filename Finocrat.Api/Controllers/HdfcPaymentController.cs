@@ -324,12 +324,26 @@ namespace Finocrat.Api.Controllers
                 //}
 
 
-                return Redirect(
+                if(orderStatus.Status == "CHARGED")
+                {
+                    return Redirect(
     "https://edu.thefinocrat.com/edu/courses" +
     "?payment=success" +
     "&orderId=" + Uri.EscapeDataString(orderId) +
     "&amount=" + Uri.EscapeDataString(orderStatus.Amount.ToString())
 );
+                }
+                else
+                {
+                    return Redirect(
+    "https://edu.thefinocrat.com/edu/courses" +
+    "?payment=failed" +
+    "&orderId=" + Uri.EscapeDataString(orderId) +
+    "&amount=" + Uri.EscapeDataString(orderStatus.Amount.ToString())
+);
+                }
+
+                
 
 
                 // -----------------------------------------------------
@@ -384,7 +398,7 @@ namespace Finocrat.Api.Controllers
 
                 return Redirect(
 "https://edu.thefinocrat.com/edu/courses" +
-"?payment=success" +
+"?payment=failed" +
 "&orderId=" + Uri.EscapeDataString(orderId) +
 "&amount=" + Uri.EscapeDataString("0")
 );

@@ -1,7 +1,9 @@
 <div class="courses-container">
 
 <!-- Payment Success Modal --> <div class="payment-modal-overlay" *ngIf="showPaymentSuccess" (click)="showPaymentSuccess = false" > <div class="payment-modal" (click)="$event.stopPropagation()" > <!-- Close --> <button class="success-close" (click)="showPaymentSuccess = false"> × </button> <!-- Success Icon --> <div class="success-icon"> ✓ </div> <!-- Title --> <h2>Payment Successful!</h2> <p class="success-message"> Your payment has been completed successfully. </p> <!-- Payment Details --> <div class="payment-details"> <div class="detail-row"> <span>Order Number</span> <strong>{{ paymentorderid }}</strong> </div> <div class="detail-row"> <span>Amount</span> <strong>₹{{ paymentamount }}</strong> </div> <div class="detail-row"> <span>Status</span> <strong class="status-success"> Successful </strong> </div> </div> <!-- Done Button --> <button class="done-btn" (click)="showPaymentSuccess = false"> Done </button> </div> </div>
-  <div class="catalogue-header">
+<!-- Payment Failed Modal --> <div class="payment-modal-overlay" *ngIf="showPaymentFailed" (click)="showPaymentFailed = false" > <div class="payment-modal" (click)="$event.stopPropagation()" > <!-- Close --> <button class="failed-close" (click)="showPaymentFailed = false"> × </button> <!-- Failed Icon --> <div class="failed-icon"> ✗ </div> <!-- Title --> <h2>Payment Failed!</h2> <p class="failed-message"> Your payment could not be processed. </p> <!-- Payment Details --> <div class="payment-details"> <div class="detail-row"> <span>Order Number</span> <strong>{{ paymentorderid }}</strong> </div> <div class="detail-row"> <span>Amount</span> <strong>₹{{ paymentamount }}</strong> </div> <div class="detail-row"> <span>Status</span> <strong class="status-failed"> Failed </strong> </div> </div> <!-- Done Button --> <button class="done-btn" (click)="showPaymentFailed = false"> Done </button> </div> </div>
+
+<div class="catalogue-header">
     <div class="catalogue-heading">
       <h1>Course Catalogue</h1>
       <p class="catalogue-subtitle">Explore our comprehensive library of {{ totalCount }}+ professional industry-aligned courses.</p>

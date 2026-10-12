@@ -16,6 +16,7 @@ import { Course } from '../../../Models/eduModels/course.model';
 export class CoursesComponent {
   constructor(private route: ActivatedRoute, private courseService: CourseService) {}
  showPaymentSuccess = false;
+ showPaymentFailed = false;
  paymentamount = "0";
  paymentorderid = "";
 
@@ -32,6 +33,17 @@ ngOnInit(): void {
         // Hide message after 5 seconds
         setTimeout(() => {
           this.showPaymentSuccess = false;
+        }, 5000);
+      }
+      if (params['payment'] === 'failed') {
+        this.showPaymentFailed = true;
+        this.paymentamount = params['amount'] || "0";
+        this.paymentorderid = params['orderId'] || "";
+
+
+        // Hide message after 5 seconds
+        setTimeout(() => {
+          this.showPaymentFailed = false;
         }, 5000);
       }
 

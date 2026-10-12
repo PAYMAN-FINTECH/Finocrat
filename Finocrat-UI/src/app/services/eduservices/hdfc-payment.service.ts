@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AnyARecord } from 'dns';
 
 export interface HdfcCreatePaymentRequest {
 
@@ -52,6 +53,9 @@ export class HdfcPaymentService {
   private apiUrl =
     'https://edu.thefinocrat.com/api/HdfcPayment';
 
+     private TAapiUrl =
+    'https://localhost:7081/api/TAPay';
+
 
   constructor(
     private http: HttpClient
@@ -71,6 +75,16 @@ export class HdfcPaymentService {
       request
     );
   }
+
+  
+  createTAPayment(request: any): Observable<any> {
+
+  return this.http.post<any>(
+    `${this.TAapiUrl}/CreatePayment`,
+    request
+  );
+}
+
 
 
   // =====================================================

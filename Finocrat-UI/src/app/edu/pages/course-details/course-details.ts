@@ -139,6 +139,11 @@ goToDashboard(): void {
 
   }
 
+  if(this.selectedGateway == 'TAEduction'){
+    this.startTAPayment();
+
+  }
+
    
 
     // alert('✅ Purchase successful (Demo)');
@@ -282,6 +287,52 @@ goToDashboard(): void {
         }
       });
   }
+
+
+  startTAPayment(): void {
+
+
+  const request = {
+    amount: Number(this.course.price),
+    email: 'test@example.com',
+    phone: '9999999999',
+    name: 'Test User',
+    selectedGateway: 'TA PAY',
+    loggedInUserPhone: '9849800697',
+    cardnum: '4111111111111111' 
+  };
+
+  this.hdfcPaymentService.createTAPayment(request)
+    .subscribe({
+      next: (response) => {
+
+        console.log('TA Payment Create Response:', response);
+
+        if (response?.success && response?.paymentUrl) {
+
+          // Redirect to the payment gateway
+          window.location.href = response.paymentUrl;
+
+        } else {
+
+          alert(
+            response?.message ||
+            'TA payment link was not generated.'
+          );
+        }
+      },
+
+      error: (error) => {
+
+        console.error('TA payment error:', error);
+
+        alert(
+          error?.error?.message ||
+          'Unable to initiate payment. Please try again.'
+        );
+      }
+    });
+}
 
   constructor(private route: ActivatedRoute,private authService: AuthService,private router: Router,  private razorService: RazorPaymentService, private toastr: ToastrService,private hdfcPaymentService: HdfcPaymentService, private courseService: CourseService) {}
 
