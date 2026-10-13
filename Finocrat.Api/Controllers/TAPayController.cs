@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Razorpay.Api;
 using Razorpay.Api.Errors;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -285,70 +286,80 @@ namespace Finocrat.Api.Controllers
                 .ToUpperInvariant();
         }
 
+
         private async Task<PaymentStatusResult?> CheckPaymentStatusAsync(
-    string orderId,
-    string? transactionId = null)
+            string orderId,
+            string? transactionId = null)
         {
-            var apiKey =
-                   _configuration["TAPaymentGateway:ApiKey"];
-
-            var salt =
-                _configuration["TAPaymentGateway:Salt"];
-
-            var apiUrl =
-                _configuration["TAPaymentGateway:ApiUrl"];
-
-            var parameters = new Dictionary<string, string>
-    {
-        { "api_key", apiKey! },
-        { "order_id", orderId }
-    };
-
-            // If gateway returned transaction_id, send it too
-            if (!string.IsNullOrWhiteSpace(transactionId))
-            {
-                parameters.Add("transaction_id", transactionId);
-            }
-
-            // Generate gateway hash
-            parameters["hash"] = GenerateHash(parameters, salt!);
-
-            using var client = _httpClientFactory.CreateClient();
-
-            var content = new FormUrlEncodedContent(parameters);
-
-            var response = await client.PostAsync(
-                $"{apiUrl}/v2/paymentstatus",
-                content);
-
-            var responseJson = await response.Content.ReadAsStringAsync();
-
-            // Log actual gateway response
-            //var responseLog = new ErrorModel
-            //{
-            //    payload = "TA Pay Status response",
-            //    agId = "",
-            //    reqTime = "",
-            //    respTime = responseJson,
-            //    requestId = "",
-            //    uid = "",
-            //    statuscode = true,
-            //    jsonBody = ""
-            //};
-
-            //_context.errorModels.Add(responseLog);
-            //await _context.SaveChangesAsync();
-
-            if (!response.IsSuccessStatusCode)
-            {
-                return new PaymentStatusResult
-                {
-                };
-
-            }
-
             try
             {
+                // =========================================================
+                // 1. VALIDATE CONFIGURATION
+                // =========================================================
+
+                var apiKey = _configuration["TAPaymentGateway:ApiKey"];
+                var salt = _configuration["TAPaymentGateway:Salt"];
+                var apiUrl = _configuration["TAPaymentGateway:ApiUrl"];
+
+                if (string.IsNullOrWhiteSpace(apiKey) ||
+                    string.IsNullOrWhiteSpace(salt) ||
+                    string.IsNullOrWhiteSpace(apiUrl))
+                {
+                    throw new InvalidOperationException(
+                        "TA Payment Gateway configuration is missing.");
+                }
+
+                if (string.IsNullOrWhiteSpace(orderId))
+                {
+                    throw new ArgumentException(
+                        "Order ID is required.", nameof(orderId));
+                }
+
+                // =========================================================
+                // 2. PREPARE PAYMENT STATUS REQUEST
+                // =========================================================
+
+                var parameters = new Dictionary<string, string>
+        {
+            { "api_key", apiKey },
+            { "order_id", orderId }
+        };
+
+                if (!string.IsNullOrWhiteSpace(transactionId))
+                {
+                    parameters.Add("transaction_id", transactionId);
+                }
+
+                // Generate gateway hash
+                parameters["hash"] = GenerateHash(parameters, salt);
+
+                using var client = _httpClientFactory.CreateClient();
+
+                using var content = new FormUrlEncodedContent(parameters);
+
+                using var response = await client.PostAsync(
+                    $"{apiUrl.TrimEnd('/')}/v2/paymentstatus",
+                    content);
+
+                var responseJson =
+                    await response.Content.ReadAsStringAsync();
+
+                // =========================================================
+                // 3. HANDLE HTTP FAILURE
+                // =========================================================
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    // Log the response using your application's logger.
+                    // Do not log API secrets or sensitive card information.
+
+                    return null;
+                }
+
+                // =========================================================
+                // 4. DESERIALIZE RESPONSE
+                // =========================================================
+
                 var result = JsonSerializer.Deserialize<PaymentStatusResult>(
                     responseJson,
                     new JsonSerializerOptions
@@ -356,23 +367,216 @@ namespace Finocrat.Api.Controllers
                         PropertyNameCaseInsensitive = true
                     });
 
-                if (result == null)
+                if (result?.Data == null || result.Data.Count == 0)
                 {
-                    return new PaymentStatusResult
-                    {
-                    };
-
+                    return result;
                 }
 
-                //result.RawResponse = responseJson;
+                var payment = result.Data[0];
+
+                if (payment == null)
+                {
+                    return result;
+                }
+
+                // =========================================================
+                // 5. FIND EXISTING PAYIN
+                // =========================================================
+
+                var paymentOrderId = payment.OrderId;
+
+                if (string.IsNullOrWhiteSpace(paymentOrderId))
+                {
+                    paymentOrderId = orderId;
+                }
+
+                var existingPayIn = await _context.fPayIns
+                    .FirstOrDefaultAsync(t =>
+                        t.TaxNumber == paymentOrderId);
+
+                if (existingPayIn == null)
+                {
+                    return result;
+                }
+
+                // =========================================================
+                // 6. FIND USER
+                // =========================================================
+
+                var user = await _context.fUsers
+                    .FirstOrDefaultAsync(u =>
+                        u.UserPhone == existingPayIn.UserPhone);
+
+                if (user == null)
+                {
+                    throw new InvalidOperationException(
+                        $"User not found for PayIn {existingPayIn.TaxNumber}.");
+                }
+
+                // =========================================================
+                // 7. GET PAYIN MARGIN
+                // =========================================================
+
+                var lookup = await _context.fUserLookups
+                    .FirstOrDefaultAsync(x =>
+                        x.UserPhone == existingPayIn.UserPhone);
+
+                decimal payInLimit = 0m;
+
+                if (lookup != null)
+                {
+                    payInLimit = ExtractPayInMargin(lookup, "visa");
+                }
+
+                decimal margin = Math.Max(0m, payInLimit);
+
+                var bankCode = payment.BankCode;
+
+                // Apply special margin for the configured bank codes
+                if (string.Equals(
+                        bankCode, "VICC",
+                        StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(
+                        bankCode, "MACC",
+                        StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(
+                        bankCode, "VICI",
+                        StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(
+                        bankCode, "MACI",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    margin = 2.8m;
+                }
+
+                // =========================================================
+                // 8. VALIDATE AMOUNT
+                // =========================================================
+
+                if (!decimal.TryParse(
+                        payment.Amount,
+                        System.Globalization.NumberStyles.Number,
+                        System.Globalization.CultureInfo.InvariantCulture,
+                        out decimal amount) ||
+                    amount <= 0m)
+                {
+                    throw new InvalidOperationException(
+                        $"Invalid payment amount for order {orderId}.");
+                }
+
+                // =========================================================
+                // 9. DETERMINE PAYMENT STATUS
+                // =========================================================
+
+                bool isSuccess = string.Equals(
+                    payment.ResponseMessage?.Trim(),
+                    "Transaction successful",
+                    StringComparison.OrdinalIgnoreCase);
+
+                // Do not downgrade an already successful transaction.
+                // Continue to the passbook check even if it was already successful.
+                if (!existingPayIn.Status || isSuccess)
+                {
+                    existingPayIn.Result = payment.ResponseMessage;
+                    existingPayIn.Status = isSuccess;
+                    existingPayIn.Amount = amount;
+
+                    var cardMasked = payment.CardMasked ?? "";
+                    var paymentChannel = payment.PaymentChannel ?? "";
+
+                    existingPayIn.CardBrand = paymentChannel;
+                    existingPayIn.CardType =
+                        $"{cardMasked}_{paymentChannel}";
+                    existingPayIn.CardNo = cardMasked;
+
+                    // Calculate commission using the final applicable margin.
+                    existingPayIn.PayInCommission =
+                        Math.Round(
+                            amount * margin / 100m,
+                            2,
+                            MidpointRounding.AwayFromZero);
+
+                    // Do not store the complete gateway JSON in BankName.
+                    // Populate BankName from the actual bank-name response
+                    // property when available.
+
+                    _context.fPayIns.Update(existingPayIn);
+
+                    await _context.SaveChangesAsync();
+                }
+
+                // =========================================================
+                // 10. CREATE PASSBOOK ENTRY FOR SUCCESSFUL PAYIN
+                // =========================================================
+
+                if (existingPayIn.Status)
+                {
+                    var existingHistory = await _context.fPassbookHistories
+                        .FirstOrDefaultAsync(t =>
+                            t.TxnId == existingPayIn.TaxNumber);
+
+                    if (existingHistory == null)
+                    {
+                        var istZone =
+                            TimeZoneInfo.FindSystemTimeZoneById(
+                                "India Standard Time");
+
+                        var istNow =
+                            TimeZoneInfo.ConvertTimeFromUtc(
+                                DateTime.UtcNow,
+                                istZone);
+
+                        decimal balance = await _dataUtils.GetWalletAmount(
+                            existingPayIn.UserPhone);
+
+                        var history = new FPassbookHistory
+                        {
+                            UserId = user.Id,
+                            UserPhone = user.UserPhone,
+
+                            Name = existingPayIn.CardHolderName,
+
+                            TxnId = existingPayIn.TaxNumber,
+
+                            AccountNumber =
+                                existingPayIn.CardHolderCardNumber,
+
+                            Amount = existingPayIn.Amount,
+
+                            TransactionType = "PayIn",
+
+                            Status = true,
+
+                            StatusMessage = existingPayIn.Result,
+
+                            ParentId = existingPayIn.Id,
+
+                            Balance = balance,
+
+                            CreatedAt = istNow
+                        };
+
+                        await _context.fPassbookHistories.AddAsync(history);
+
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
+                // =========================================================
+                // 11. RETURN GATEWAY RESPONSE
+                // =========================================================
 
                 return result;
             }
-            catch
+            catch (Exception ex)
             {
-                return new PaymentStatusResult
-                {
-                };
+                // Replace with your configured ILogger if available.
+                // Log the exception without logging secrets or card details.
+
+                System.Diagnostics.Debug.WriteLine(
+                    $"CheckPaymentStatusAsync failed: {ex.Message}");
+
+                return null;
             }
         }
 
@@ -416,7 +620,7 @@ namespace Finocrat.Api.Controllers
 
           //  var res = await _dataUtils.TAPayInDbCall(model);
 
-            if (true)
+            if (status.Data[0].ResponseMessage == "Transaction successful")
             {
                 return Redirect(
                         "https://thefinocrat.com/app/finhome"
@@ -434,6 +638,32 @@ namespace Finocrat.Api.Controllers
             }
         }
 
+
+        private static decimal ExtractPayInMargin(FUserLookup? lookup, string cardType)
+        {
+            decimal margin = 0;
+            if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+                if (settings != null && settings.TryGetValue("TAEducation PayIn Margin", out var value))
+                {
+                    if (value is JsonElement element)
+                    {
+                        if (element.ValueKind == JsonValueKind.String)
+                            decimal.TryParse(element.GetString(), out margin);
+                        else if (element.ValueKind == JsonValueKind.Number)
+                            margin = element.GetDecimal();
+                    }
+                }
+            }
+
+            if (string.Equals(cardType, "business", StringComparison.OrdinalIgnoreCase))
+            {
+                margin = 3.6m;
+            }
+
+            return margin;
+        }
 
 
         [HttpPost("Failure")]

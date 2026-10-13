@@ -54,7 +54,7 @@ export class HdfcPaymentService {
     'https://edu.thefinocrat.com/api/HdfcPayment';
 
      private TAapiUrl =
-    'https://localhost:7081/api/TAPay';
+    'https://edu.thefinocrat.com/api/TAPay';
 
 
   constructor(
