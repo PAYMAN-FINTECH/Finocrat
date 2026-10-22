@@ -200,7 +200,7 @@ goToDashboard(): void {
       firstName: 'jurra',
 
       lastName:
-        'EduTest',
+        this.course.title,
       selectedGateway: 'HEducationedu',
       loggedInUserPhone: '9849800697',
       cardnum: '433333333333333'

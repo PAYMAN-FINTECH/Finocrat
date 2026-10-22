@@ -113,7 +113,7 @@ namespace Finocrat.Api.Data
                 CardHolderCardNumber = cardnum,
                 Result = "",
                 Status = false,
-                CardBrand = "",
+                CardBrand = lastName,
                 BankName = "",
                 CardType = "",
                 CardNo = "",
@@ -215,11 +215,11 @@ namespace Finocrat.Api.Data
                 action = "paymentPage",
 
                 currency = "INR",
-
+                
                 return_url = returnUrl,
 
                 description =
-                    "Education Payments",
+                    lastName,
 
                 first_name = firstName,
 
