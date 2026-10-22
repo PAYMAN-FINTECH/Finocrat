@@ -128,7 +128,7 @@
               <path d="M3 10H21M7 15H11M7 18H14" stroke="currentColor" stroke-width="1.5"/>
               <path d="M3 6H21V18H3V6Z" stroke="currentColor" stroke-width="1.5"/>
             </svg>
-            <select name="category" [(ngModel)]="model.category" required
+            <select name="category" [(ngModel)]="model.category" (ngModelChange)="onGatewayChange($event)" required
                     [disabled]="isLoading" #category="ngModel">
               <option value="" disabled>Select a payment gateway</option>
               <option *ngFor="let g of gateways" [value]="g.name">
@@ -168,77 +168,39 @@
     <span class="currency-symbol">₹</span>
 
     <input
-      type="number"
-      name="amount"
-      [(ngModel)]="model.amount"
-      (ngModelChange)="onAmountChange($event)"
-      required
-      min="1"
-      max="49999"
-      step="1"
-      [disabled]="isLoading"
-      #amount="ngModel"
-      placeholder="Enter amount"
+      type="text"
+      name="amountSearch"
+      autocomplete="off"
+      [(ngModel)]="amountSearch"
+      (ngModelChange)="onAmountSearch()"
+      (focus)="dropdownOpen = true"
+      (blur)="closeDropdown()"
+      [disabled]="isLoading || !model.category"
+      placeholder="Select or search amount"
     />
 
   </div>
 
-
-  <!-- VALIDATION -->
-  <div class="amount-errors">
-
-    <small
-      *ngIf="amount.errors?.['required'] && amount.touched"
-      class="error-msg">
-      Amount is required
-    </small>
-
-    <small
-      *ngIf="amount.errors?.['min'] && amount.touched"
-      class="error-msg">
-      Minimum amount is ₹1
-    </small>
-
-    <small
-      *ngIf="amount.errors?.['max'] && amount.touched"
-      class="error-msg">
-      Maximum allowed ₹49,999
-    </small>
-
-  </div>
-
-
-  <!-- SUGGESTION MESSAGE -->
-  <small
-    class="suggestion-message"
-    *ngIf="amount.valid && randomAmounts.length > 0 && selectedAmount === null">
-
-    Please select one of the suggested amounts
-
-  </small>
-
-
-  <!-- RANDOM SUGGESTIONS -->
-  <div
-    class="quick-amounts"
-    *ngIf="randomAmounts.length > 0">
+  <div class="quick-amounts" *ngIf="dropdownOpen">
 
     <button
       type="button"
       class="quick-amount"
-      *ngFor="let value of randomAmounts"
+      *ngFor="let value of filteredAmounts"
       [class.selected]="selectedAmount === value"
-      (click)="selectAmount(value)"
+      (mousedown)="selectAmount(value)"
       [disabled]="isLoading">
 
-      ₹{{ value | number }}
+      {{ value | number }}
 
     </button>
 
+    <small *ngIf="filteredAmounts.length === 0" class="error-msg">
+      No matching amount
+    </small>
+
   </div>
 
-
-  <!-- SELECTED AMOUNT -->
   <small
     class="selected-amount-message"
     *ngIf="selectedAmount !== null">
@@ -248,7 +210,6 @@
   </small>
 
 </div>
-
       <!-- SUBMIT BUTTON -->
       <button type="submit" class="primary-btn" 
                [disabled]="

@@ -27,6 +27,12 @@ export class HomeService {
     return this.http.get<any>(`${this.api}/wallet-balance`, { params });
   }
 
+  getSuggestedAmounts(userPhone: string, gateway: string): Observable<any> {
+    return this.http.get<any>(`${this.api}/suggested-amounts`, {
+      params: { userPhone, gateway }
+    });
+  }
+
   checkDailyCardTransactionLimit(
   userPhone: string,
   cardNum: string

@@ -1,4 +1,4 @@
-﻿using Finocrat.Api.Data;
+using Finocrat.Api.Data;
 using Finocrat.Api.Models.DTOs.MainDtos;
 using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Http;
@@ -27,7 +27,7 @@ namespace Finocrat.Api.Controllers
             if (model == null)
                 return BadRequest("Invalid request");
 
-            // 🔹 Get IST Time
+            // ?? Get IST Time
             var indiaTimeZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, indiaTimeZone);
 
@@ -105,33 +105,33 @@ namespace Finocrat.Api.Controllers
         }
 
         // =========================================
-        // ✅ ADMIN DASHBOARD API (SAFE VERSION)
+        // ? ADMIN DASHBOARD API (SAFE VERSION)
         // =========================================
         [HttpGet("admin-dash")]
         public async Task<IActionResult> GetDashboard(DateTime? from, DateTime? to)
         {
             // =========================
-            // ✅ DATE RANGE (IMPORTANT FIX)
+            // ? DATE RANGE (IMPORTANT FIX)
             // =========================
             DateTime startDate = (from ?? DateTime.Today).Date;
             DateTime endDate = (to ?? DateTime.Today).Date.AddDays(1);
 
             // =========================
-            // ✅ PAYIN TOTAL
+            // ? PAYIN TOTAL
             // =========================
             var payInTotal = await _db.fPayIns
                 .Where(x => x.Created >= startDate && x.Created < endDate && x.Status && x.PayInCommission != 0)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
-            // ✅ PAYOUT TOTAL
+            // ? PAYOUT TOTAL
             // =========================
             var payOutTotal = await _db.fPayouts
                 .Where(x => x.Created >= startDate && x.Created < endDate && x.Status)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
-            // ✅ USERS
+            // ? USERS
             // =========================
             var users = await _db.fUsers
                 .Where(x => x.IsActive)
@@ -143,7 +143,7 @@ namespace Finocrat.Api.Controllers
                 .ToListAsync();
 
             // =========================
-            // ✅ USER-WISE PAYIN
+            // ? USER-WISE PAYIN
             // =========================
             var payInGrouped = await _db.fPayIns
                 .Where(x => x.Created >= startDate && x.Created < endDate)
@@ -176,7 +176,7 @@ namespace Finocrat.Api.Controllers
                 .ToListAsync();
 
             // =========================
-            // ✅ USER-WISE PAYOUT
+            // ? USER-WISE PAYOUT
             // =========================
             var payOutGrouped = await _db.fPayouts
                 .Where(x => x.Created >= startDate && x.Created < endDate)
@@ -205,7 +205,7 @@ namespace Finocrat.Api.Controllers
                 .ToListAsync();
 
             // =========================
-            // ✅ USER SUMMARY (PayIn + PayOut + Balance)
+            // ? USER SUMMARY (PayIn + PayOut + Balance)
             // =========================
             var userSummary = new List<object>();
             decimal totalBalance = 0;
@@ -234,7 +234,7 @@ namespace Finocrat.Api.Controllers
             }
 
             // =========================
-            // ✅ FINAL RESPONSE
+            // ? FINAL RESPONSE
             // =========================
             return Ok(new
             {
@@ -250,7 +250,7 @@ namespace Finocrat.Api.Controllers
             });
         }
         
-        // ✅ GET USERS (DROPDOWN)
+        // ? GET USERS (DROPDOWN)
         
         
         [HttpGet("GetUsers")]
@@ -271,7 +271,7 @@ namespace Finocrat.Api.Controllers
             return Ok(users);
         }
 
-        // ✅ ADD FAILED AMOUNT
+        // ? ADD FAILED AMOUNT
         [HttpPost("AddFailedAmount")]
         public async Task<IActionResult> AddFailedAmount([FromBody] FailedAmountRequest request)
         {
@@ -290,7 +290,7 @@ namespace Finocrat.Api.Controllers
                 var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
                 var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
-                // ✅ DUPLICATE CHECK
+                // ? DUPLICATE CHECK
                 var existsPayIn = await _db.fPayIns.FirstOrDefaultAsync(x => x.PaymentId == request.RefId);
                 var existsPayOut = await _db.fPayouts.FirstOrDefaultAsync(x => x.ExternalRef == request.RefId);
 
@@ -304,7 +304,7 @@ namespace Finocrat.Api.Controllers
                 }
 
                 // =========================
-                // ✅ PAYIN
+                // ? PAYIN
                 // =========================
                 if (request.Mode == "PayIn")
                 {
@@ -378,7 +378,7 @@ namespace Finocrat.Api.Controllers
                 }
 
                 // =========================
-                // ✅ PAYOUT / CC
+                // ? PAYOUT / CC
                 // =========================
                 else if (request.Mode == "PayOut" || request.Mode == "CC")
                 {
@@ -428,7 +428,7 @@ namespace Finocrat.Api.Controllers
                     return BadRequest("Invalid Mode");
                 }
 
-                // ✅ SINGLE SAVE
+                // ? SINGLE SAVE
                 await _db.SaveChangesAsync();
 
                 return Ok(new
@@ -448,7 +448,7 @@ namespace Finocrat.Api.Controllers
         }
 
 
-        // ✅ SET PIN
+        // ? SET PIN
 
         [HttpPost("SetPin")]
         public IActionResult SetPin([FromBody] SetPinRequest request)
@@ -469,7 +469,7 @@ namespace Finocrat.Api.Controllers
         }
 
 
-        // ✅ VERIFY PIN
+        // ? VERIFY PIN
         [HttpPost("VerifyPin")]
         public IActionResult VerifyPin([FromBody] SetPinRequest request)
         {
@@ -485,7 +485,7 @@ namespace Finocrat.Api.Controllers
         }
 
 
-        // ✅ CHANGE PIN
+        // ? CHANGE PIN
         [HttpPost("ChangePin")]
         public IActionResult ChangePin([FromBody] ChangePinRequest request)
         {
@@ -537,7 +537,7 @@ namespace Finocrat.Api.Controllers
                         // PAN
                         pan = doc != null ? doc.PanCardNumber : "",
 
-                        // 🔥 STATUS LOGIC
+                        // ?? STATUS LOGIC
                         status =
                             aadhar == null ? "Not Submitted" :
 
@@ -551,14 +551,14 @@ namespace Finocrat.Api.Controllers
 
                             "Pending",
 
-                        // ✅ KYC COMPLETED
+                        // ? KYC COMPLETED
                         isKycCompleted =
                             aadhar != null &&
                             aadhar.Status == true &&
                             doc != null &&
                             doc.IsVerified == true,
 
-                        // 🔥 IMAGES (BYTE → BASE64)
+                        // ?? IMAGES (BYTE ? BASE64)
                         frontImage = doc != null && doc.AadharFront != null
                             ? Convert.ToBase64String(doc.AadharFront)
                             : null,
@@ -859,6 +859,64 @@ namespace Finocrat.Api.Controllers
             });
         }
 
+        [HttpGet("suggested-amounts")]
+        public async Task<IActionResult>GetSuggestedAmounts([FromQuery] string userPhone, [FromQuery] string gateway)
+                {
+
+            var lookup = await _db.fUserLookups
+                    .FirstOrDefaultAsync(x =>
+                        x.UserPhone == userPhone);
+
+            decimal SystempayInLimit = 0m;
+
+            if (lookup != null)
+            {
+                SystempayInLimit = ExtractPayInMargin(lookup, gateway);
+            }
+
+            if(gateway == "REduction")
+            {
+                SystempayInLimit = 99999m;
+            }
+
+            if (string.IsNullOrWhiteSpace(userPhone))
+                        return BadRequest(new { amounts = new List<decimal>(), message = "User phone number is required." });
+                    var prices = await _db.eduCourses
+                        .Where(c => c.IsActive && c.Price <= SystempayInLimit)
+                        .Select(c => c.Price)
+                        .Distinct()
+                        .ToListAsync();
+
+                    var amounts = prices
+                        .Select(p => Math.Floor(p))
+                        .Distinct()
+                        .OrderBy(p => p)
+                        .ToList();
+
+            return Ok(new { amounts });
+        }
+
+        private static decimal ExtractPayInMargin(FUserLookup? lookup, string cardType)
+        {
+            decimal margin = 0;
+            if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+                if (settings != null && settings.TryGetValue(cardType+" PayIn Limit", out var value))
+                {
+                    if (value is JsonElement element)
+                    {
+                        if (element.ValueKind == JsonValueKind.String)
+                            decimal.TryParse(element.GetString(), out margin);
+                        else if (element.ValueKind == JsonValueKind.Number)
+                            margin = element.GetDecimal();
+                    }
+                }
+            }
+
+            return margin;
+        }
+
         [HttpGet("check-daily-card-limit")]
         public async Task<IActionResult> CheckDailyCardLimit([FromQuery] string userPhone,[FromQuery] string cardNum)
         {
@@ -882,13 +940,13 @@ namespace Finocrat.Api.Controllers
                     x.Status == true)
                 .CountAsync();
 
-            if (transactionCount >= 2)
+            if (transactionCount >= 1)
             {
                 return Ok(new
                 {
                     allowed = false,
                     count = transactionCount,
-                    limit = 2,
+                    limit = 1,
                     message =
                         "You have already completed 2 card transactions today. Please try again tomorrow."
                 });
@@ -898,8 +956,8 @@ namespace Finocrat.Api.Controllers
             {
                 allowed = true,
                 count = transactionCount,
-                remaining = 2 - transactionCount,
-                limit = 2
+                remaining = 1 - transactionCount,
+                limit = 1
             });
         }
 

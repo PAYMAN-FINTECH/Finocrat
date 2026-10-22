@@ -153,11 +153,11 @@ namespace Finocrat.Api.Controllers
                 // Generate unique order ID
 
 
-                var returnUrl = "https://localhost:7081/api/TAPay/Success";
+                var returnUrl = "https://edu.thefinocrat.com/api/TAPay/Success";
 
-                var failureUrl = "https://localhost:7081/api/TAPay/Failure";
+                var failureUrl = "https://edu.thefinocrat.com/api/TAPay/Failure";
 
-                var cancelUrl = "https://localhost:7081/api/TAPay/Cancel";
+                var cancelUrl = "https://edu.thefinocrat.com/api/TAPay/Cancel";
 
                 var parameters =
                     new Dictionary<string, string>
