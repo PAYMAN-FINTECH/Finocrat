@@ -85,6 +85,13 @@ export class HdfcPaymentService {
   );
 }
 
+  createPayUPayment(request: any): Observable<any> {
+    return this.http.post<any>(
+      'https://edu.thefinocrat.com/api/PayUPayment/CreatePayment',
+      request
+    );
+  }
+
 
 
   // =====================================================

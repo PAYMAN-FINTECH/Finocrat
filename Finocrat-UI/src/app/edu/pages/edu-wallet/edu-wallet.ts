@@ -162,7 +162,46 @@ export class EduWalletComponent implements OnInit {
      if(this.gateway === 'TAEducation'){
       this.startTAPayment();
     }
+
+    if(this.gateway === 'PayUEducation'){
+      this.startPayUPayment();
+    }
   }
+
+startPayUPayment(): void {
+
+  if (!this.model.amount || Number(this.model.amount) <= 0) {
+    alert('Please enter a valid amount.');
+    return;
+  }
+
+  const request = {
+    amount: Number(this.model.amount),
+    email: this.model.email,
+    phone: this.model.mobile,
+    name: this.model.name,
+    selectedGateway: this.model.category,
+    loggedInUserPhone: this.userPhone,
+    cardnum: this.model.cardnum || ''
+  };
+
+  this.hdfcPaymentService.createPayUPayment(request)
+    .subscribe({
+      next: (response) => {
+        if (response?.success && response?.paymentUrl) {
+          window.location.href = response.paymentUrl;
+        } else {
+          alert(response?.message || 'PayU payment link was not generated.');
+        }
+      },
+      error: (error) => {
+        alert(
+          error?.error?.message ||
+          'Unable to initiate payment. Please try again.'
+        );
+      }
+    });
+}
 
    async startCashfreePayment(): Promise<void> {
 
