@@ -448,6 +448,118 @@ namespace Finocrat.Api.Controllers
         }
 
 
+        [HttpPost("AddQrAmount")]
+        public async Task<IActionResult> AddQrAmount([FromBody] QrAmountRequest request)
+        {
+            try
+            {
+                if (request == null)
+                    return BadRequest("Invalid request");
+
+                if (string.IsNullOrEmpty(request.CustomerMobileNumber) || request.Amount <= 0)
+                    return BadRequest("Required fields missing");
+
+                // Get agent user
+                var agent = await _db.fUsers.FirstOrDefaultAsync(x => x.UserPhone == request.AgentMobile);
+                if (agent == null)
+                    return NotFound("Agent not found");
+
+                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+                var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
+                // Duplicate check
+                var existsPayIn = await _db.fPayIns.FirstOrDefaultAsync(x => x.PaymentId == request.TransactionId);
+                if (existsPayIn != null)
+                {
+                    return Ok(new
+                    {
+                        success = true,
+                        message = "Transaction already processed"
+                    });
+                }
+
+                var lookup = await _db.fUserLookups
+                    .FirstOrDefaultAsync(x =>
+                        x.UserPhone == request.AgentMobile);
+
+                decimal qrmarigin = 0m;
+
+                if (lookup != null)
+                {
+                    var type = "QR PayIn Margin";
+                    qrmarigin = ExtractPayInMargin(lookup, type);
+                }
+
+                // Create PayIn record
+                var payIn = new FPayIn
+                {
+                    UserId = agent.Id,
+                    UserPhone = agent.UserPhone,
+                    UserEmail = agent.Email,
+                    Result = "QR_PAYMENT",
+                    Status = true,
+                    PaymentId = request.TransactionId,
+                    TaxNumber = request.TransactionId,
+                    Amount = request.Amount,
+                    PayInCommission = Math.Round(request.Amount * qrmarigin / 100m, 2,MidpointRounding.AwayFromZero),
+                    FCommission = 0,
+                    Gateway = "QR_CODE",
+                    Created = istNow,
+                    CardHolderName = request.CustomerName,
+                    CardHolderPhone = request.CustomerMobileNumber,
+                    CardHolderEmail = request.CustomerEmail,
+                    CardHolderCardNumber = request.CardNumber,
+                    CardBrand = "",
+                    BankName = request.BankName,
+                    CardType = "QR",
+                    CardNo = request.CardNumber,
+                    UserTypeId = agent.UserTypeId,
+                    PatentTypeId = agent.ParentUserId
+                };
+
+                await _db.fPayIns.AddAsync(payIn);
+                await _db.SaveChangesAsync();
+
+                // Get wallet balance after transaction
+                var balance = await _dataUtils.GetWalletAmount(agent.UserPhone);
+
+                // Create passbook history
+                var history = new FPassbookHistory
+                {
+                    UserId = agent.Id,
+                    UserPhone = agent.UserPhone,
+                    Name = "QR Code Payment",
+                    TxnId = request.TransactionId,
+                    AccountNumber = request.CardNumber,
+                    Amount = request.Amount,
+                    TransactionType = "PayIn",
+                    Status = true,
+                    StatusMessage = "QR Payment Received",
+                    ParentId = payIn.Id,
+                    Balance = balance,
+                    CreatedAt = istNow
+                };
+
+                await _db.fPassbookHistories.AddAsync(history);
+                await _db.SaveChangesAsync();
+
+                return Ok(new
+                {
+                    success = true,
+                    message = "QR Amount added successfully"
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    success = false,
+                    message = ex.Message
+                });
+            }
+        }
+
+
         // ? SET PIN
 
         [HttpPost("SetPin")]
@@ -871,7 +983,8 @@ namespace Finocrat.Api.Controllers
 
             if (lookup != null)
             {
-                SystempayInLimit = ExtractPayInMargin(lookup, gateway);
+                var type = gateway + " PayIn Limit";
+                SystempayInLimit = ExtractPayInMargin(lookup, type);
             }
 
             if(gateway == "REduction")
@@ -902,7 +1015,7 @@ namespace Finocrat.Api.Controllers
             if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
             {
                 var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
-                if (settings != null && settings.TryGetValue(cardType+" PayIn Limit", out var value))
+                if (settings != null && settings.TryGetValue(cardType, out var value))
                 {
                     if (value is JsonElement element)
                     {
@@ -916,6 +1029,8 @@ namespace Finocrat.Api.Controllers
 
             return margin;
         }
+
+
 
         [HttpGet("check-daily-card-limit")]
         public async Task<IActionResult> CheckDailyCardLimit([FromQuery] string userPhone,[FromQuery] string cardNum)
@@ -992,6 +1107,18 @@ namespace Finocrat.Api.Controllers
         public string UserId { get; set; }
         public string Name { get; set; }
         public string Mobile { get; set; }
+    }
+
+    public class QrAmountRequest
+    {
+        public string CustomerMobileNumber { get; set; }
+        public string CustomerEmail { get; set; }
+        public decimal Amount { get; set; }
+        public string CardNumber { get; set; }
+        public string BankName { get; set; }
+        public string TransactionId { get; set; }
+        public string AgentMobile { get; set; }
+        public string CustomerName  { get; set; }
     }
 
     public class SetPinRequest

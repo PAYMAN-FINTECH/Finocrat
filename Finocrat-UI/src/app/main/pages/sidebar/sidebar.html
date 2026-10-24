@@ -151,6 +151,13 @@
       <span>Failed Amount</span>
     </li>
 
+
+    <!-- FAILED -->
+    <li routerLink="/app/qr-amount" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
+      <lucide-icon [img]="AlertCircle"></lucide-icon>
+      <span>QR Amount</span>
+    </li>
+
   </ul>
 </ng-container>
    </ng-container>

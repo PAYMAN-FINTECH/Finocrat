@@ -90,6 +90,10 @@ export class HomeService {
     return this.http.post(`${this.api}/AddFailedAmount`, data);
   }
 
+  addQrAmount(data: any) {
+    return this.http.post(`${this.api}/AddQrAmount`, data);
+  }
+
   setPin(data: any) {
     return this.http.post(`${this.api}/SetPin`, data);
   }

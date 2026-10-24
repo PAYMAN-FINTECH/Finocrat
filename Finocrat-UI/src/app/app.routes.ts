@@ -40,6 +40,7 @@ import { KycComponent } from './main/pages/kyc/kyc';
 import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-password';
 import { AdminDashboardComponent } from './main/pages/admin-dashboard/admin-dashboard';
 import { FailedAmountComponent } from './main/pages/failed-amount/failed-amount';
+import { QrAmountComponent } from './main/pages/qr-amount/qr-amount';
 import { PinVerificationComponent } from './main/pages/pin-verification/pin-verification';
 import { SetPinComponent } from './main/pages/set-pin/set-pin';
 import { ChangePinComponent } from './main/pages/change-pin/change-pin';
@@ -162,6 +163,7 @@ export const routes: Routes = [
       { path: 'finhome', component: FinhomeComponent },
       { path: 'wallet', component: WalletComponent },
       { path: 'failed', component: FailedAmountComponent },
+      { path: 'qr-amount', component: QrAmountComponent },
       { path: 'cc', component: CcBillPaymentComponent },
       { path: 'bbps', component: BbpsComponent },
       { path: 'admin-user-lookup', component: AdminUserLookupComponent },

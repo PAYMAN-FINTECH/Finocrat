@@ -23,5 +23,6 @@ namespace Finocrat.Api.Data
         public DbSet<FUserDocuments> fUserDocuments  { get; set; }
         public DbSet<FPassbookHistory> fPassbookHistories { get; set; }
         public DbSet<FUserTypes> fUserTypes { get; set; }
+        public DbSet<BharatConnectBiller> BharatConnectBillers { get; set; }
     }
 }

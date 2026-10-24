@@ -1,0 +1,76 @@
+<div class="container">
+  <h2>📱 Add QR Amount</h2>
+
+  <div class="form-card">
+
+    <!-- ROW 1: Customer Mobile & Customer Name -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer Mobile Number *</label>
+        <input type="text" [(ngModel)]="model.customerMobileNumber" placeholder="Auto-filled" >
+       
+      </div>
+
+      <div class="form-group">
+        <label>Customer Name *</label>
+        <input type="text" [(ngModel)]="model.customerName" placeholder="Auto-filled" >
+      </div>
+    </div>
+
+    <!-- ROW 2: Customer Email & Amount -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer Email *</label>
+        <input type="text" [(ngModel)]="model.customerEmail" placeholder="Auto-filled" >
+      
+      </div>
+
+      <div class="form-group">
+        <label>Amount (₹) *</label>
+        <input type="number" [(ngModel)]="model.amount" placeholder="Enter amount" min="1">
+      </div>
+    </div>
+
+    <!-- ROW 3: Card Number & Bank Name -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Customer Card Number *</label>
+        <input type="text" [(ngModel)]="model.cardNumber" placeholder="Enter card number" maxlength="20">
+      </div>
+
+      <div class="form-group">
+        <label>Bank Name *</label>
+        <input type="text" [(ngModel)]="model.bankName" placeholder="Enter bank name">
+      </div>
+    </div>
+
+    <!-- ROW 4: Transaction ID & Agent Mobile -->
+    <div class="form-row">
+      <div class="form-group">
+        <label>Payment Transaction ID *</label>
+        <input type="text" [(ngModel)]="model.transactionId" placeholder="Enter transaction ID" maxlength="50">
+      </div>
+
+      <div class="form-group">
+        <label>Agent Mobile Number *</label>
+        <select [(ngModel)]="model.agentMobile">
+          <option value="">Select Agent Mobile</option>
+          <option *ngFor="let u of users" [value]="u.mobile">
+            {{u.mobile}} - {{u.name}}
+          </option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="button-group">
+      <button class="btn-submit" (click)="submit()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">✓ Add QR Amount</span>
+        <span *ngIf="isLoading">⏳ Processing...</span>
+      </button>
+      <button class="btn-reset" type="button" (click)="resetForm()">↻ Reset</button>
+    </div>
+
+  </div>
+
+</div>
