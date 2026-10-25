@@ -479,7 +479,10 @@ namespace Finocrat.Api.Controllers
                 // 10. SAVE PAYIN (AND PASSBOOK WHEN SUCCESSFUL) -- SUCCESS
                 // =========================================================
 
-                await _dataUtils.SavePayInAsync(existingPayIn);
+                await _dataUtils.SavePayInWithCommissionsAsync(
+                    existingPayIn,
+                    margin,
+                    l => _dataUtils.ExtractPayInMargin(l, existingPayIn.Gateway + " PayIn Margin"));
 
                 // =========================================================
                 // 11. RETURN GATEWAY RESPONSE

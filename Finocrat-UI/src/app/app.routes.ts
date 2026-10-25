@@ -41,6 +41,7 @@ import { ForgotPasswordComponent } from './main/pages/forgot-password/forgot-pas
 import { AdminDashboardComponent } from './main/pages/admin-dashboard/admin-dashboard';
 import { FailedAmountComponent } from './main/pages/failed-amount/failed-amount';
 import { QrAmountComponent } from './main/pages/qr-amount/qr-amount';
+import { QrPaymentComponent } from './main/pages/qr-payment/qr-payment';
 import { PinVerificationComponent } from './main/pages/pin-verification/pin-verification';
 import { SetPinComponent } from './main/pages/set-pin/set-pin';
 import { ChangePinComponent } from './main/pages/change-pin/change-pin';
@@ -165,6 +166,7 @@ export const routes: Routes = [
       { path: 'wallet', component: WalletComponent },
       { path: 'failed', component: FailedAmountComponent },
       { path: 'qr-amount', component: QrAmountComponent },
+      { path: 'qr-payment', component: QrPaymentComponent },
       { path: 'cc', component: CcBillPaymentComponent },
       { path: 'bbps-categories', component: BbpsCategoriesComponent },
       { path: 'bbps', component: BbpsComponent },

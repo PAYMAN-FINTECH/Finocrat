@@ -1,0 +1,55 @@
+<div class="qr-page">
+  <div class="qr-tabs">
+    <button type="button" [class.active]="activeTab === 'qr'" (click)="activeTab = 'qr'">QR Codes</button>
+    <button type="button" [class.active]="activeTab === 'receipt'" (click)="activeTab = 'receipt'">Receipt</button>
+  </div>
+
+  <section *ngIf="activeTab === 'qr'" class="qr-list">
+    <p class="hint">Tap a QR name to open it, then scan with any UPI app.</p>
+
+    <div class="qr-item" *ngFor="let qr of qrImages">
+      <button type="button" class="qr-header" [class.open]="openQr === qr.name" (click)="toggleQr(qr.name)">
+        <span>{{ qr.name }}</span>
+        <span class="chevron">{{ openQr === qr.name ? '−' : '+' }}</span>
+      </button>
+      <div class="qr-body" *ngIf="openQr === qr.name">
+        <img [src]="qr.path" [alt]="qr.name">
+      </div>
+    </div>
+
+    <p *ngIf="qrImages.length === 0" class="hint">No QR codes available.</p>
+  </section>
+
+  <section *ngIf="activeTab === 'receipt'" class="receipt-card">
+    <h2>Upload Receipt</h2>
+    <p class="hint">UTR, date, amount and transaction mode are read from the receipt. Please verify before submitting.</p>
+
+    <label class="file-drop">
+      <input type="file" accept="image/*" (change)="onReceiptSelected($event)">
+      <span>{{ scanning ? 'Reading receipt...' : 'Tap to choose receipt image' }}</span>
+    </label>
+    <img *ngIf="receiptPreview" class="receipt-preview" [src]="receiptPreview" alt="Receipt preview">
+
+    <div class="receipt-form">
+      <label>UTR
+        <input type="text" [(ngModel)]="utr" maxlength="12">
+      </label>
+      <label>Amount
+        <input type="number" [(ngModel)]="amount" min="0">
+      </label>
+      <label>Date
+        <input type="text" [(ngModel)]="receiptDate" placeholder="dd/MM/yyyy">
+      </label>
+      <label>Transaction Mode
+        <select [(ngModel)]="transactionType">
+          <option value="">Select mode</option>
+          <option *ngFor="let mode of transactionModes" [value]="mode">{{ mode }}</option>
+        </select>
+      </label>
+    </div>
+
+    <button type="button" class="submit-btn" [disabled]="submitting || scanning" (click)="submitReceipt()">
+      {{ submitting ? 'Submitting...' : 'Submit Receipt' }}
+    </button>
+  </section>
+</div>

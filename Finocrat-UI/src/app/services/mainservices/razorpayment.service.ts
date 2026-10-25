@@ -20,5 +20,21 @@ export class RazorPaymentService {
   return this.http.get<any>(`${this.api}/gateways?userPhone=${userPhone}`);
 }
 
+  getQrStatus(userPhone: string) {
+    return this.http.get<{ qrEnabled: boolean }>(`${this.api}/qr-status?userPhone=${userPhone}`);
+  }
+
+  submitQrReceipt(data: { userPhone: string; utr: string; amount: number; receiptDate: string; transactionType: string }) {
+    return this.http.post<any>(`${this.api}/qr-receipt`, data);
+  }
+
+  getQrRequests() {
+    return this.http.get<any[]>(`${this.api}/qr-requests`);
+  }
+
+  reviewQrReceipt(id: string, approve: boolean) {
+    return this.http.post<any>(`${this.api}/qr-review`, { id, approve });
+  }
+
   
 }

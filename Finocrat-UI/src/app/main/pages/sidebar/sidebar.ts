@@ -19,11 +19,13 @@ import {
   Search,
   BadgeCheck,
   BookText,
-  AlertCircle
+  AlertCircle,
+  QrCode
 } from 'lucide-angular';
 import { TokenService } from '../../../services/mainservices/token.service';
 import { ToastrService } from 'ngx-toastr';
 import { HomeService } from '../../../services/mainservices/home.service';
+import { RazorPaymentService } from '../../../services/mainservices/razorpayment.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -63,8 +65,9 @@ export class SidebarComponent {
   BadgeCheck = BadgeCheck;
   BookText = BookText;
   AlertCircle = AlertCircle;
+  QrCode = QrCode;
 
-  constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,private userService: HomeService) {}
+  constructor(private router: Router, private tokenService: TokenService,  private toastr: ToastrService,private userService: HomeService, private razorService: RazorPaymentService) {}
 
   ngOnInit() {
      const user = this.tokenService.getUser();
@@ -121,6 +124,27 @@ export class SidebarComponent {
 
   onLinkClick() {
     this.linkClicked.emit();
+  }
+
+  // Opens the QR page only when QR is enabled for the logged-in user
+  openQrPayment() {
+    const user = this.tokenService.getUser();
+    if (!user?.userPhone) {
+      this.toastr.error('User not found');
+      return;
+    }
+
+    this.razorService.getQrStatus(user.userPhone).subscribe({
+      next: (res) => {
+        if (res.qrEnabled) {
+          this.onLinkClick();
+          this.router.navigate(['/app/qr-payment']);
+        } else {
+          this.toastr.info('QR payment is not enabled for your account');
+        }
+      },
+      error: () => this.toastr.error('Failed to check QR payment status')
+    });
   }
 
   // Logout

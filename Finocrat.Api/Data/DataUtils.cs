@@ -47,8 +47,10 @@ namespace Finocrat.Api.Data
 
             payIn.UserId = user.Id;
 
+            // One order can produce several rows (customer, distributor, super distributor),
+            // so the row is identified by both the order and the beneficiary phone.
             var saved = await _context.fPayIns
-                .FirstOrDefaultAsync(x => x.TaxNumber == payIn.TaxNumber);
+                .FirstOrDefaultAsync(x => x.TaxNumber == payIn.TaxNumber && x.UserPhone == payIn.UserPhone);
 
             if (saved == null)
             {
@@ -70,6 +72,151 @@ namespace Finocrat.Api.Data
             return saved;
         }
 
+        /// <summary>
+        /// Saves the PayIn and, for user types 2 and 3, the distributor and
+        /// super-distributor commission rows (with their passbook entries).
+        /// <paramref name="payInLimit"/> is the payer's margin and
+        /// <paramref name="getMargin"/> returns a gateway-specific margin from a user's lookup.
+        /// </summary>
+        public async Task<FPayIn> SavePayInWithCommissionsAsync(
+            FPayIn payIn,
+            decimal payInLimit,
+            Func<FUserLookup?, Task<decimal>> getMargin)
+        {
+            var saved = await SavePayInAsync(payIn);
+
+            var user = await _context.fUsers
+                .FirstOrDefaultAsync(u => u.UserPhone == saved.UserPhone);
+
+            if (user?.ParentUserId != null)
+            {
+                await SaveCommissionRowsAsync(user, saved, payInLimit, getMargin);
+            }
+
+            return saved;
+        }
+
+        private async Task SaveCommissionRowsAsync(
+            FUser user,
+            FPayIn basePayIn,
+            decimal payInLimit,
+            Func<FUserLookup?, Task<decimal>> getMargin)
+        {
+            var distributor = await _context.fUsers
+                .FirstOrDefaultAsync(t => t.Id == user.ParentUserId);
+
+            if (distributor == null)
+                return;
+
+            if (user.UserTypeId == 2)
+            {
+                var distMargin = await GetMarginForUserAsync(distributor, getMargin);
+                var amount = basePayIn.Amount * (payInLimit - distMargin) / 100;
+
+                if (amount > 0)
+                    await SaveCommissionRowAsync(basePayIn, distributor, amount, user.UserTypeId, user.Id);
+            }
+            else if (user.UserTypeId == 3)
+            {
+                var superDistributor = distributor.ParentUserId == null
+                    ? null
+                    : await _context.fUsers.FirstOrDefaultAsync(t => t.Id == distributor.ParentUserId);
+
+                if (superDistributor == null)
+                    return;
+
+                var distMargin = await GetMarginForUserAsync(distributor, getMargin);
+                var superMargin = await GetMarginForUserAsync(superDistributor, getMargin);
+
+                var distAmount = basePayIn.Amount * (payInLimit - distMargin) / 100;
+                if (distAmount > 0)
+                    await SaveCommissionRowAsync(basePayIn, distributor, distAmount, user.UserTypeId, user.Id);
+
+                var superAmount = basePayIn.Amount * (distMargin - superMargin) / 100;
+                if (superAmount > 0)
+                    await SaveCommissionRowAsync(basePayIn, superDistributor, superAmount, distributor.UserTypeId, distributor.Id);
+            }
+        }
+
+        private async Task<decimal> GetMarginForUserAsync(FUser user, Func<FUserLookup?, Task<decimal>> getMargin)
+        {
+            var lookup = await _context.fUserLookups
+                .FirstOrDefaultAsync(x => x.UserPhone == user.UserPhone);
+
+            return await getMargin(lookup);
+        }
+
+        private async Task SaveCommissionRowAsync(
+            FPayIn basePayIn,
+            FUser beneficiary,
+            decimal amount,
+            int userTypeId,
+            Guid patentTypeId)
+        {
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            await SavePayInAsync(new FPayIn
+            {
+                UserPhone = beneficiary.UserPhone,
+                UserEmail = beneficiary.Email,
+                CardHolderName = basePayIn.CardHolderName,
+                CardHolderPhone = basePayIn.CardHolderPhone,
+                CardHolderEmail = basePayIn.CardHolderEmail,
+                CardHolderCardNumber = basePayIn.CardHolderCardNumber,
+                Result = basePayIn.Result,
+                Status = basePayIn.Status,
+                CardBrand = basePayIn.CardBrand,
+                BankName = basePayIn.BankName,
+                CardType = basePayIn.CardType,
+                CardNo = basePayIn.CardNo,
+                PaymentId = basePayIn.PaymentId,
+                TaxNumber = basePayIn.TaxNumber,
+                Amount = amount,
+                PayInCommission = 0,
+                FCommission = basePayIn.Status ? (basePayIn.Amount / 100) : 0,
+                Gateway = basePayIn.Gateway,
+                Created = basePayIn.Created ?? istNow,
+                UserTypeId = userTypeId,
+                PatentTypeId = patentTypeId
+            });
+        }
+
+        /// <summary>
+        /// Admin review of a QR receipt. Approve marks the receipt and its commission rows
+        /// as success and writes passbook entries; reject marks them as rejected.
+        /// Returns false when the row is not a pending QR receipt.
+        /// </summary>
+        public async Task<bool> ReviewQrReceiptAsync(Guid payInId, bool approve)
+        {
+            var baseRow = await _context.fPayIns.FirstOrDefaultAsync(p => p.Id == payInId);
+            if (baseRow == null || baseRow.Gateway != "QR Code" || baseRow.Result != "PENDING")
+                return false;
+
+            var rows = await _context.fPayIns
+                .Where(p => p.Gateway == "QR Code" && p.TaxNumber == baseRow.TaxNumber)
+                .ToListAsync();
+
+            foreach (var row in rows)
+            {
+                row.Status = approve;
+                row.Result = approve ? "SUCCESS" : "REJECTED";
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (approve)
+            {
+                foreach (var row in rows)
+                {
+                    await SavePassbookForPayInAsync(row, row.UserId, row.UserPhone);
+                }
+            }
+
+            return true;
+        }
+
         private void CopyPayInValues(FPayIn source, FPayIn target)
         {
             var entry = _context.Entry(target);
@@ -84,7 +231,7 @@ namespace Finocrat.Api.Data
 
         private async Task SavePassbookForPayInAsync(FPayIn payIn, Guid userId, string userPhone)
         {
-            if (await _context.fPassbookHistories.AnyAsync(h => h.TxnId == payIn.TaxNumber))
+            if (await _context.fPassbookHistories.AnyAsync(h => h.TxnId == payIn.TaxNumber && h.UserPhone == userPhone))
                 return;
 
             var istNow = TimeZoneInfo.ConvertTimeFromUtc(
@@ -106,7 +253,8 @@ namespace Finocrat.Api.Data
                 StatusMessage = payIn.Result,
                 ParentId = payIn.Id,
                 Balance = balance,
-                CreatedAt = istNow
+                CreatedAt = istNow,
+                UserTypeId = payIn.UserTypeId
             });
 
             await _context.SaveChangesAsync();

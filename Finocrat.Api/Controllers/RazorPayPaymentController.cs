@@ -135,6 +135,11 @@ namespace Finocrat.Api.Controllers
                 gateways.Add(new { id = id++, name = "PayUEducation" });
             }
 
+            if (settings.ContainsKey("QR Enabled") && (bool)settings["QR Enabled"])
+            {
+                gateways.Add(new { id = id++, name = "QR Code" });
+            }
+
 
             //if (settings.ContainsKey("CC Enabled") && (bool)settings["CC Enabled"])
             //    gateways.Add(new { id = id++, name = "Credit Card" });
@@ -145,6 +150,185 @@ namespace Finocrat.Api.Controllers
                 payInLimit = payInLimit,
                 gateways = gateways
             });
+        }
+
+        // =========================================
+        // ✅ SUBMIT QR RECEIPT (PENDING)
+        // =========================================
+        [HttpPost("qr-receipt")]
+        public async Task<IActionResult> SubmitQrReceipt([FromBody] QrReceiptRequest request)
+        {
+            if (request == null || string.IsNullOrWhiteSpace(request.UserPhone) ||
+                string.IsNullOrWhiteSpace(request.Utr) || request.Amount <= 0)
+            {
+                return BadRequest(new { success = false, message = "UserPhone, UTR and a valid amount are required" });
+            }
+
+            var utr = request.Utr.Trim();
+
+            var user = await _db.fUsers.FirstOrDefaultAsync(u => u.UserPhone == request.UserPhone);
+            if (user == null)
+                return NotFound(new { success = false, message = "User not found" });
+
+            var lookup = await _db.fUserLookups.FirstOrDefaultAsync(x => x.UserPhone == request.UserPhone);
+            bool qrEnabled = false;
+            if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(lookup.LookupJson);
+                qrEnabled = settings != null &&
+                            settings.TryGetValue("QR1 Enabled", out var value) &&
+                            value.ValueKind == JsonValueKind.True;
+            }
+
+            if (!qrEnabled)
+                return BadRequest(new { success = false, message = "QR payment is not enabled for this account" });
+
+            bool alreadySubmitted = await _db.fPayIns.AnyAsync(p =>
+                p.UserPhone == request.UserPhone && p.PaymentId == utr);
+
+            if (alreadySubmitted)
+                return Conflict(new { success = false, message = "This UTR has already been submitted" });
+
+            var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
+
+            decimal payInLimit = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, "QR1 PayIn Limit"));
+            decimal commission = Math.Round(request.Amount * payInLimit / 100m, 2, MidpointRounding.AwayFromZero);
+
+            var payIn = new FPayIn
+            {
+                UserId = user.Id,
+                UserPhone = request.UserPhone,
+                UserEmail = user.Email,
+                CardHolderName = "",
+                CardHolderPhone = "",
+                CardHolderEmail = "",
+                CardHolderCardNumber = "",
+                Result = "PENDING",
+                Status = false,
+                CardBrand = "",
+                BankName = "",
+                CardType = "",
+                CardNo = "",
+                PaymentId = utr,
+                TaxNumber = utr,
+                Amount = request.Amount,
+                PayInCommission = commission,
+                FCommission = 0,
+                Gateway = "QR Code",
+                Created = istNow,
+                Request = $"ReceiptDate: {request.ReceiptDate}; TransactionType: {request.TransactionType}",
+                UserTypeId = user.UserTypeId,
+            };
+
+            var saved = await _dataUtils.SavePayInWithCommissionsAsync(
+                payIn,
+                payInLimit,
+                l => _dataUtils.ExtractPayInMargin(l, "QR1 PayIn Margin"));
+
+            return Ok(new { success = true, message = "Receipt submitted, pending verification", id = saved.Id });
+        }
+
+        // =========================================
+        // ✅ LIST QR RECEIPTS (ADMIN REVIEW)
+        // =========================================
+        [HttpGet("qr-requests")]
+        public async Task<IActionResult> GetQrRequests()
+        {
+            var rows = await _db.fPayIns
+                .Where(p => p.Gateway == "QR Code" && p.Request != null)
+                .OrderByDescending(p => p.Created)
+                .Take(200)
+                .Select(p => new
+                {
+                    p.Id,
+                    p.UserPhone,
+                    p.UserEmail,
+                    Utr = p.TaxNumber,
+                    p.Amount,
+                    p.PayInCommission,
+                    p.Result,
+                    p.Status,
+                    p.Created,
+                    p.Request
+                })
+                .ToListAsync();
+
+            var list = rows.Select(r =>
+            {
+                var parts = (r.Request ?? "").Split(';');
+                string receiptDate = "", transactionType = "";
+                foreach (var part in parts)
+                {
+                    var kv = part.Split(':', 2);
+                    if (kv.Length != 2) continue;
+                    var key = kv[0].Trim();
+                    var val = kv[1].Trim();
+                    if (key == "ReceiptDate") receiptDate = val;
+                    if (key == "TransactionType") transactionType = val;
+                }
+
+                return new
+                {
+                    r.Id,
+                    r.UserPhone,
+                    r.UserEmail,
+                    r.Utr,
+                    r.Amount,
+                    r.PayInCommission,
+                    r.Result,
+                    r.Status,
+                    r.Created,
+                    receiptDate,
+                    transactionType
+                };
+            });
+
+            return Ok(list);
+        }
+
+        // =========================================
+        // ✅ APPROVE / REJECT QR RECEIPT (ADMIN)
+        // =========================================
+        [HttpPost("qr-review")]
+        public async Task<IActionResult> ReviewQrReceipt([FromBody] QrReviewRequest request)
+        {
+            if (request == null || request.Id == Guid.Empty)
+                return BadRequest(new { success = false, message = "Receipt id is required" });
+
+            var reviewed = await _dataUtils.ReviewQrReceiptAsync(request.Id, request.Approve);
+            if (!reviewed)
+                return NotFound(new { success = false, message = "Pending QR receipt not found" });
+
+            return Ok(new
+            {
+                success = true,
+                message = request.Approve ? "Receipt approved" : "Receipt rejected"
+            });
+        }
+
+        // =========================================
+        // ✅ CHECK QR ENABLED FOR USER
+        // =========================================
+        [HttpGet("qr-status")]
+        public async Task<IActionResult> GetQrStatus(string userPhone)
+        {
+            if (string.IsNullOrEmpty(userPhone))
+                return BadRequest("userPhone is required");
+
+            var data = await _db.fUserLookups
+                .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+            bool qrEnabled = false;
+
+            if (data != null && !string.IsNullOrEmpty(data.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(data.LookupJson);
+
+                qrEnabled = settings != null && settings.TryGetValue("QR1 Enabled", out var value) && value.ValueKind == JsonValueKind.True;
+            }
+
+            return Ok(new { qrEnabled });
         }
 
         // =========================================
@@ -634,6 +818,21 @@ namespace Finocrat.Api.Controllers
     public class OrderRequest
     {
         public decimal Amount { get; set; }
+    }
+
+    public class QrReceiptRequest
+    {
+        public string UserPhone { get; set; }
+        public string Utr { get; set; }
+        public decimal Amount { get; set; }
+        public string ReceiptDate { get; set; }
+        public string TransactionType { get; set; }
+    }
+
+    public class QrReviewRequest
+    {
+        public Guid Id { get; set; }
+        public bool Approve { get; set; }
     }
 
     public class VerifyPaymentRequest

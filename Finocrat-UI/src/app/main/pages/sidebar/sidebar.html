@@ -33,6 +33,14 @@
       </div>
     </li>
 
+    <!-- QR PAYMENT - checks QR Enabled for the user on click -->
+    <li (click)="openQrPayment()">
+      <div class="menu-left">
+      <lucide-icon [img]="QrCode"></lucide-icon>
+      <span>QR Payment</span>
+      </div>
+    </li>
+
     <!-- BILL PAYMENTS - Add click handler -->
     <li routerLink="/app/cc" routerLinkActive="active" (click)="onLinkClick()">
       <div class="menu-left">
@@ -45,7 +53,7 @@
    
     </ng-container>
 
-    <ng-container> 
+    <!-- <ng-container> 
 
      <li routerLink="/app/bbps-categories" routerLinkActive="active" (click)="onLinkClick()">
   <div class="menu-left">
@@ -59,7 +67,7 @@
     <span class="menu-text">Bill Payments</span>
   </div>
 </li>
-    </ng-container>
+    </ng-container> -->
 
     <!-- SERVICES - Add click handler -->
     <li routerLink="/app/services" routerLinkActive="active" (click)="onLinkClick()">
@@ -155,14 +163,14 @@
     <!-- FAILED -->
     <li routerLink="/app/qr-amount" routerLinkActive="active" (click)="onLinkClick()" *ngIf="isAdmin">
       <lucide-icon [img]="AlertCircle"></lucide-icon>
-      <span>QR Amount</span>
+      <span>QR List</span>
     </li>
 
   </ul>
 </ng-container>
    </ng-container>
 
-
+ 
     <!-- PROFILE - Add click handler -->
     <li routerLink="/app/profile" routerLinkActive="active" (click)="onLinkClick()">
       <div class="menu-left">

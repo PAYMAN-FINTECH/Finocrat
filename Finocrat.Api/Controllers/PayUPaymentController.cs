@@ -328,6 +328,7 @@ namespace Finocrat.Api.Controllers
     });
 
                 decimal commission = 0m;
+                decimal payInLimit = 0m;
                 bool isSuccess = false;
 
                 if (payUResponse?.Status == 1 &&
@@ -355,10 +356,9 @@ namespace Finocrat.Api.Controllers
                        .FirstOrDefaultAsync(x => x.UserPhone == payIn.UserPhone);
                         var gatew = payIn.Gateway+ " PayIn Margin";
 
-                        var margin = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, gatew));
-                         
+                        payInLimit = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, gatew));
                         commission = Math.Round(
-                            payIn.Amount * margin / 100m, 2,
+                            payIn.Amount * payInLimit / 100m, 2,
                             MidpointRounding.AwayFromZero);
                     }
 
@@ -374,7 +374,10 @@ namespace Finocrat.Api.Controllers
                     if (isSuccess)
                         payIn.PayInCommission = commission;
 
-                    await _dataUtils.SavePayInAsync(payIn);
+                    await _dataUtils.SavePayInWithCommissionsAsync(
+                        payIn,
+                        payInLimit,
+                        l => _dataUtils.ExtractPayInMargin(l, payIn.Gateway + " PayIn Margin"));
 
                 }
 

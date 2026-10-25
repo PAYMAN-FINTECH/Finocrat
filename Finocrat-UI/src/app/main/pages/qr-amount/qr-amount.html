@@ -1,84 +1,52 @@
 <div class="container">
-  <h2>📱 Add QR Amount</h2>
+  <h2>QR Receipts</h2>
 
-  <div class="form-card">
-
-    <!-- ROW 1: Customer Mobile & Customer Name -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Customer Mobile Number *</label>
-        <select [(ngModel)]="model.customerMobileNumber" (change)="onCustomerMobileChange()">
-          <option value="">Select Mobile Number</option>
-          <option *ngFor="let u of users" [value]="u.userPhone">
-            {{u.userPhone}} - {{u.userName}}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Customer Name *</label>
-        <input type="text" [(ngModel)]="model.customerName" placeholder="Auto-filled" readonly class="readonly-input">
-      </div>
-    </div>
-
-    <!-- ROW 2: Customer Email & Amount -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Customer Email *</label>
-        <select [(ngModel)]="model.customerEmail" (change)="onCustomerEmailChange()">
-          <option value="">Select Email</option>
-          <option *ngFor="let u of users" [value]="u.email">
-            {{u.email}} - {{u.userName}}
-          </option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Amount (₹) *</label>
-        <input type="number" [(ngModel)]="model.amount" placeholder="Enter amount" min="1">
-      </div>
-    </div>
-
-    <!-- ROW 3: Card Number & Bank Name -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Customer Card Number *</label>
-        <input type="text" [(ngModel)]="model.cardNumber" placeholder="Enter card number" maxlength="20">
-      </div>
-
-      <div class="form-group">
-        <label>Bank Name *</label>
-        <input type="text" [(ngModel)]="model.bankName" placeholder="Enter bank name">
-      </div>
-    </div>
-
-    <!-- ROW 4: Transaction ID & Agent Mobile -->
-    <div class="form-row">
-      <div class="form-group">
-        <label>Payment Transaction ID *</label>
-        <input type="text" [(ngModel)]="model.transactionId" placeholder="Enter transaction ID" maxlength="50">
-      </div>
-
-      <div class="form-group">
-        <label>Agent Mobile Number *</label>
-        <select [(ngModel)]="model.agentMobile">
-          <option value="">Select Agent Mobile</option>
-          <option *ngFor="let u of users" [value]="u.userPhone">
-            {{u.userPhone}} - {{u.userName}}
-          </option>
-        </select>
-      </div>
-    </div>
-
-    <!-- ACTIONS -->
-    <div class="button-group">
-      <button class="btn-submit" (click)="submit()" [disabled]="isLoading">
-        <span *ngIf="!isLoading">✓ Add QR Amount</span>
-        <span *ngIf="isLoading">⏳ Processing...</span>
-      </button>
-      <button class="btn-reset" type="button" (click)="resetForm()">↻ Reset</button>
-    </div>
-
+  <div class="toolbar">
+    <label>From
+      <input type="date" [(ngModel)]="fromDate">
+    </label>
+    <label>To
+      <input type="date" [(ngModel)]="toDate">
+    </label>
+    <button type="button" class="today-btn" (click)="resetToToday()">Today</button>
+    <input type="search" class="search" placeholder="Search phone, email, UTR or amount" [(ngModel)]="search">
   </div>
 
+  <div class="filter-tabs">
+    <button type="button" *ngFor="let f of filters"
+            [class.active]="filter === f"
+            (click)="filter = f">
+      {{ f === 'ALL' ? 'All' : (f | titlecase) }}
+      <span class="count">{{ countFor(f) }}</span>
+    </button>
+  </div>
+
+  <p class="empty" *ngIf="!loading && visibleRequests.length === 0">No receipts to show.</p>
+  <p class="empty" *ngIf="loading">Loading...</p>
+
+  <div class="receipt-card" *ngFor="let item of visibleRequests">
+    <div class="card-head">
+      <div>
+        <div class="user">{{ item.userPhone }}</div>
+        <div class="sub">{{ item.userEmail }}</div>
+      </div>
+      <span class="badge" [ngClass]="item.result">{{ item.result }}</span>
+    </div>
+
+    <div class="grid">
+      <div><span class="label">Amount</span><span class="value">₹{{ item.amount }}</span></div>
+      <div><span class="label">Commission</span><span class="value">₹{{ item.payInCommission }}</span></div>
+      <div><span class="label">UTR</span><span class="value">{{ item.utr }}</span></div>
+      <div><span class="label">Date</span><span class="value">{{ item.receiptDate || '-' }}</span></div>
+      <div><span class="label">Mode</span><span class="value">{{ item.transactionType || '-' }}</span></div>
+      <div><span class="label">Submitted</span><span class="value">{{ item.created | date:'dd MMM yyyy, hh:mm a' }}</span></div>
+    </div>
+
+    <div class="actions" *ngIf="item.result === 'PENDING'">
+      <button type="button" class="btn reject" [disabled]="reviewingId === item.id" (click)="review(item, false)">Reject</button>
+      <button type="button" class="btn approve" [disabled]="reviewingId === item.id" (click)="review(item, true)">
+        {{ reviewingId === item.id ? 'Saving...' : 'Approve' }}
+      </button>
+    </div>
+  </div>
 </div>

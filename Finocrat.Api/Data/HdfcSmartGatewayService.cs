@@ -566,7 +566,10 @@ namespace Finocrat.Api.Data
                     : 0;
 
             // Saves the PayIn and, on success, the passbook entry.
-            await _dataUtils.SavePayInAsync(payiis);
+            await _dataUtils.SavePayInWithCommissionsAsync(
+                payiis,
+                payInLimit,
+                l => _dataUtils.ExtractPayInMargin(l, payiis.Gateway + " PayIn Margin"));
 
 
             // =========================================================
