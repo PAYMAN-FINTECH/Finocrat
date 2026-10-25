@@ -101,33 +101,7 @@ namespace Finocrat.Api.Data
 
             var user = await _db.fUsers.FirstOrDefaultAsync(t => t.UserPhone == LoggedInUserPhone);
 
-            var payIn = new FPayIn
-            {
-                UserId = user.Id,
-
-                UserPhone = LoggedInUserPhone,
-                UserEmail = user.Email,
-                CardHolderName = firstName,
-                CardHolderPhone = customerPhone,
-                CardHolderEmail = customerEmail,
-                CardHolderCardNumber = cardnum,
-                Result = "",
-                Status = false,
-                CardBrand = lastName,
-                BankName = "",
-                CardType = "",
-                CardNo = "",
-                PaymentId = CustomeId,
-                TaxNumber = orderId,
-                Amount = amount,
-                PayInCommission = 0,
-                FCommission = 0,
-                Gateway = SelectedGateway,
-                Created = istNow
-            };
-
-            await _db.fPayIns.AddAsync(payIn);
-            await _db.SaveChangesAsync();
+           
 
 
             // -----------------------------------------------------
@@ -180,7 +154,7 @@ namespace Finocrat.Api.Data
 
             request.Headers.Add(
                 "x-customerid",
-                customerId.Trim()
+                CustomeId.Trim()
             );
 
             request.Headers.Accept.Add(
@@ -203,7 +177,7 @@ namespace Finocrat.Api.Data
                     CultureInfo.InvariantCulture
                 ),
 
-                customer_id = customerId,
+                customer_id = CustomeId,
 
                 customer_email = customerEmail,
 
@@ -233,6 +207,30 @@ namespace Finocrat.Api.Data
 
             var json =
                 JsonSerializer.Serialize(requestBody);
+
+            var payIn = await _dataUtils.SavePayInAsync(new FPayIn
+            {
+                UserPhone = LoggedInUserPhone,
+                UserEmail = user.Email,
+                CardHolderName = firstName,
+                CardHolderPhone = customerPhone,
+                CardHolderEmail = customerEmail,
+                CardHolderCardNumber = cardnum,
+                Result = "",
+                Status = false,
+                CardBrand = lastName,
+                BankName = "",
+                CardType = "",
+                CardNo = "",
+                PaymentId = CustomeId,
+                TaxNumber = orderId,
+                Amount = amount,
+                PayInCommission = 0,
+                FCommission = 0,
+                Gateway = SelectedGateway,
+                Created = istNow,
+                Request = json
+            });
 
 
             request.Content =
@@ -537,10 +535,11 @@ namespace Finocrat.Api.Data
 
                 if (lookup != null)
                 {
+                    var gatway = payiis.Gateway + " PayIn Margin";
                     payInLimit =
-                        ExtractPayInMargin(
+                         await _dataUtils.ExtractPayInMargin(
                             lookup,
-                            "visa"
+                            gatway
                         );
                 }
             }
@@ -550,98 +549,29 @@ namespace Finocrat.Api.Data
             // UPDATE PAYIN
             // =========================================================
 
-            payiis.Result =
-                result.Status;
-
-            payiis.Status =
-                isCharged;
-
-            payiis.Amount =
-                result.Amount;
-
             var jds = result.Card?.CardType ?? "";
             var hd =  result.Card?.CardSubTypeCategory ?? "";
 
-            payiis.CardBrand = result.Card?.JuspayBankCode ?? "";
-            payiis.BankName = result.Card?.CardBrand ?? "";
+            payiis.Result = result.Status;
+            payiis.Status = isCharged;
+            payiis.Amount = result.Amount;
+            payiis.CardBrand = result.Card?.CardBrand ?? "";
+            payiis.BankName = result.Card?.JuspayBankCode + "_" + result.Card?.CardIsin ?? "";
             payiis.CardType = jds + "_" + hd;
-            payiis.CardNo = responseBody;//result.Card.LastFourDigits;
-
+            payiis.CardNo = result.Card?.LastFourDigits ?? "";
+            payiis.Response = responseBody;
             payiis.PayInCommission =
                 isCharged
                     ? (result.Amount * payInLimit / 100)
                     : 0;
 
-
-            _db.fPayIns.Update(payiis);
-
-
-            // =========================================================
-            // SAVE DATABASE
-            // =========================================================
-
-            await _db.SaveChangesAsync();
+            // Saves the PayIn and, on success, the passbook entry.
+            await _dataUtils.SavePayInAsync(payiis);
 
 
             // =========================================================
             // RETURN HDFC RESPONSE
             // =========================================================
-
-
-            // =====================================================
-            // PAYMENT SUCCESS
-            // =====================================================
-
-            if (isCharged)
-            {
-                // IMPORTANT:
-                // Check whether passbook entry already exists
-                // for this transaction.
-                var existingHistory = await _db.fPassbookHistories
-                    .FirstOrDefaultAsync(t =>
-                        t.TxnId == payiis.TaxNumber);
-
-                var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-                var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
-
-
-                if (existingHistory == null)
-                {
-                    decimal balance = await _dataUtils.GetWalletAmount(
-                        payiis.UserPhone
-                    );
-
-                    var history = new FPassbookHistory
-                    {
-                        UserId = user.Id,
-                        UserPhone = user.UserPhone,
-                        Name = payiis.CardHolderName,
-
-                        TxnId = payiis.TaxNumber,
-
-                        AccountNumber = payiis.CardHolderCardNumber,
-
-                        Amount = payiis.Amount,
-
-                        TransactionType = "PayIn",
-
-                        Status = true,
-
-                        StatusMessage = payiis.Result,
-
-                        ParentId = payiis.Id,
-
-                        Balance = balance,
-
-                        CreatedAt = istNow
-                    };
-
-                    await _db.fPassbookHistories.AddAsync(history);
-
-                    await _db.SaveChangesAsync();
-                }
-            }
-
 
             return result;
         }

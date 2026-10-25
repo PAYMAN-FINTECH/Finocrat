@@ -2,9 +2,11 @@
 using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
+using System.Text.Json;
 
 namespace Finocrat.Api.Data
 {
@@ -29,6 +31,107 @@ namespace Finocrat.Api.Data
         {
             await _context.fPassbookHistories.AddAsync(model);
             return model;
+        }
+
+        /// <summary>
+        /// Single entry point for all gateways: inserts or updates the PayIn
+        /// (matched by TaxNumber) and, when the payment is successful, writes
+        /// the passbook entry once per transaction.
+        /// </summary>
+        public async Task<FPayIn> SavePayInAsync(FPayIn payIn)
+        {
+            var user = await _context.fUsers
+                .FirstOrDefaultAsync(u => u.UserPhone == payIn.UserPhone)
+                ?? throw new InvalidOperationException(
+                    $"User not found for phone {payIn.UserPhone}.");
+
+            payIn.UserId = user.Id;
+
+            var saved = await _context.fPayIns
+                .FirstOrDefaultAsync(x => x.TaxNumber == payIn.TaxNumber);
+
+            if (saved == null)
+            {
+                _context.fPayIns.Add(payIn);
+                saved = payIn;
+            }
+            else if (!ReferenceEquals(saved, payIn))
+            {
+                CopyPayInValues(payIn, saved);
+            }
+
+            await _context.SaveChangesAsync();
+
+            if (saved.Status)
+            {
+                await SavePassbookForPayInAsync(saved, user.Id, user.UserPhone);
+            }
+
+            return saved;
+        }
+
+        private void CopyPayInValues(FPayIn source, FPayIn target)
+        {
+            var entry = _context.Entry(target);
+
+            foreach (var property in entry.Metadata.GetProperties()
+                         .Where(p => !p.IsPrimaryKey()))
+            {
+                entry.Property(property.Name).CurrentValue =
+                    typeof(FPayIn).GetProperty(property.Name)?.GetValue(source);
+            }
+        }
+
+        private async Task SavePassbookForPayInAsync(FPayIn payIn, Guid userId, string userPhone)
+        {
+            if (await _context.fPassbookHistories.AnyAsync(h => h.TxnId == payIn.TaxNumber))
+                return;
+
+            var istNow = TimeZoneInfo.ConvertTimeFromUtc(
+                DateTime.UtcNow,
+                TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
+
+            var balance = await GetWalletAmount(payIn.UserPhone);
+
+            _context.fPassbookHistories.Add(new FPassbookHistory
+            {
+                UserId = userId,
+                UserPhone = userPhone,
+                Name = payIn.CardHolderName,
+                TxnId = payIn.TaxNumber,
+                AccountNumber = payIn.CardHolderCardNumber,
+                Amount = payIn.Amount,
+                TransactionType = "PayIn",
+                Status = true,
+                StatusMessage = payIn.Result,
+                ParentId = payIn.Id,
+                Balance = balance,
+                CreatedAt = istNow
+            });
+
+            await _context.SaveChangesAsync();
+        }
+
+
+        public async Task<decimal> ExtractPayInMargin(FUserLookup? lookup, string gateway)
+        {
+            decimal margin = 0;
+            if (lookup != null && !string.IsNullOrEmpty(lookup.LookupJson))
+            {
+                var settings = JsonSerializer.Deserialize<Dictionary<string, object>>(lookup.LookupJson);
+                if (settings != null && settings.TryGetValue(gateway, out var value))
+                {
+                    if (value is JsonElement element)
+                    {
+                        if (element.ValueKind == JsonValueKind.String)
+                            decimal.TryParse(element.GetString(), out margin);
+                        else if (element.ValueKind == JsonValueKind.Number)
+                            margin = element.GetDecimal();
+                    }
+                }
+            }
+
+            return margin;
         }
 
 

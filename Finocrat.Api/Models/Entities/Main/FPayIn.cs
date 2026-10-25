@@ -26,5 +26,8 @@
         public int? UserTypeId { get; set; } 
         public Guid? PatentTypeId {  get; set; }
 
+        public string? Request {  get; set; }
+        public string? Response { get; set; }
+
     }
 }

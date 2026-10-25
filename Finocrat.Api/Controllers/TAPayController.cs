@@ -47,31 +47,20 @@ namespace Finocrat.Api.Controllers
 
             var user = await _context.fUsers.FirstOrDefaultAsync(u => u.UserPhone == userPhone);
 
-            var existing = await _context.fPayIns
-                   .FirstOrDefaultAsync(x => x.TaxNumber == orderId);
-
-            if (existing == null)
+            await _dataUtils.SavePayInAsync(new FPayIn
             {
-                var payIn = new FPayIn
-                {
-                    UserId = user.Id,
-                    UserPhone = userPhone,
-                    TaxNumber = orderId,              // 🔑 orderId
-                    Amount = amount,
-                    Gateway = gateway,
-                    Created = istTime,
-                    CardHolderEmail = Cemail,
-                    Status = false,
-                    Result = "PENDING",
-                    //Device = divice,
-                    CardHolderCardNumber = CCard,
-                    CardHolderName = CName,
-                    CardHolderPhone = CMobile
-                };
-
-                _context.fPayIns.Add(payIn);
-                await _context.SaveChangesAsync();
-            }
+                UserPhone = userPhone,
+                TaxNumber = orderId,
+                Amount = amount,
+                Gateway = gateway,
+                Created = istTime,
+                CardHolderEmail = Cemail,
+                Status = false,
+                Result = "PENDING",
+                CardHolderCardNumber = CCard,
+                CardHolderName = CName,
+                CardHolderPhone = CMobile
+            });
 
             var model = new TaPaySessionModel
             {
@@ -123,36 +112,6 @@ namespace Finocrat.Api.Controllers
 
                 var user = await _context.fUsers.FirstOrDefaultAsync(t => t.UserPhone == request.LoggedInUserPhone);
 
-                var payIn = new FPayIn
-                {
-                    UserId = user.Id,
-                    UserPhone = request.LoggedInUserPhone,
-                    UserEmail = user.Email,
-                    CardHolderName = request.Name,
-                    CardHolderPhone = request.Phone,
-                    CardHolderEmail = request.Email,
-                    CardHolderCardNumber = request.cardnum,
-                    Result = "",
-                    Status = false,
-                    CardBrand = "",
-                    BankName = "",
-                    CardType = "",
-                    CardNo = "",
-                    PaymentId = "",
-                    TaxNumber = orderId,
-                    Amount = request.Amount,
-                    PayInCommission = 0,
-                    FCommission = 0,
-                    Gateway = request.SelectedGateway,
-                    Created = istTime
-                };
-
-                await _context.fPayIns.AddAsync(payIn);
-                await _context.SaveChangesAsync();
-
-                // Generate unique order ID
-
-
                 var returnUrl = "https://edu.thefinocrat.com/api/TAPay/Success";
 
                 var failureUrl = "https://edu.thefinocrat.com/api/TAPay/Failure";
@@ -191,6 +150,33 @@ namespace Finocrat.Api.Controllers
 
                 using var content =
                     new FormUrlEncodedContent(parameters);
+
+                string requestJson = JsonSerializer.Serialize(parameters);
+
+                await _dataUtils.SavePayInAsync(new FPayIn
+                {
+                    UserPhone = request.LoggedInUserPhone,
+                    UserEmail = user.Email,
+                    CardHolderName = request.Name,
+                    CardHolderPhone = request.Phone,
+                    CardHolderEmail = request.Email,
+                    CardHolderCardNumber = request.cardnum,
+                    Result = "",
+                    Status = false,
+                    CardBrand = "",
+                    BankName = "",
+                    CardType = "",
+                    CardNo = "",
+                    PaymentId = "",
+                    TaxNumber = orderId,
+                    Amount = request.Amount,
+                    PayInCommission = 0,
+                    FCommission = 0,
+                    Gateway = request.SelectedGateway,
+                    Created = istTime,
+                    Request = requestJson
+                });
+
 
                 var response =
                     await client.PostAsync(
@@ -400,21 +386,7 @@ namespace Finocrat.Api.Controllers
                 }
 
                 // =========================================================
-                // 6. FIND USER
-                // =========================================================
-
-                var user = await _context.fUsers
-                    .FirstOrDefaultAsync(u =>
-                        u.UserPhone == existingPayIn.UserPhone);
-
-                if (user == null)
-                {
-                    throw new InvalidOperationException(
-                        $"User not found for PayIn {existingPayIn.TaxNumber}.");
-                }
-
-                // =========================================================
-                // 7. GET PAYIN MARGIN
+                // 6. GET PAYIN MARGIN
                 // =========================================================
 
                 var lookup = await _context.fUserLookups
@@ -422,15 +394,16 @@ namespace Finocrat.Api.Controllers
                         x.UserPhone == existingPayIn.UserPhone);
 
                 decimal payInLimit = 0m;
-
+                var bankCode = payment.BankCode;
                 if (lookup != null)
                 {
-                    payInLimit = ExtractPayInMargin(lookup, "visa");
+                    var gateway = existingPayIn.Gateway + " PayIn Margin";
+                    payInLimit = await _dataUtils.ExtractPayInMargin(lookup, gateway);
                 }
 
                 decimal margin = Math.Max(0m, payInLimit);
 
-                var bankCode = payment.BankCode;
+                
 
                 // Apply special margin for the configured bank codes
                 if (string.Equals(
@@ -468,99 +441,45 @@ namespace Finocrat.Api.Controllers
                 // 9. DETERMINE PAYMENT STATUS
                 // =========================================================
 
-                bool isSuccess = string.Equals(
-                    payment.ResponseMessage?.Trim(),
-                    "Transaction successful",
-                    StringComparison.OrdinalIgnoreCase);
+                bool isSuccess =
+    string.Equals(
+        payment.ResponseMessage?.Trim(),
+        "Transaction successful",
+        StringComparison.OrdinalIgnoreCase)
+    ||
+    string.Equals(
+        payment.ResponseMessage?.Trim(),
+        "SUCCESS",
+        StringComparison.OrdinalIgnoreCase);
 
                 // Do not downgrade an already successful transaction.
-                // Continue to the passbook check even if it was already successful.
+                // The save still runs so the passbook check happens.
                 if (!existingPayIn.Status || isSuccess)
                 {
-                    existingPayIn.Result = payment.ResponseMessage;
-                    existingPayIn.Status = isSuccess;
-                    existingPayIn.Amount = amount;
-
                     var cardMasked = payment.CardMasked ?? "";
                     var paymentChannel = payment.PaymentChannel ?? "";
 
+                    existingPayIn.Result = payment.ResponseMessage;
+                    existingPayIn.PaymentId = transactionId;
+                    existingPayIn.Status = isSuccess;
+                    existingPayIn.Amount = amount;
                     existingPayIn.CardBrand = paymentChannel;
-                    existingPayIn.CardType =
-                        $"{cardMasked}_{paymentChannel}";
+                    existingPayIn.CardType = bankCode;
                     existingPayIn.CardNo = cardMasked;
+                    existingPayIn.Response = responseJson;
 
                     // Calculate commission using the final applicable margin.
-                    existingPayIn.PayInCommission =
-                        Math.Round(
-                            amount * margin / 100m,
-                            2,
-                            MidpointRounding.AwayFromZero);
-
-                    // Do not store the complete gateway JSON in BankName.
-                    // Populate BankName from the actual bank-name response
-                    // property when available.
-
-                    _context.fPayIns.Update(existingPayIn);
-
-                    await _context.SaveChangesAsync();
+                    existingPayIn.PayInCommission = Math.Round(
+                        amount * margin / 100m,
+                        2,
+                        MidpointRounding.AwayFromZero);
                 }
 
                 // =========================================================
-                // 10. CREATE PASSBOOK ENTRY FOR SUCCESSFUL PAYIN
+                // 10. SAVE PAYIN (AND PASSBOOK WHEN SUCCESSFUL) -- SUCCESS
                 // =========================================================
 
-                if (existingPayIn.Status)
-                {
-                    var existingHistory = await _context.fPassbookHistories
-                        .FirstOrDefaultAsync(t =>
-                            t.TxnId == existingPayIn.TaxNumber);
-
-                    if (existingHistory == null)
-                    {
-                        var istZone =
-                            TimeZoneInfo.FindSystemTimeZoneById(
-                                "India Standard Time");
-
-                        var istNow =
-                            TimeZoneInfo.ConvertTimeFromUtc(
-                                DateTime.UtcNow,
-                                istZone);
-
-                        decimal balance = await _dataUtils.GetWalletAmount(
-                            existingPayIn.UserPhone);
-
-                        var history = new FPassbookHistory
-                        {
-                            UserId = user.Id,
-                            UserPhone = user.UserPhone,
-
-                            Name = existingPayIn.CardHolderName,
-
-                            TxnId = existingPayIn.TaxNumber,
-
-                            AccountNumber =
-                                existingPayIn.CardHolderCardNumber,
-
-                            Amount = existingPayIn.Amount,
-
-                            TransactionType = "PayIn",
-
-                            Status = true,
-
-                            StatusMessage = existingPayIn.Result,
-
-                            ParentId = existingPayIn.Id,
-
-                            Balance = balance,
-
-                            CreatedAt = istNow
-                        };
-
-                        await _context.fPassbookHistories.AddAsync(history);
-
-                        await _context.SaveChangesAsync();
-                    }
-                }
+                await _dataUtils.SavePayInAsync(existingPayIn);
 
                 // =========================================================
                 // 11. RETURN GATEWAY RESPONSE
@@ -620,7 +539,7 @@ namespace Finocrat.Api.Controllers
 
           //  var res = await _dataUtils.TAPayInDbCall(model);
 
-            if (status.Data[0].ResponseMessage == "Transaction successful")
+            if (status.Data[0].ResponseMessage == "Transaction successful" || status.Data[0].ResponseMessage == "SUCCESS")
             {
                 return Redirect(
                         "https://thefinocrat.com/app/finhome"

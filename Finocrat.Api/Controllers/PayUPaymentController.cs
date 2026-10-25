@@ -2,10 +2,13 @@ using Finocrat.Api.Data;
 using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Razorpay.Api;
 using System.Globalization;
+using System.Net.NetworkInformation;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Finocrat.Api.Controllers
 {
@@ -110,30 +113,7 @@ namespace Finocrat.Api.Controllers
                     DateTime.UtcNow,
                     TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
 
-                await _db.fPayIns.AddAsync(new FPayIn
-                {
-                    UserId = user.Id,
-                    UserPhone = request.LoggedInUserPhone,
-                    UserEmail = user.Email,
-                    CardHolderName = request.Name,
-                    CardHolderPhone = request.Phone,
-                    CardHolderEmail = request.Email,
-                    CardHolderCardNumber = request.cardnum,
-                    Result = "PENDING",
-                    Status = false,
-                    CardBrand = "",
-                    BankName = "",
-                    CardType = "",
-                    CardNo = "",
-                    PaymentId = "",
-                    TaxNumber = orderId,
-                    Amount = request.Amount,
-                    PayInCommission = 0,
-                    FCommission = 0,
-                    Gateway = request.SelectedGateway,
-                    Created = istNow
-                });
-                await _db.SaveChangesAsync();
+               
 
                 var encodedOrder = Uri.EscapeDataString(orderId);
 
@@ -177,9 +157,34 @@ namespace Finocrat.Api.Controllers
 
                 // The exact string that is hashed must be the string that is sent.
                 var body = JsonSerializer.Serialize(payload);
+
+                await _dataUtils.SavePayInAsync(new FPayIn
+                {
+                    UserPhone = request.LoggedInUserPhone,
+                    UserEmail = user.Email,
+                    CardHolderName = request.Name,
+                    CardHolderPhone = request.Phone,
+                    CardHolderEmail = request.Email,
+                    CardHolderCardNumber = request.cardnum,
+                    Result = "PENDING",
+                    Status = false,
+                    CardBrand = "",
+                    BankName = "",
+                    CardType = "",
+                    CardNo = "",
+                    PaymentId = "",
+                    TaxNumber = orderId,
+                    Amount = request.Amount,
+                    PayInCommission = 0,
+                    FCommission = 0,
+                    Gateway = request.SelectedGateway,
+                    Created = istNow,
+                    Request = body
+                });
+
                 var date = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture);
 
-                using var message = new HttpRequestMessage(HttpMethod.Post, PaymentsUrl)
+                using var message = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, PaymentsUrl)
                 {
                     Content = new StringContent(body, Encoding.UTF8, "application/json")
                 };
@@ -302,7 +307,7 @@ namespace Finocrat.Api.Controllers
                 var body = JsonSerializer.Serialize(new { txnId = new[] { orderId } });
                 var date = DateTime.UtcNow.ToString("r", CultureInfo.InvariantCulture);
 
-                using var message = new HttpRequestMessage(HttpMethod.Post, VerifyUrl)
+                using var message = new HttpRequestMessage(System.Net.Http.HttpMethod.Post, VerifyUrl)
                 {
                     Content = new StringContent(body, Encoding.UTF8, "application/json")
                 };
@@ -315,109 +320,65 @@ namespace Finocrat.Api.Controllers
                 var response = await client.SendAsync(message);
                 var responseText = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                    return false;
+                var payUResponse = JsonSerializer.Deserialize<PayUResponse>(
+    responseText,
+    new JsonSerializerOptions
+    {
+        PropertyNameCaseInsensitive = true
+    });
 
-                using var json = JsonDocument.Parse(responseText);
-                var root = json.RootElement;
+                decimal commission = 0m;
+                bool isSuccess = false;
 
-                if (!root.TryGetProperty("result", out var result) ||
-                    result.ValueKind != JsonValueKind.Array)
-                    return false;
-
-                JsonElement? txn = null;
-                foreach (var item in result.EnumerateArray())
+                if (payUResponse?.Status == 1 &&
+                    payUResponse.Result?.Count > 0)
                 {
-                    if (item.TryGetProperty("txnId", out var id) &&
-                        id.ToString() == orderId)
+                    var payment = payUResponse.Result[0];
+
+                    string? transactionId = payment.TxnId;
+                    long mihpayId = payment.MihpayId;
+                    string? bankReference = payment.BankReferenceNumber;
+                    decimal amount = payment.Amount;
+                    string? cardNumber = payment.CardNo;
+                    string? cardType = payment.CardType;
+                    string? paymentStatus = payment.Status;
+                    string? unmappedStatus = payment.UnmappedStatus;
+
+                     isSuccess = string.Equals(
+                        paymentStatus,
+                        "success",
+                        StringComparison.OrdinalIgnoreCase);
+
+                    if (isSuccess)
                     {
-                        txn = item;
-                        break;
+                        var lookup = await _db.fUserLookups
+                       .FirstOrDefaultAsync(x => x.UserPhone == payIn.UserPhone);
+                        var gatew = payIn.Gateway+ " PayIn Margin";
+
+                        var margin = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, gatew));
+                         
+                        commission = Math.Round(
+                            payIn.Amount * margin / 100m, 2,
+                            MidpointRounding.AwayFromZero);
                     }
+
+                    payIn.Result = paymentStatus ?? "";
+                    payIn.Status = isSuccess;
+                    payIn.PaymentId = transactionId ?? "";
+                    payIn.CardBrand = payment.CardType ?? "";
+                    payIn.BankName = payment.Field2 ?? "";
+                    payIn.CardNo = payment.CardNo ?? "";
+                    payIn.CardType = payment.BankCode ?? "";
+                    payIn.Response = responseText;
+
+                    if (isSuccess)
+                        payIn.PayInCommission = commission;
+
+                    await _dataUtils.SavePayInAsync(payIn);
+
                 }
 
-                if (txn == null)
-                    return false;
-
-                var t = txn.Value;
-
-                var status = GetString(t, "status");
-                var isSuccess = string.Equals(status, "success",
-                    StringComparison.OrdinalIgnoreCase);
-
-                var paidAmount = t.TryGetProperty("amount", out var amt) &&
-                    amt.TryGetDecimal(out var parsed) ? parsed : 0m;
-
-                // Guard against a paid amount that differs from the order.
-                if (isSuccess && paidAmount != payIn.Amount)
-                    isSuccess = false;
-
-                var bankName = GetString(t, "bankcode");
-                var cardNo = GetString(t, "cardNo");
-                var mode = GetString(t, "mode");
-
-                payIn.Result = GetString(t, "field9") is { Length: > 0 } f9 ? f9 : status;
-                payIn.Status = isSuccess;
-                payIn.PaymentId = GetString(t, "mihpayId");
-                payIn.CardBrand = mode;
-                payIn.BankName = bankName;
-                payIn.CardNo = cardNo;
-                payIn.CardType = $"{cardNo}_{mode}";
-
-                if (isSuccess)
-                {
-                    var lookup = await _db.fUserLookups
-                        .FirstOrDefaultAsync(x => x.UserPhone == payIn.UserPhone);
-
-                    var margin = Math.Max(0m, ExtractPayInMargin(lookup));
-
-                    payIn.PayInCommission = Math.Round(
-                        payIn.Amount * margin / 100m, 2,
-                        MidpointRounding.AwayFromZero);
-                }
-
-                await _db.SaveChangesAsync();
-
-                if (!isSuccess)
-                    return false;
-
-                var existingHistory = await _db.fPassbookHistories
-                    .FirstOrDefaultAsync(h => h.TxnId == payIn.TaxNumber);
-
-                if (existingHistory == null)
-                {
-                    var user = await _db.fUsers
-                        .FirstOrDefaultAsync(u => u.UserPhone == payIn.UserPhone);
-
-                    if (user == null)
-                        return false;
-
-                    var istNow = TimeZoneInfo.ConvertTimeFromUtc(
-                        DateTime.UtcNow,
-                        TimeZoneInfo.FindSystemTimeZoneById("India Standard Time"));
-
-                    var balance = await _dataUtils.GetWalletAmount(payIn.UserPhone);
-
-                    await _db.fPassbookHistories.AddAsync(new FPassbookHistory
-                    {
-                        UserId = user.Id,
-                        UserPhone = user.UserPhone,
-                        Name = payIn.CardHolderName,
-                        TxnId = payIn.TaxNumber,
-                        AccountNumber = payIn.CardHolderCardNumber,
-                        Amount = payIn.Amount,
-                        TransactionType = "PayIn",
-                        Status = true,
-                        StatusMessage = payIn.Result,
-                        ParentId = payIn.Id,
-                        Balance = balance,
-                        CreatedAt = istNow
-                    });
-
-                    await _db.SaveChangesAsync();
-                }
-
-                return true;
+                return isSuccess;
             }
             catch (Exception ex)
             {
@@ -465,5 +426,155 @@ namespace Finocrat.Api.Controllers
         public string? SelectedGateway { get; set; }
         public string? LoggedInUserPhone { get; set; }
         public string? cardnum { get; set; }
+    }
+
+    public class PayUResponse
+    {
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("status")]
+        public int Status { get; set; }
+
+        [JsonPropertyName("result")]
+        public List<PayUResult>? Result { get; set; }
+    }
+
+    public class PayUResult
+    {
+        [JsonPropertyName("mihpayId")]
+        public long MihpayId { get; set; }
+
+        [JsonPropertyName("bankReferenceNumber")]
+        public string? BankReferenceNumber { get; set; }
+
+        [JsonPropertyName("amount")]
+        public decimal Amount { get; set; }
+
+        [JsonPropertyName("mode")]
+        public string? Mode { get; set; }
+
+        [JsonPropertyName("requestId")]
+        public string? RequestId { get; set; }
+
+        [JsonPropertyName("originalAmount")]
+        public decimal OriginalAmount { get; set; }
+
+        [JsonPropertyName("additionalCharges")]
+        public decimal AdditionalCharges { get; set; }
+
+        [JsonPropertyName("discount")]
+        public decimal Discount { get; set; }
+
+        [JsonPropertyName("netDebitAmount")]
+        public decimal NetDebitAmount { get; set; }
+
+        [JsonPropertyName("productInfo")]
+        public string? ProductInfo { get; set; }
+
+        [JsonPropertyName("firstName")]
+        public string? FirstName { get; set; }
+
+        [JsonPropertyName("bankcode")]
+        public string? BankCode { get; set; }
+
+        [JsonPropertyName("nameOnCard")]
+        public string? NameOnCard { get; set; }
+
+        [JsonPropertyName("cardNo")]
+        public string? CardNo { get; set; }
+
+        [JsonPropertyName("cardType")]
+        public string? CardType { get; set; }
+
+        [JsonPropertyName("cardToken")]
+        public string? CardToken { get; set; }
+
+        [JsonPropertyName("udf1")]
+        public string? Udf1 { get; set; }
+
+        [JsonPropertyName("udf2")]
+        public string? Udf2 { get; set; }
+
+        [JsonPropertyName("udf3")]
+        public string? Udf3 { get; set; }
+
+        [JsonPropertyName("udf4")]
+        public string? Udf4 { get; set; }
+
+        [JsonPropertyName("udf5")]
+        public string? Udf5 { get; set; }
+
+        [JsonPropertyName("field2")]
+        public string? Field2 { get; set; }
+
+        [JsonPropertyName("field9")]
+        public string? Field9 { get; set; }
+
+        [JsonPropertyName("errorCode")]
+        public string? ErrorCode { get; set; }
+
+        [JsonPropertyName("errorMessage")]
+        public string? ErrorMessage { get; set; }
+
+        [JsonPropertyName("addedOn")]
+        public string? AddedOn { get; set; }
+
+        [JsonPropertyName("settledAt")]
+        public string? SettledAt { get; set; }
+
+        [JsonPropertyName("paymentSource")]
+        public string? PaymentSource { get; set; }
+
+        [JsonPropertyName("meCode")]
+        public PayUMeCode? MeCode { get; set; }
+
+        [JsonPropertyName("pgType")]
+        public string? PgType { get; set; }
+
+        [JsonPropertyName("status")]
+        public string? Status { get; set; }
+
+        [JsonPropertyName("unmappedStatus")]
+        public string? UnmappedStatus { get; set; }
+
+        [JsonPropertyName("merchantUTR")]
+        public string? MerchantUTR { get; set; }
+
+        [JsonPropertyName("mcpLookupId")]
+        public string? McpLookupId { get; set; }
+
+        [JsonPropertyName("mcpAmount")]
+        public decimal McpAmount { get; set; }
+
+        [JsonPropertyName("mcpCurrency")]
+        public string? McpCurrency { get; set; }
+
+        [JsonPropertyName("mcpExchangeRate")]
+        public decimal McpExchangeRate { get; set; }
+
+        [JsonPropertyName("originalCurrency")]
+        public string? OriginalCurrency { get; set; }
+
+        [JsonPropertyName("merNetAmount")]
+        public decimal? MerNetAmount { get; set; }
+
+        [JsonPropertyName("offerAvailed")]
+        public string? OfferAvailed { get; set; }
+
+        [JsonPropertyName("message")]
+        public string? Message { get; set; }
+
+        [JsonPropertyName("txnId")]
+        public string? TxnId { get; set; }
+    }
+
+    public class PayUMeCode
+    {
+        [JsonPropertyName("MID")]
+        public string? MID { get; set; }
+
+        [JsonPropertyName("TID")]
+        public string? TID { get; set; }
     }
 }
