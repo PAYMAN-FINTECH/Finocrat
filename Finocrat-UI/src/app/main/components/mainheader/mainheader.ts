@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { TokenService } from '../../../services/mainservices/token.service';
@@ -12,14 +12,11 @@ import { MainAuthService } from '../../../services/mainservices/mainauth.service
   styleUrls: ['./mainheader.css'],
   encapsulation: ViewEncapsulation.None
 })
-export class MainheaderComponent implements OnInit {
+export class MainheaderComponent {
 
-  username: string = '';
-  userId: string = '';
   isMenuOpen = false;
 
   // ✅ PROFILE IMAGE HANDLING
-  profileImage: string = 'assets/images/profile.png';
   imageError: boolean = false;
 
   constructor(
@@ -28,21 +25,21 @@ export class MainheaderComponent implements OnInit {
     private mainAuthService: MainAuthService
   ) {}
 
-  ngOnInit(): void {
-    const user = this.tokenService.getUser();
-    if (user) {
-      this.username = user.name;
-      this.userId = user.userId;
-
-      // optional dynamic image
-      if (user.profileImage) {
-        this.profileImage = user.profileImage;
-      }
-    }
+  get username(): string {
+    return this.tokenService.getUser()?.name ?? '';
   }
 
+  get userId(): string {
+    return this.tokenService.getUser()?.userId ?? '';
+  }
+
+  get profileImage(): string {
+    return this.tokenService.getUser()?.profileImage || 'assets/images/profile.png';
+  }
+
+  // Reads the same session that login saves (TokenService), so the header updates after login.
   isLoggedIn(): boolean {
-    return this.mainAuthService.isLoggedIn();
+    return !!this.tokenService.getToken() && !this.tokenService.isTokenExpired() && !!this.tokenService.getUser();
   }
 
   toggleMenu() {

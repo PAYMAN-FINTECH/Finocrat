@@ -34,6 +34,7 @@ export class AdminUserLookupComponent implements OnInit {
   }
 
   // ================= USERS =================
+
   loadUsers() {
     var loginUser = this.tokenService.getUser();
 
@@ -81,6 +82,12 @@ export class AdminUserLookupComponent implements OnInit {
   }
 
   // ================= UTIL =================
+  deleteSetting(key: string) {
+    if (!confirm(`Delete setting "${key}"?`)) return;
+    delete this.settings[key];
+    this.keys = Object.keys(this.settings);
+  }
+
   isBoolean(val: any) {
     return typeof val === 'boolean';
   }

@@ -29,6 +29,7 @@
   padding: 10px;
   border-radius: 8px;
   border: 1px solid #ddd;
+  box-sizing: border-box;
 }
 
 /* SETTINGS */
@@ -36,9 +37,17 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
   margin-bottom: 18px;
   padding-bottom: 10px;
   border-bottom: 1px solid #eee;
+}
+
+.setting-control {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 input, select {
@@ -63,6 +72,37 @@ input, select {
 
 .btn.secondary {
   background: #e5e7eb;
+}
+
+.btn.danger {
+  background: #dc2626;
+  color: white;
+  padding: 6px 12px;
+}
+
+.btn.danger:hover {
+  background: #b91c1c;
+}
+
+.icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+}
+
+.icon-btn.danger {
+  color: #dc2626;
+}
+
+.icon-btn.danger:hover {
+  background: #fee2e2;
 }
 
 .btn.primary:hover {
