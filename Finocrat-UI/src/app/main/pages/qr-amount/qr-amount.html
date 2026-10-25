@@ -7,13 +7,17 @@
     <div class="form-row">
       <div class="form-group">
         <label>Customer Mobile Number *</label>
-        <input type="text" [(ngModel)]="model.customerMobileNumber" placeholder="Auto-filled" >
-       
+        <select [(ngModel)]="model.customerMobileNumber" (change)="onCustomerMobileChange()">
+          <option value="">Select Mobile Number</option>
+          <option *ngFor="let u of users" [value]="u.userPhone">
+            {{u.userPhone}} - {{u.userName}}
+          </option>
+        </select>
       </div>
 
       <div class="form-group">
         <label>Customer Name *</label>
-        <input type="text" [(ngModel)]="model.customerName" placeholder="Auto-filled" >
+        <input type="text" [(ngModel)]="model.customerName" placeholder="Auto-filled" readonly class="readonly-input">
       </div>
     </div>
 
@@ -21,8 +25,12 @@
     <div class="form-row">
       <div class="form-group">
         <label>Customer Email *</label>
-        <input type="text" [(ngModel)]="model.customerEmail" placeholder="Auto-filled" >
-      
+        <select [(ngModel)]="model.customerEmail" (change)="onCustomerEmailChange()">
+          <option value="">Select Email</option>
+          <option *ngFor="let u of users" [value]="u.email">
+            {{u.email}} - {{u.userName}}
+          </option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -55,8 +63,8 @@
         <label>Agent Mobile Number *</label>
         <select [(ngModel)]="model.agentMobile">
           <option value="">Select Agent Mobile</option>
-          <option *ngFor="let u of users" [value]="u.mobile">
-            {{u.mobile}} - {{u.name}}
+          <option *ngFor="let u of users" [value]="u.userPhone">
+            {{u.userPhone}} - {{u.userName}}
           </option>
         </select>
       </div>

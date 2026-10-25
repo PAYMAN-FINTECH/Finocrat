@@ -60,6 +60,7 @@ import { FastagContactComponent } from './fastag/pages/fastag-contact/fastag-con
 import { FastagFaqComponent } from './fastag/pages/fastag-faq/fastag-faq';
 import { FastagSupportComponent } from './fastag/pages/fastag-support/fastag-support';
 import { BbpsComponent } from './main/pages/bbps/bbps';
+import { BbpsCategoriesComponent } from './main/pages/bbps-categories/bbps-categories';
 import { TravelLayout } from './travel/components/travel-layout/travel-layout';
 import { TravelHome } from './travel/pages/travel-home/travel-home';
 import { TravelAbout } from './travel/pages/travel-about/travel-about';
@@ -165,6 +166,7 @@ export const routes: Routes = [
       { path: 'failed', component: FailedAmountComponent },
       { path: 'qr-amount', component: QrAmountComponent },
       { path: 'cc', component: CcBillPaymentComponent },
+      { path: 'bbps-categories', component: BbpsCategoriesComponent },
       { path: 'bbps', component: BbpsComponent },
       { path: 'admin-user-lookup', component: AdminUserLookupComponent },
       { path: 'users', component: UsersComponent },

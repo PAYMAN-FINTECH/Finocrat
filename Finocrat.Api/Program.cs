@@ -26,6 +26,7 @@ builder.Services.AddScoped<JwtHelper>();
 builder.Services.AddScoped<DataUtils>();
 builder.Services
     .AddHttpClient<HdfcSmartGatewayService>();
+builder.Services.AddHttpClient<BillAvenueService>();
 
 // -------------------- CORS --------------------
 // 🔥 Allow Angular (change origin when deploying)

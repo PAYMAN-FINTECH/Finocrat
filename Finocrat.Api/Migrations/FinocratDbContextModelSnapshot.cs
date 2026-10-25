@@ -120,6 +120,9 @@ namespace Finocrat.Api.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<string>("BillerInfo")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("BlrAliasName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -142,6 +145,9 @@ namespace Finocrat.Api.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("IconUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

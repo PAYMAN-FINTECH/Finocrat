@@ -38,5 +38,8 @@ namespace Finocrat.Api.Models.Entities.Main
         /// Whether this biller is active
         /// </summary>
         public bool IsActive { get; set; } = true;
+
+        public string? IconUrl { get; set; }
+        public string? BillerInfo { get; set;  }
     }
 }
