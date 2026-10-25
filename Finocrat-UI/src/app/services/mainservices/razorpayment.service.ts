@@ -20,6 +20,10 @@ export class RazorPaymentService {
   return this.http.get<any>(`${this.api}/gateways?userPhone=${userPhone}`);
 }
 
+  checkBin(bin: string) {
+    return this.http.post<any>('https://thefinocrat.com/api/TAPay/CheckBin', { bin });
+  }
+
   getQrStatus(userPhone: string) {
     return this.http.get<{ qrEnabled: boolean }>(`${this.api}/qr-status?userPhone=${userPhone}`);
   }

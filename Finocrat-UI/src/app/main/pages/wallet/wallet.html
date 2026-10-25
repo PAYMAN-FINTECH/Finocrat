@@ -150,9 +150,15 @@
             <input type="text" name="cardnum" [(ngModel)]="model.cardnum" required
                    minlength="16" maxlength="16" pattern="^[0-9]{16}$"
                    [disabled]="isLoading" #cardnum="ngModel"
+                   (ngModelChange)="onCardNumberChange($event)"
                    placeholder="Enter 16-digit card number">
           </div>
+          <small *ngIf="binLoading" class="bin-info">Checking bank...</small>
+          <small *ngIf="!binLoading && binBankName" class="bin-info bin-found">{{ binBankName }}</small>
+          <small *ngIf="!binLoading && binError" class="error-msg">{{ binError }}</small>
+          <small *ngIf="cardLimitBlocked" class="error-msg">{{ cardLimitMessage }}</small>
           <small *ngIf="cardnum.invalid && cardnum.touched" class="error-msg">
+
             Enter valid 16-digit card number
           </small>
         </div>
@@ -181,7 +187,7 @@
 
   </div>
 
-  <div class="quick-amounts" *ngIf="dropdownOpen">
+  <div class="quick-amounts" *ngIf="dropdownOpen && amountSearch.trim()">
 
     <button
       type="button"
@@ -217,6 +223,7 @@
     selectedAmount === null ||
     selectedAmount > payInLimit ||
     !payInEnabled ||
+    cardLimitBlocked ||
     isLoading
   ">
         <span *ngIf="!isLoading" class="btn-content">

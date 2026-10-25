@@ -1063,7 +1063,7 @@ namespace Finocrat.Api.Controllers
                     count = transactionCount,
                     limit = 1,
                     message =
-                        "You have already completed 2 card transactions today. Please try again tomorrow."
+                        "You have already completed 1 card transactions today. Please try again tomorrow."
                 });
             }
 

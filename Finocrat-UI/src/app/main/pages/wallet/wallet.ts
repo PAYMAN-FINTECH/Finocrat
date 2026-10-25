@@ -42,6 +42,77 @@ dropdownOpen = false;
   userId: string = '';
   userPhone: string = '';
 
+  binBankName: string = '';
+  binLoading: boolean = false;
+  binError: string = '';
+  private lastBin: string = '';
+
+  cardLimitMessage: string = '';
+  cardLimitBlocked: boolean = false;
+  private lastLimitCard: string = '';
+
+  private checkCardLimit(cardNum: string): void {
+    if (cardNum === this.lastLimitCard) return;
+    this.lastLimitCard = cardNum;
+    this.cardLimitMessage = '';
+    this.cardLimitBlocked = false;
+
+    this.homeService.checkDailyCardTransactionLimit(this.userPhone, cardNum).subscribe({
+      next: (res: any) => {
+        if (cardNum !== this.lastLimitCard) return;
+        if (res && res.allowed === false) {
+          this.cardLimitBlocked = true;
+          this.cardLimitMessage = res.message || 'You have reached the maximum of 1 card transactions for today.';
+        }
+        this.cd.detectChanges();
+      },
+      error: () => {
+        if (cardNum !== this.lastLimitCard) return;
+        this.cardLimitMessage = '';
+      }
+    });
+  }
+
+  onCardNumberChange(value: string): void {
+    const digits = (value || '').replace(/\D/g, '');
+    if (digits.length === 16) {
+      this.checkCardLimit(digits);
+    } else if (digits.length < 16) {
+      this.lastLimitCard = '';
+      this.cardLimitMessage = '';
+      this.cardLimitBlocked = false;
+    }
+    if (digits.length < 6) {
+      this.lastBin = '';
+      this.binBankName = '';
+      this.binError = '';
+      this.binLoading = false;
+      return;
+    }
+    const bin = digits.substring(0, 6);
+    if (bin === this.lastBin) return;
+    this.lastBin = bin;
+    this.binBankName = '';
+    this.binError = '';
+    this.binLoading = true;
+
+    this.razorService.checkBin(bin).subscribe({
+      next: (res) => {
+        if (bin !== this.lastBin) return;
+        this.binBankName = res?.bankName ?? res?.BankName ?? res?.bank ?? res?.data?.bankName ?? '';
+        this.binLoading = false;
+        if (!this.binBankName) this.binError = 'Bank not found for this BIN';
+        this.cd.detectChanges();
+      },
+      error: () => {
+        if (bin !== this.lastBin) return;
+        this.binLoading = false;
+        this.binError = 'Could not fetch bank name';
+        this.cd.detectChanges();
+      }
+    });
+  }
+
   constructor(
     private razorService: RazorPaymentService,
     private tokenService: TokenService,
@@ -82,6 +153,7 @@ loadGateways(): void {
 onGatewayChange(gateway: string): void {
   this.allAmounts = [];
   this.amountSearch = '';
+  this.dropdownOpen = false;
   this.selectedAmount = null;
   this.model.amount = null;
   if (gateway) this.loadAmounts(gateway);

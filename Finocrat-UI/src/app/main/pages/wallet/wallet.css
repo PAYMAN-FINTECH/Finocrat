@@ -236,6 +236,17 @@
   cursor: pointer;
 }
 
+.bin-info {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+  color: #2e7d32;
+}
+
+.bin-found {
+  font-weight: 600;
+}
+
 .error-msg {
   color: #ef4444;
   font-size: 12px;

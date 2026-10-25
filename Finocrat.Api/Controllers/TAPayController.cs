@@ -77,6 +77,32 @@ namespace Finocrat.Api.Controllers
             return Ok(model);
         }
 
+        [HttpPost("CheckBin")]
+        public async Task<IActionResult> CheckBin([FromBody] CardBinRequest request)
+        {
+            var bin = (request?.Bin ?? "").Trim();
+            if (bin.Length != 6 || !bin.All(char.IsDigit))
+                return BadRequest(new { message = "BIN must be 6 digits" });
+
+            try
+            {
+                var client = _httpClientFactory.CreateClient();
+                var content = new StringContent(JsonSerializer.Serialize(new { bin }), Encoding.UTF8, "application/json");
+                using var response = await client.PostAsync("https://paymanfintech.in/TAPay/CheckBin", content);
+                var body = await response.Content.ReadAsStringAsync();
+
+                if (!response.IsSuccessStatusCode)
+                    return StatusCode((int)response.StatusCode, new { message = "BIN lookup failed" });
+
+                using var doc = JsonDocument.Parse(body);
+                return Ok(doc.RootElement.Clone());
+            }
+            catch (Exception)
+            {
+                return StatusCode(502, new { message = "BIN lookup unavailable" });
+            }
+        }
+
         [HttpPost("CreatePayment")]
         public async Task<IActionResult> CreatePayment(
             [FromBody] PaymentRequest request)

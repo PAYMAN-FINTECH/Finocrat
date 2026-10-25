@@ -3,6 +3,7 @@ using Finocrat.Api.Models.Entities.Main;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Razorpay.Api;
 using System.Net;
 using System.Net.Mail;
 using System.Text;
@@ -60,7 +61,7 @@ namespace Finocrat.Api.Data
             else if (!ReferenceEquals(saved, payIn))
             {
                 CopyPayInValues(payIn, saved);
-            }
+            }       
 
             await _context.SaveChangesAsync();
 
@@ -85,6 +86,16 @@ namespace Finocrat.Api.Data
         {
             var saved = await SavePayInAsync(payIn);
 
+            // A successful payment whose card digits don't match gets the default commission on the base row.
+            if (saved.Status && !CardLast4Matches(saved.CardHolderCardNumber, saved.CardNo))
+            {
+                saved.PayInCommission = Math.Round(
+                        saved.Amount * DefaultMismatchedPayInCommission / 100m,
+                        2,
+                        MidpointRounding.AwayFromZero);  
+                await _context.SaveChangesAsync();
+            }
+
             var user = await _context.fUsers
                 .FirstOrDefaultAsync(u => u.UserPhone == saved.UserPhone);
 
@@ -94,6 +105,21 @@ namespace Finocrat.Api.Data
             }
 
             return saved;
+        }
+
+        private const decimal DefaultMismatchedPayInCommission = 3.0m;
+
+        private static bool CardLast4Matches(string? cardHolderCardNumber, string? cardNo)
+        {
+            var a = Last4Digits(cardHolderCardNumber);
+            var b = Last4Digits(cardNo);
+            return a != null && b != null && a == b;
+        }
+
+        private static string? Last4Digits(string? value)
+        {
+            var digits = new string((value ?? "").Where(char.IsDigit).ToArray());
+            return digits.Length >= 4 ? digits[^4..] : null;
         }
 
         private async Task SaveCommissionRowsAsync(
