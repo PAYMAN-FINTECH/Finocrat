@@ -377,7 +377,8 @@ namespace Finocrat.Api.Controllers
                     await _dataUtils.SavePayInWithCommissionsAsync(
                         payIn,
                         payInLimit,
-                        l => _dataUtils.ExtractPayInMargin(l, payIn.Gateway + " PayIn Margin"));
+                        l => _dataUtils.ExtractPayInMargin(l, payIn.Gateway + " PayIn Margin"),
+                        payIn.Gateway + " Enabled");
 
                 }
 

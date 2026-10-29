@@ -224,7 +224,8 @@ namespace Finocrat.Api.Controllers
             var saved = await _dataUtils.SavePayInWithCommissionsAsync(
                 payIn,
                 payInLimit,
-                l => _dataUtils.ExtractPayInMargin(l, "QR1 PayIn Margin"));
+                l => _dataUtils.ExtractPayInMargin(l, "QR1 PayIn Limit"),
+                "QR1 Enabled");
 
             return Ok(new { success = true, message = "Receipt submitted, pending verification", id = saved.Id });
         }

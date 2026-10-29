@@ -16,7 +16,7 @@ constructor(
   private cdr: ChangeDetectorRef
 ) {}
 
-  apiUrl = "https://localhost:7081/api/BillPayments";
+  apiUrl = "https://thefinocrat.com/api/BillPayments";
   apiUrl1 = "https://thefinocrat.com/api/BillPayments";
 
   activeTab = "pay";

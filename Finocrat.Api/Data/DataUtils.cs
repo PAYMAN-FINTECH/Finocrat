@@ -82,7 +82,8 @@ namespace Finocrat.Api.Data
         public async Task<FPayIn> SavePayInWithCommissionsAsync(
             FPayIn payIn,
             decimal payInLimit,
-            Func<FUserLookup?, Task<decimal>> getMargin)
+            Func<FUserLookup?, Task<decimal>> getMargin,
+            string enabledKey)
         {
             var saved = await SavePayInAsync(payIn);
 
@@ -101,7 +102,7 @@ namespace Finocrat.Api.Data
 
             if (user?.ParentUserId != null)
             {
-                await SaveCommissionRowsAsync(user, saved, payInLimit, getMargin);
+                await SaveCommissionRowsAsync(user, saved, payInLimit, getMargin, enabledKey);
             }
 
             return saved;
@@ -126,7 +127,8 @@ namespace Finocrat.Api.Data
             FUser user,
             FPayIn basePayIn,
             decimal payInLimit,
-            Func<FUserLookup?, Task<decimal>> getMargin)
+            Func<FUserLookup?, Task<decimal>> getMargin,
+            string enabledKey)
         {
             var distributor = await _context.fUsers
                 .FirstOrDefaultAsync(t => t.Id == user.ParentUserId);
@@ -136,8 +138,11 @@ namespace Finocrat.Api.Data
 
             if (user.UserTypeId == 2)
             {
-                var distMargin = await GetMarginForUserAsync(distributor, getMargin);
-                var amount = basePayIn.Amount * (payInLimit - distMargin) / 100;
+                var distMargin = await GetMarginForUserAsync(distributor, getMargin, enabledKey);
+                if (distMargin == null)
+                    return;
+
+                var amount = basePayIn.Amount * (payInLimit - distMargin.Value) / 100;
 
                 if (amount > 0)
                     await SaveCommissionRowAsync(basePayIn, distributor, amount, user.UserTypeId, user.Id);
@@ -151,25 +156,52 @@ namespace Finocrat.Api.Data
                 if (superDistributor == null)
                     return;
 
-                var distMargin = await GetMarginForUserAsync(distributor, getMargin);
-                var superMargin = await GetMarginForUserAsync(superDistributor, getMargin);
+                var distMargin = await GetMarginForUserAsync(distributor, getMargin, enabledKey);
+                var superMargin = await GetMarginForUserAsync(superDistributor, getMargin, enabledKey);
 
-                var distAmount = basePayIn.Amount * (payInLimit - distMargin) / 100;
-                if (distAmount > 0)
-                    await SaveCommissionRowAsync(basePayIn, distributor, distAmount, user.UserTypeId, user.Id);
+                if (distMargin != null)
+                {
+                    var distAmount = basePayIn.Amount * (payInLimit - distMargin.Value) / 100;
+                    if (distAmount > 0)
+                        await SaveCommissionRowAsync(basePayIn, distributor, distAmount, user.UserTypeId, user.Id);
+                }
 
-                var superAmount = basePayIn.Amount * (distMargin - superMargin) / 100;
-                if (superAmount > 0)
-                    await SaveCommissionRowAsync(basePayIn, superDistributor, superAmount, distributor.UserTypeId, distributor.Id);
+                if (distMargin != null && superMargin != null)
+                {
+                    var superAmount = basePayIn.Amount * (distMargin.Value - superMargin.Value) / 100;
+                    if (superAmount > 0)
+                        await SaveCommissionRowAsync(basePayIn, superDistributor, superAmount, distributor.UserTypeId, distributor.Id);
+                }
             }
         }
 
-        private async Task<decimal> GetMarginForUserAsync(FUser user, Func<FUserLookup?, Task<decimal>> getMargin)
+        /// <summary>
+        /// Returns the user's gateway margin, or null when the gateway is not enabled for that user.
+        /// </summary>
+        private async Task<decimal?> GetMarginForUserAsync(
+            FUser user,
+            Func<FUserLookup?, Task<decimal>> getMargin,
+            string enabledKey)
         {
             var lookup = await _context.fUserLookups
                 .FirstOrDefaultAsync(x => x.UserPhone == user.UserPhone);
 
-            return await getMargin(lookup);
+            if (!IsSettingEnabled(lookup, enabledKey))
+                return null;
+
+            var margin = await getMargin(lookup);
+            return margin > 0 ? margin : null;
+        }
+
+        private static bool IsSettingEnabled(FUserLookup? lookup, string key)
+        {
+            if (lookup == null || string.IsNullOrEmpty(lookup.LookupJson))
+                return false;
+
+            var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(lookup.LookupJson);
+            return settings != null
+                && settings.TryGetValue(key, out var value)
+                && value.ValueKind == JsonValueKind.True;
         }
 
         private async Task SaveCommissionRowAsync(

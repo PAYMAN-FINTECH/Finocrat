@@ -508,7 +508,8 @@ namespace Finocrat.Api.Controllers
                 await _dataUtils.SavePayInWithCommissionsAsync(
                     existingPayIn,
                     margin,
-                    l => _dataUtils.ExtractPayInMargin(l, existingPayIn.Gateway + " PayIn Margin"));
+                    l => _dataUtils.ExtractPayInMargin(l, existingPayIn.Gateway + " PayIn Margin"),
+                    existingPayIn.Gateway + " Enabled");
 
                 // =========================================================
                 // 11. RETURN GATEWAY RESPONSE

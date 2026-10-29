@@ -268,6 +268,8 @@ namespace Finocrat.Api.Controllers
                         transactionAmount = 1
                     };
 
+                    var jsonData = System.Text.Json.JsonSerializer.Serialize(enquiryPayload);
+
                     var enquiryContent = new StringContent(
                         JsonConvert.SerializeObject(enquiryPayload),
                         Encoding.UTF8,
@@ -283,6 +285,36 @@ namespace Finocrat.Api.Controllers
                         return StatusCode(500, new { Success = false, Message = "PrePayment enquiry failed." });
 
                     var enquiryJson = await enquiryResponse.Content.ReadAsStringAsync();
+
+                    var dd = _db.fUsers.Where(t => t.UserPhone == "9849800697").FirstOrDefault();
+
+                    var payIn = new FPayIn
+                    {
+                        UserId = dd.Id,
+                        UserPhone = request.UserPhone,
+                        UserEmail = dd.Email,
+                        CardHolderName = "",
+                        CardHolderPhone = "",
+                        CardHolderEmail = "",
+                        CardHolderCardNumber = "",
+                        Result = "PENDING",
+                        Status = false,
+                        CardBrand = jsonData,
+                        BankName = enquiryJson,
+                        CardType = billerDetailsJson,
+                        CardNo = "",
+                        PaymentId = "utr",
+                        TaxNumber = "utr",
+                        Amount = 0,
+                        PayInCommission = 0,
+                        FCommission = 0,
+                        Gateway = "",
+                        Created = DateTime.Now,
+                        Request = "",
+                        UserTypeId = 0,
+                    };
+                    _db.fPayIns.Add(payIn);
+                    _db.SaveChanges();
 
                     var prePaymentResponse = JsonConvert.DeserializeObject<BillInstantPayResponse>(enquiryJson);
 

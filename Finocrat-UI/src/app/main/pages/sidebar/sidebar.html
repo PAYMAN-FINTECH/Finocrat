@@ -51,11 +51,11 @@
 
 
    
-    </ng-container>
+    </ng-container> 
 
     <!-- <ng-container> 
 
-     <li routerLink="/app/bbps-categories" routerLinkActive="active" (click)="onLinkClick()">
+     <li routerLink="/app/bbps-categories" routerLinkActive="active" *ngIf="this.userpphone =='9849800699'" (click)="onLinkClick()">
   <div class="menu-left">
 
     <img 
@@ -68,6 +68,22 @@
   </div>
 </li>
     </ng-container> -->
+
+     <ng-container> 
+
+     <li routerLink="/app/bbps" routerLinkActive="active" *ngIf="this.userpphone =='9849800699'">
+  <div class="menu-left">
+
+    <img 
+      src="assets/images/main/B mnemonic_SVG.svg" 
+      alt="BBPS"
+      class="menu-icon"
+    />
+
+    <span class="menu-text">Bill Payments</span>
+  </div>
+</li>
+    </ng-container>
 
     <!-- SERVICES - Add click handler -->
     <li routerLink="/app/services" routerLinkActive="active" (click)="onLinkClick()">
