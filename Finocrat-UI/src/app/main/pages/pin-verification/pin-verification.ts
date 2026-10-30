@@ -2,9 +2,7 @@ import {
   Component,
   Output,
   EventEmitter,
-  ViewChild,
-  ElementRef,
-  AfterViewInit,
+  HostListener,
   Input,
   OnInit
 } from '@angular/core';
@@ -21,9 +19,8 @@ import { ToastrService } from 'ngx-toastr';
   templateUrl: './pin-verification.html',
   styleUrls: ['./pin-verification.css']
 })
-export class PinVerificationComponent implements AfterViewInit, OnInit {
+export class PinVerificationComponent implements OnInit {
 
-  @ViewChild('pinInput') pinInput!: ElementRef;
   @Output() success = new EventEmitter<void>();
   @Input() redirectAfterSuccess: boolean = false;
   @Input() returnUrl: string = '/app/finhome';
@@ -59,29 +56,44 @@ export class PinVerificationComponent implements AfterViewInit, OnInit {
     }
   }
 
-  ngAfterViewInit(): void {
-    this.focusInput();
-  }
+  // Listens on the document so typing works without the input holding focus
+  @HostListener('document:keydown', ['$event'])
+  onKeyDown(event: KeyboardEvent) {
+    if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-  focusInput() {
-    setTimeout(() => {
-      this.pinInput?.nativeElement.focus();
-    }, 100);
-  }
-
-  onInput(event: any) {
-    let value = event.target.value.replace(/\D/g, '');
-    
-    if (value.length > 4) {
-      value = value.slice(0, 4);
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+      this.addDigit(event.key);
+    } else if (event.key === 'Backspace') {
+      event.preventDefault();
+      this.deleteDigit();
+    } else if (event.key === 'Escape') {
+      event.preventDefault();
+      this.clearPin();
     }
-    
-    this.pin = value;
+  }
+
+  addDigit(digit: string) {
+    if (this.isLoading || this.pin.length >= 4) return;
+
+    this.pin += digit;
     this.error = '';
-    
+
     if (this.pin.length === 4) {
       this.verify();
     }
+  }
+
+  deleteDigit() {
+    if (this.isLoading) return;
+    this.pin = this.pin.slice(0, -1);
+    this.error = '';
+  }
+
+  clearPin() {
+    if (this.isLoading) return;
+    this.pin = '';
+    this.error = '';
   }
 
   verify() {
@@ -128,12 +140,6 @@ export class PinVerificationComponent implements AfterViewInit, OnInit {
         
         this.error = `Wrong PIN. ${this.maxAttempts - this.attempts} attempt${this.maxAttempts - this.attempts > 1 ? 's' : ''} left`;
         this.pin = '';
-        
-        if (this.pinInput?.nativeElement) {
-          this.pinInput.nativeElement.value = '';
-        }
-        
-        this.focusInput();
       }
     });
   }

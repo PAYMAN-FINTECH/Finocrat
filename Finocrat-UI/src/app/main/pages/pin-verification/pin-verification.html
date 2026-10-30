@@ -12,26 +12,15 @@
       </span>
     </div>
 
-    <input 
-      #pinInput 
-      type="tel" 
-      maxlength="4" 
-      inputmode="numeric"
-      pattern="\d*"
-      class="pin-input-hidden"
-      (input)="onInput($event)" 
-      autofocus
-    />
-
     <div class="pin-keypad" *ngIf="!isLoading">
       <button *ngFor="let num of [1,2,3,4,5,6,7,8,9,0]" 
               class="pin-key"
-              (click)="onInput({target: {value: pin + num}})">
+              (click)="addDigit(num.toString())">
         {{num}}
       </button>
-      <!-- <button class="pin-key delete" (click)="pin = pin.slice(0, -1); pinInput.nativeElement.value = pin">
+      <button class="pin-key delete" type="button" (click)="deleteDigit()">
         ⌫
-      </button> -->
+      </button>
     </div>
 
     <div class="pin-error" *ngIf="error">
