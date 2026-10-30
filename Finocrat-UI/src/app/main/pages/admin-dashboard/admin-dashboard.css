@@ -329,3 +329,35 @@ td, th {
   }
 
 }
+
+/* REFUND BUTTON */
+.refund-btn {
+  padding: 6px 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+}
+
+.refund-btn:hover {
+  background: #c0392b;
+  transform: scale(1.05);
+}
+
+.refund-btn:active {
+  transform: scale(0.95);
+}
+
+.refunded-badge {
+  display: inline-block;
+  padding: 4px 10px;
+  background: #f39c12;
+  color: white;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}

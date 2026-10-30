@@ -121,4 +121,11 @@ getCurrentUser(userPhone: string) {
   );
 }
 
+refundPayout(payoutId: string, userPhone: string): Observable<any> {
+  return this.http.post(`${this.api}/refund-payout`, {
+    payoutId,
+    userPhone
+  });
+}
+
 }

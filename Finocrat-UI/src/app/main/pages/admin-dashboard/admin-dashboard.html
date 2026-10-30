@@ -169,6 +169,7 @@
                 <th>Account</th>
                 <th>Commission</th>
                 <th>Date</th>
+                <th>Action</th>
               </tr>
             </thead>
 
@@ -187,6 +188,14 @@
                 <td>{{tx.customerNumber}}</td>
                 <td>₹ {{tx.paoutcommition}}</td>
                 <td>{{tx.created | date:'short'}}</td>
+                <td>
+                  <button class="refund-btn" 
+                          *ngIf="tx.status && tx.result !== 'Refund'"
+                          (click)="refundTransaction(tx)">
+                    Refund
+                  </button>
+                  <span class="refunded-badge" *ngIf="tx.result === 'Refund'">Refunded</span>
+                </td>
               </tr>
             </tbody>
           </table>

@@ -1629,4 +1629,23 @@ const mutedText: [number, number, number] = [
 
   return pdf;
 }
+
+refundTransaction(payout: any) {
+  if (!confirm(`Are you sure you want to refund ₹${payout.amount}?`)) {
+    return;
+  }
+
+  this.service.refundPayout(payout.id.toString(), payout.userPhone)
+    .subscribe({
+      next: (response) => {
+        alert('Refund processed successfully!');
+        this.loadData();
+      },
+      error: (err) => {
+        console.error('Refund error:', err);
+        alert('Error processing refund: ' + (err.error?.message || 'Unknown error'));
+      }
+    });
+}
+
 }

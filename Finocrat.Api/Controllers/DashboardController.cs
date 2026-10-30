@@ -1032,48 +1032,71 @@ namespace Finocrat.Api.Controllers
 
 
 
-        [HttpGet("check-daily-card-limit")]
-        public async Task<IActionResult> CheckDailyCardLimit([FromQuery] string userPhone,[FromQuery] string cardNum)
+        [HttpPost("refund-payout")]
+        public async Task<IActionResult> RefundPayout([FromBody] RefundPayoutRequest request)
         {
-            if (string.IsNullOrWhiteSpace(userPhone))
+            if (string.IsNullOrWhiteSpace(request?.PayoutId) || string.IsNullOrWhiteSpace(request?.UserPhone))
             {
-                return BadRequest(new
-                {
-                    allowed = false,
-                    message = "User phone number is required."
-                });
+                return BadRequest(new { message = "PayoutId and UserPhone are required." });
             }
 
-            var today = DateTime.Today;
-            var tomorrow = today.AddDays(1);
-
-            var transactionCount = await _db.fPayIns
-                .Where(x =>
-                    x.UserPhone == userPhone && x.CardHolderCardNumber == cardNum &&
-                    x.Created >= today &&
-                    x.Created < tomorrow &&
-                    x.Status == true)
-                .CountAsync();
-
-            if (transactionCount >= 1)
+            try
             {
+                var payout = await _db.fPayouts
+                    .FirstOrDefaultAsync(x => x.Id.ToString() == request.PayoutId && x.UserPhone == request.UserPhone);
+
+                if (payout == null)
+                {
+                    return NotFound(new { message = "Payout transaction not found." });
+                }
+
+                var user = await _db.fUsers
+                    .FirstOrDefaultAsync(x => x.UserPhone == request.UserPhone);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                payout.Status = false;
+                payout.Result = "Refund";
+                _db.fPayouts.Update(payout);
+
+                var history = new FPassbookHistory
+                {
+                    Id = Guid.NewGuid(),
+                    UserId = user.Id,
+                    UserPhone = user.UserPhone,
+                    TxnId = payout.TxnReferenceId ?? payout.Id.ToString(),
+                    Name = payout.CustomerName,
+                    AccountNumber = payout.AccountNumber,
+                    TransactionType = "Refund",
+                    Amount = payout.Amount,
+                    Balance = user.Wallet,
+                    Status = false,
+                    StatusMessage = "Refund processed",
+                    ParentId = payout.Id,
+                    CreatedAt = DateTime.Now,
+                    UserTypeId = user.UserTypeId
+                };
+
+                _db.fPassbookHistories.Add(history);
+
+                await _db.SaveChangesAsync();
+
                 return Ok(new
                 {
-                    allowed = false,
-                    count = transactionCount,
-                    limit = 1,
-                    message =
-                        "You have already completed 1 card transactions today. Please try again tomorrow."
+                    success = true,
+                    message = "Refund processed successfully",
+                    payoutId = payout.Id,
+                    amount = payout.Amount,
+                    result = "Refund"
                 });
             }
-
-            return Ok(new
+            catch (Exception ex)
             {
-                allowed = true,
-                count = transactionCount,
-                remaining = 1 - transactionCount,
-                limit = 1
-            });
+                return StatusCode(500, new { message = "Error processing refund: " + ex.Message });
+            }
         }
 
 
@@ -1140,12 +1163,9 @@ namespace Finocrat.Api.Controllers
         public string NewPin { get; set; }
     }
 
-    public class InvoiceDataRequest
+    public class RefundPayoutRequest
     {
-        public DateTime FromDate { get; set; }
-
-        public DateTime ToDate { get; set; }
-
-        public string UserPhone { get; set; } = "";
+        public string PayoutId { get; set; }
+        public string UserPhone { get; set; }
     }
 }
