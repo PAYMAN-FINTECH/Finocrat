@@ -28,7 +28,7 @@ export class RazorPaymentService {
     return this.http.get<{ qrEnabled: boolean }>(`${this.api}/qr-status?userPhone=${userPhone}`);
   }
 
-  submitQrReceipt(data: { userPhone: string; utr: string; amount: number; receiptDate: string; transactionType: string }) {
+  submitQrReceipt(data: { userPhone: string; utr: string; amount: number; receiptDate: string; transactionType: string; selectedQr: string; qrMargin: number }) {
     return this.http.post<any>(`${this.api}/qr-receipt`, data);
   }
 

@@ -164,6 +164,11 @@ namespace Finocrat.Api.Controllers
                 return BadRequest(new { success = false, message = "UserPhone, UTR and a valid amount are required" });
             }
 
+            if (string.IsNullOrWhiteSpace(request.SelectedQr))
+            {
+                return BadRequest(new { success = false, message = "SelectedQr is required" });
+            }
+
             var utr = request.Utr.Trim();
 
             var user = await _db.fUsers.FirstOrDefaultAsync(u => u.UserPhone == request.UserPhone);
@@ -176,12 +181,12 @@ namespace Finocrat.Api.Controllers
             {
                 var settings = JsonSerializer.Deserialize<Dictionary<string, JsonElement>>(lookup.LookupJson);
                 qrEnabled = settings != null &&
-                            settings.TryGetValue("QR1 Enabled", out var value) &&
+                            settings.TryGetValue($"{request.SelectedQr} Enabled", out var value) &&
                             value.ValueKind == JsonValueKind.True;
             }
 
             if (!qrEnabled)
-                return BadRequest(new { success = false, message = "QR payment is not enabled for this account" });
+                return BadRequest(new { success = false, message = $"QR payment ({request.SelectedQr}) is not enabled for this account" });
 
             bool alreadySubmitted = await _db.fPayIns.AnyAsync(p =>
                 p.UserPhone == request.UserPhone && p.PaymentId == utr);
@@ -192,7 +197,7 @@ namespace Finocrat.Api.Controllers
             var istZone = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
             var istNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, istZone);
 
-            decimal payInLimit = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, "QR1 PayIn Limit"));
+            decimal payInLimit = Math.Max(0m, await _dataUtils.ExtractPayInMargin(lookup, $"{request.SelectedQr} PayIn Limit"));
             decimal commission = Math.Round(request.Amount * payInLimit / 100m, 2, MidpointRounding.AwayFromZero);
 
             var payIn = new FPayIn
@@ -215,17 +220,17 @@ namespace Finocrat.Api.Controllers
                 Amount = request.Amount,
                 PayInCommission = commission,
                 FCommission = 0,
-                Gateway = "QR Code",
+                Gateway = request.SelectedQr,
                 Created = istNow,
-                Request = $"ReceiptDate: {request.ReceiptDate}; TransactionType: {request.TransactionType}",
+                Request = $"SelectedQr: {request.SelectedQr}; QrMargin: {request.QrMargin}; ReceiptDate: {request.ReceiptDate}; TransactionType: {request.TransactionType}",
                 UserTypeId = user.UserTypeId,
             };
 
             var saved = await _dataUtils.SavePayInWithCommissionsAsync(
                 payIn,
                 payInLimit,
-                l => _dataUtils.ExtractPayInMargin(l, "QR1 PayIn Limit"),
-                "QR1 Enabled");
+                l => _dataUtils.ExtractPayInMargin(l, $"{request.SelectedQr} PayIn Limit"),
+                $"{request.SelectedQr} Enabled");
 
             return Ok(new { success = true, message = "Receipt submitted, pending verification", id = saved.Id });
         }
@@ -237,7 +242,7 @@ namespace Finocrat.Api.Controllers
         public async Task<IActionResult> GetQrRequests()
         {
             var rows = await _db.fPayIns
-                .Where(p => p.Gateway == "QR Code" && p.Request != null)
+                .Where(p => p.Gateway.Contains("QR") && p.Request != null)
                 .OrderByDescending(p => p.Created)
                 .Take(200)
                 .Select(p => new
@@ -828,6 +833,8 @@ namespace Finocrat.Api.Controllers
         public decimal Amount { get; set; }
         public string ReceiptDate { get; set; }
         public string TransactionType { get; set; }
+        public string SelectedQr { get; set; }
+        public decimal QrMargin { get; set; }
     }
 
     public class QrReviewRequest

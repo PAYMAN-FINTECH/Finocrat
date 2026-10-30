@@ -56,6 +56,12 @@ namespace Finocrat.Api.Controllers
             defaultSettings.Add("PayIn Margin", 0);
             defaultSettings.Add("PayIn Enabled", false);
 
+            // ✅ QR CODE SETTINGS
+            defaultSettings.Add("QR1 Enabled", false);
+            defaultSettings.Add("QR2 Enabled", false);
+            defaultSettings.Add("QR1 PayIn Margin", 0);
+            defaultSettings.Add("QR2 PayIn Margin", 0);
+
             if (userDetails.IsAdmin == true && userDetails.UserName == "Admin")
             {
                 defaultSettings.Add("PayOut Margin", 0);

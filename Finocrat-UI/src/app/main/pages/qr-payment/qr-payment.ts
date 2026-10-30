@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, NgZone, OnDestroy } from '@angular/core';
+import { ChangeDetectorRef, Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -6,6 +6,7 @@ import { ToastrService } from 'ngx-toastr';
 import { createWorker, Worker } from 'tesseract.js';
 import { RazorPaymentService } from '../../../services/mainservices/razorpayment.service';
 import { TokenService } from '../../../services/mainservices/token.service';
+import { HomeService } from '../../../services/mainservices/home.service';
 
 @Component({
   selector: 'app-qr-payment',
@@ -14,16 +15,18 @@ import { TokenService } from '../../../services/mainservices/token.service';
   templateUrl: './qr-payment.html',
   styleUrls: ['./qr-payment.css']
 })
-export class QrPaymentComponent implements OnDestroy {
-  // Add each QR image file here. The file name (without extension) is shown as the QR name.
-  readonly qrFileNames: string[] = ['Fino1.jpeg'];
-  readonly qrImages = this.qrFileNames.map(file => ({
-    name: file.replace(/\.[^.]+$/, ''),
-    path: `assets/images/${file}`
-  }));
+export class QrPaymentComponent implements OnDestroy, OnInit {
+  // Map of QR file names to their enable flag keys in user lookup
+  private readonly qrFileMapping: { [key: string]: string } = {
+    'Fino1.jpeg': 'QR1 Enabled',
+    'Fino2.jpeg': 'QR2 Enabled'
+  };
+  readonly allQrFileNames: string[] = Object.keys(this.qrFileMapping);
+  qrImages: Array<{ name: string; path: string }> = [];
   openQr: string | null = null;
 
   readonly transactionModes = ['UPI', 'IMPS', 'NEFT', 'RTGS'];
+  qrOptions: Array<{ value: string; label: string }> = [];
 
   activeTab: 'qr' | 'receipt' = 'qr';
 
@@ -35,6 +38,10 @@ export class QrPaymentComponent implements OnDestroy {
   amount: number | null = null;
   receiptDate = '';
   transactionType = '';
+  selectedQr = '';
+  qrMargin: number | null = null;
+
+  private userLookup: any = null;
 
   // One OCR worker is reused across uploads so the language data loads only once.
   private workerPromise: Promise<Worker> | null = null;
@@ -42,10 +49,63 @@ export class QrPaymentComponent implements OnDestroy {
   constructor(
     private razorService: RazorPaymentService,
     private tokenService: TokenService,
+    private homeService: HomeService,
     private toastr: ToastrService,
     private ngZone: NgZone,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit() {
+    this.loadQrCodes();
+  }
+
+  private loadQrCodes() {
+    const user = this.tokenService.getUser();
+    if (!user?.userPhone) {
+      this.toastr.error('User not found. Please log in again.');
+      return;
+    }
+
+    this.homeService.getUserLookup(user.userPhone).subscribe({
+      next: (userLookup: any) => {
+        this.userLookup = userLookup;
+        
+        this.qrImages = this.allQrFileNames
+          .filter(file => {
+            const enableKey = this.qrFileMapping[file];
+            return userLookup[enableKey] === true;
+          })
+          .map(file => ({
+            name: file.replace(/\.[^.]+$/, ''),
+            path: `assets/images/${file}`
+          }));
+
+        // Build QR dropdown options from enabled QR codes
+        this.qrOptions = this.allQrFileNames
+          .filter(file => userLookup[this.qrFileMapping[file]] === true)
+          .map((file, index) => ({
+            value: `QR${index + 1}`,
+            label: `QR${index + 1}`
+          }));
+
+        this.cdr.detectChanges();
+      },
+      error: (err: HttpErrorResponse) => {
+        this.toastr.error('Failed to load QR codes configuration.');
+        console.error('Error fetching user lookup:', err);
+      }
+    });
+  }
+
+  onQrSelected() {
+    if (!this.selectedQr || !this.userLookup) {
+      this.qrMargin = null;
+      return;
+    }
+
+    const marginKey = `${this.selectedQr} Margin`;
+    this.qrMargin = this.userLookup[marginKey] ?? null;
+  }
 
   async onReceiptSelected(event: Event) {
     const file = (event.target as HTMLInputElement).files?.[0];
@@ -144,15 +204,25 @@ export class QrPaymentComponent implements OnDestroy {
       this.toastr.warning('Please fill in UTR, amount, date and transaction type.');
       return;
     }
+    if (!this.selectedQr) {
+      this.toastr.warning('Please select a QR code.');
+      return;
+    }
 
     this.submitting = true;
-    this.razorService.submitQrReceipt({
+    const payload = {
       userPhone: user.userPhone,
       utr: this.utr,
       amount: this.amount,
       receiptDate: this.receiptDate,
-      transactionType: this.transactionType
-    }).subscribe({
+      transactionType: this.transactionType,
+      selectedQr: this.selectedQr,
+      qrMargin: this.qrMargin ?? 0
+    };
+    
+    console.log('Submitting QR Receipt:', payload);
+    
+    this.razorService.submitQrReceipt(payload).subscribe({
       next: () => {
         this.toastr.success('Receipt submitted. Status: Pending.');
         this.resetReceipt();
@@ -171,5 +241,7 @@ export class QrPaymentComponent implements OnDestroy {
     this.amount = null;
     this.receiptDate = '';
     this.transactionType = '';
+    this.selectedQr = '';
+    this.qrMargin = null;
   }
 }
