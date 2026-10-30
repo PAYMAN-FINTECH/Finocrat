@@ -120,7 +120,7 @@ namespace Finocrat.Api.Controllers
             // ? PAYIN TOTAL
             // =========================
             var payInTotal = await _db.fPayIns
-                .Where(x => x.Created >= startDate && x.Created < endDate && x.Status && x.PayInCommission != 0)
+                .Where(x => x.Created >= startDate  && x.Created < endDate && x.Status && x.PayInCommission != 0)
                 .SumAsync(x => (decimal?)x.Amount) ?? 0;
 
             // =========================
@@ -1062,6 +1062,8 @@ namespace Finocrat.Api.Controllers
                 payout.Result = "Refund";
                 _db.fPayouts.Update(payout);
 
+                var balance = await _dataUtils.GetWalletAmount(request.UserPhone);
+
                 var history = new FPassbookHistory
                 {
                     Id = Guid.NewGuid(),
@@ -1072,7 +1074,7 @@ namespace Finocrat.Api.Controllers
                     AccountNumber = payout.AccountNumber,
                     TransactionType = "Refund",
                     Amount = payout.Amount,
-                    Balance = user.Wallet,
+                    Balance = balance,
                     Status = false,
                     StatusMessage = "Refund processed",
                     ParentId = payout.Id,

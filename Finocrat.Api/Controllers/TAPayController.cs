@@ -190,7 +190,7 @@ namespace Finocrat.Api.Controllers
                     Result = "",
                     Status = false,
                     CardBrand = "",
-                    BankName = "",
+                    BankName = request.binBankName,
                     CardType = "",
                     CardNo = "",
                     PaymentId = "",
@@ -448,6 +448,34 @@ namespace Finocrat.Api.Controllers
                     margin = 2.8m;
                 }
 
+                var lookupAdmin =
+                   await _context.fUserLookups
+                       .FirstOrDefaultAsync(
+                           x => x.UserPhone == "9014559309"
+                       );
+
+                if (lookupAdmin != null)
+                {
+                    if (existingPayIn.BankName.Contains("sbi") || existingPayIn.BankName.Contains("SBI"))
+                    {
+                        margin =
+                         await _dataUtils.ExtractPayInMargin(
+                            lookupAdmin,
+                            "SBI Margin"
+                        );
+                    }
+
+                    if (existingPayIn.BankName.Contains("icici") || existingPayIn.BankName.Contains("ICICI"))
+                    {
+                        margin =
+                         await _dataUtils.ExtractPayInMargin(
+                            lookupAdmin,
+                            "ICICI Margin"
+                        );
+                    }
+
+                }
+
                 // =========================================================
                 // 8. VALIDATE AMOUNT
                 // =========================================================
@@ -684,6 +712,7 @@ namespace Finocrat.Api.Controllers
         public string? LoggedInUserPhone { get; set; }
 
         public string? cardnum { get; set; }
+        public string? binBankName { get; set; }
     }
 
     public class PaymentStatusResult

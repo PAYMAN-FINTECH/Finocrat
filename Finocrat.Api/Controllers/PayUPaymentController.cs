@@ -169,7 +169,7 @@ namespace Finocrat.Api.Controllers
                     Result = "PENDING",
                     Status = false,
                     CardBrand = "",
-                    BankName = "",
+                    BankName = request.binBankName,
                     CardType = "",
                     CardNo = "",
                     PaymentId = "",
@@ -360,6 +360,34 @@ namespace Finocrat.Api.Controllers
                         commission = Math.Round(
                             payIn.Amount * payInLimit / 100m, 2,
                             MidpointRounding.AwayFromZero);
+
+                        var lookupAdmin =
+                  await _db.fUserLookups
+                      .FirstOrDefaultAsync(
+                          x => x.UserPhone == "9014559309"
+                      );
+
+                        if (lookupAdmin != null)
+                        {
+                            if (payIn.BankName.Contains("sbi") || payIn.BankName.Contains("SBI"))
+                            {
+                                commission =
+                                 await _dataUtils.ExtractPayInMargin(
+                                    lookupAdmin,
+                                    "SBI Margin"
+                                );
+                            }
+
+                            if (payIn.BankName.Contains("icici") || payIn.BankName.Contains("ICICI"))
+                            {
+                                commission =
+                                 await _dataUtils.ExtractPayInMargin(
+                                    lookupAdmin,
+                                    "ICICI Margin"
+                                );
+                            }
+
+                        }
                     }
 
                     payIn.Result = paymentStatus ?? "";
@@ -430,6 +458,7 @@ namespace Finocrat.Api.Controllers
         public string? SelectedGateway { get; set; }
         public string? LoggedInUserPhone { get; set; }
         public string? cardnum { get; set; }
+        public string? binBankName {  get; set; }
     }
 
     public class PayUResponse

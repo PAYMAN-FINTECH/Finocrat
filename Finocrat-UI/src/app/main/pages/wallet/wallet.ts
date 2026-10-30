@@ -271,7 +271,8 @@ closeDropdown(): void {
       amount: this.model.amount,
       category: this.model.category,
       userPhone: this.userPhone,
-      cardnum: this.model.cardnum || ''
+      cardnum: this.model.cardnum || '',
+      binBankName: this.model.binBankName || ''
     };
 
     const encodedData = btoa(JSON.stringify(payload));

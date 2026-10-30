@@ -115,7 +115,8 @@ namespace Finocrat.Api.Controllers
                             request.LastName,
                             request.LoggedInUserPhone,
                             request.cardnum,
-                            request.SelectedGateway);
+                            request.SelectedGateway,
+                            request.binBankName);
 
 
                 // -------------------------------------------------
@@ -423,6 +424,7 @@ namespace Finocrat.Api.Controllers
         public string? LoggedInUserPhone { get; set; }
 
         public string? cardnum { get; set; }
+        public string? binBankName { get; set; }
     }
 
     public class HdfcPaymentResponse

@@ -182,7 +182,8 @@ startPayUPayment(): void {
     name: this.model.name,
     selectedGateway: this.model.category,
     loggedInUserPhone: this.userPhone,
-    cardnum: this.model.cardnum || ''
+    cardnum: this.model.cardnum || '',
+    binBankName: this.model.binBankName || ''
   };
 
   this.hdfcPaymentService.createPayUPayment(request)
@@ -417,7 +418,8 @@ startPayUPayment(): void {
         '',
       selectedGateway: this.model.category,
       loggedInUserPhone: this.userPhone,
-      cardnum: this.model.cardnum || ''
+      cardnum: this.model.cardnum || '',
+      binBankName: this.model.binBankName || ''
 
     };
 
@@ -516,7 +518,8 @@ startTAPayment(): void {
     name: this.model.name,
     selectedGateway: this.model.category,
     loggedInUserPhone: this.userPhone,
-    cardnum: this.model.cardnum || ''
+    cardnum: this.model.cardnum || '',
+    binBankName: this.model.binBankName || ''
   };
 
   this.hdfcPaymentService.createTAPayment(request)

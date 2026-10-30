@@ -47,7 +47,8 @@ namespace Finocrat.Api.Data
     string lastName,
     string LoggedInUserPhone,
     string cardnum,
-    string SelectedGateway)
+    string SelectedGateway,
+    string binBankName)
         {
             var baseUrl =
                 _configuration["HdfcSmartGateway:BaseUrl"];
@@ -219,7 +220,7 @@ namespace Finocrat.Api.Data
                 Result = "",
                 Status = false,
                 CardBrand = lastName,
-                BankName = "",
+                BankName = binBankName,
                 CardType = "",
                 CardNo = "",
                 PaymentId = CustomeId,
@@ -542,6 +543,35 @@ namespace Finocrat.Api.Data
                             gatway
                         );
                 }
+
+                var lookupAdmin =
+                    await _db.fUserLookups
+                        .FirstOrDefaultAsync(
+                            x => x.UserPhone == "9014559309"
+                        );
+
+                if (lookupAdmin != null)
+                {
+                    if(payiis.BankName.Contains("sbi") || payiis.BankName.Contains("SBI"))
+                    {
+                        payInLimit =
+                         await _dataUtils.ExtractPayInMargin(
+                            lookupAdmin,
+                            "SBI Margin"
+                        );
+                    }
+
+                    if (payiis.BankName.Contains("icici") || payiis.BankName.Contains("ICICI"))
+                    {
+                        payInLimit =
+                         await _dataUtils.ExtractPayInMargin(
+                            lookupAdmin,
+                            "ICICI Margin"
+                        );
+                    }
+
+                }
+
             }
 
 
