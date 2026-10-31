@@ -210,20 +210,9 @@
       <span *ngFor="let dot of [1,2,3,4]; let i = index"
             class="pin-dot"
             [class.filled]="i < pin.length">
+        {{ pin[i] }}
       </span>
     </div>
-
-    <input 
-      id="pin-input-field"
-      type="tel" 
-      maxlength="4" 
-      inputmode="numeric"
-      pattern="\d*"
-      class="pin-hidden-input"
-      [(ngModel)]="pin"
-      (input)="onPinInput($event.target.value)"
-      autofocus
-    />
 
     <div class="pin-keypad">
       <button *ngFor="let num of [1,2,3,4,5,6,7,8,9,0]" 

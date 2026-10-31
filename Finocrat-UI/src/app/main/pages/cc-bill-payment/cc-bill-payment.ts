@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
@@ -191,10 +191,10 @@ export class CcBillPaymentComponent implements OnInit {
     };
 
     // Show PIN modal instead of processing directly
-    this.showPinModal = true;
-    this.pin = '';
     this.pinError = '';
-    this.focusPinInput();
+    this.pin = '';
+    this.showPinModal = true;
+
   }
 
   // Verify PIN and process payment
@@ -238,7 +238,6 @@ export class CcBillPaymentComponent implements OnInit {
         
         this.pinError = `Wrong PIN. ${this.maxPinAttempts - this.pinAttempts} attempt(s) left`;
         this.pin = '';
-        this.focusPinInput();
       }
     });
   }
@@ -271,13 +270,20 @@ export class CcBillPaymentComponent implements OnInit {
     });
   }
 
-  focusPinInput() {
-    setTimeout(() => {
-      const pinInput = document.getElementById('pin-input-field');
-      if (pinInput) {
-        pinInput.focus();
-      }
-    }, 100);
+  // Physical keyboard support for the PIN modal
+  @HostListener('document:keydown', ['$event'])
+  handlePinKeyboard(event: KeyboardEvent) {
+    if (!this.showPinModal) return;
+
+    if (/^\d$/.test(event.key)) {
+      event.preventDefault();
+      this.onPinInput(event.key);
+    } else if (event.key === 'Backspace') {
+      event.preventDefault();
+      this.deletePin();
+    } else if (event.key === 'Escape') {
+      this.closePinModal();
+    }
   }
 
   // Handle PIN input from keypad

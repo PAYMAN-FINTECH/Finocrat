@@ -1030,7 +1030,58 @@ namespace Finocrat.Api.Controllers
             return margin;
         }
 
+        [HttpGet("check-daily-card-limit")]
+        public async Task<IActionResult> CheckDailyCardLimit([FromQuery] string userPhone, [FromQuery] string cardNum)
+        {
+            if (string.IsNullOrWhiteSpace(userPhone))
+            {
+                return BadRequest(new { message = "User phone number is required." });
+            }
 
+            if (string.IsNullOrWhiteSpace(cardNum))
+            {
+                return BadRequest(new { message = "Card number is required." });
+            }
+
+            try
+            {
+                var user = await _db.fUsers
+                    .FirstOrDefaultAsync(x => x.UserPhone == userPhone);
+
+                if (user == null)
+                {
+                    return NotFound(new { message = "User not found." });
+                }
+
+                var today = DateTime.Today;
+                var todayTransactions = await _db.fPayins
+                    .Where(x => x.UserPhone == userPhone && 
+                                x.CardNumber == cardNum && 
+                                x.Created.Date == today &&
+                                x.Status == true)
+                    .ToListAsync();
+
+                decimal dailyLimit = 100000m;
+                decimal totalToday = todayTransactions.Sum(x => x.Amount);
+                decimal remainingLimit = dailyLimit - totalToday;
+
+                return Ok(new
+                {
+                    success = true,
+                    userPhone = userPhone,
+                    cardNumber = cardNum,
+                    dailyLimit = dailyLimit,
+                    usedToday = totalToday,
+                    remainingLimit = remainingLimit,
+                    canTransact = remainingLimit > 0,
+                    transactionCount = todayTransactions.Count
+                });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error checking daily card limit: " + ex.Message });
+            }
+        }
 
         [HttpPost("refund-payout")]
         public async Task<IActionResult> RefundPayout([FromBody] RefundPayoutRequest request)
