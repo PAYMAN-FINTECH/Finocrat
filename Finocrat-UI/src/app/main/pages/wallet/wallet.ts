@@ -46,6 +46,7 @@ dropdownOpen = false;
   binLoading: boolean = false;
   binError: string = '';
   private lastBin: string = '';
+  isSBIorICICI: boolean = false;
 
   cardLimitMessage: string = '';
   cardLimitBlocked: boolean = false;
@@ -87,6 +88,7 @@ dropdownOpen = false;
       this.binBankName = '';
       this.binError = '';
       this.binLoading = false;
+      this.isSBIorICICI = false;
       return;
     }
     const bin = digits.substring(0, 6);
@@ -100,6 +102,11 @@ dropdownOpen = false;
       next: (res) => {
         if (bin !== this.lastBin) return;
         this.binBankName = res?.bankName ?? res?.BankName ?? res?.bank ?? res?.data?.bankName ?? '';
+        
+        // Check if bank is SBI or ICICI and disable Add Funds button
+        this.isSBIorICICI = this.binBankName.toLowerCase().includes('sbi') || 
+                            this.binBankName.toLowerCase().includes('icici');
+        
         this.binLoading = false;
         if (!this.binBankName) this.binError = 'Bank not found for this BIN';
         this.cd.detectChanges();
@@ -108,6 +115,7 @@ dropdownOpen = false;
         if (bin !== this.lastBin) return;
         this.binLoading = false;
         this.binError = 'Could not fetch bank name';
+        this.isSBIorICICI = false;
         this.cd.detectChanges();
       }
     });

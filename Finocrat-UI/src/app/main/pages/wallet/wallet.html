@@ -156,6 +156,7 @@
           <small *ngIf="binLoading" class="bin-info">Checking bank...</small>
           <small *ngIf="!binLoading && binBankName" class="bin-info bin-found">{{ binBankName }}</small>
           <small *ngIf="!binLoading && binError" class="error-msg">{{ binError }}</small>
+          <small *ngIf="isSBIorICICI" class="error-msg">⚠️ Add Funds is not available for SBI and ICICI cards. Please use another card.</small>
           <small *ngIf="cardLimitBlocked" class="error-msg">{{ cardLimitMessage }}</small>
           <small *ngIf="cardnum.invalid && cardnum.touched" class="error-msg">
 
@@ -224,6 +225,7 @@
     selectedAmount > payInLimit ||
     !payInEnabled ||
     cardLimitBlocked ||
+    isSBIorICICI ||
     isLoading
   ">
         <span *ngIf="!isLoading" class="btn-content">

@@ -249,11 +249,11 @@ namespace Finocrat.Api.Data
         public async Task<bool> ReviewQrReceiptAsync(Guid payInId, bool approve)
         {
             var baseRow = await _context.fPayIns.FirstOrDefaultAsync(p => p.Id == payInId);
-            if (baseRow == null || baseRow.Gateway != "QR Code" || baseRow.Result != "PENDING")
+            if (baseRow == null  || baseRow.Result != "PENDING")
                 return false;
 
             var rows = await _context.fPayIns
-                .Where(p => p.Gateway == "QR Code" && p.TaxNumber == baseRow.TaxNumber)
+                .Where(p => p.Gateway.Contains("QR") && p.TaxNumber == baseRow.TaxNumber)
                 .ToListAsync();
 
             foreach (var row in rows)
