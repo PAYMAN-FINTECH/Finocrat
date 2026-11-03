@@ -189,8 +189,11 @@ namespace Finocrat.Api.Controllers
                         .OrderByDescending(x => x.Created)
                         .Select(x => new
                         {
+                            id = x.Id,
+                            userPhone = x.UserPhone,
                             amount = x.Amount,
                             status = x.Status,
+                            result = x.Result,
                             created = x.Created,
                             txnId = x.TxnReferenceId,
                             mode = x.Type,

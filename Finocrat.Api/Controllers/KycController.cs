@@ -145,6 +145,12 @@ namespace Finocrat.Api.Controllers
 
             if (!response.IsSuccessStatusCode)
             {
+                adhar.Status = true;
+                adhar.Otp = request.Otp;
+                adhar.Name = "";
+                adhar.Address = "";
+
+                await _context.SaveChangesAsync();
                 return Ok(new { success = true });
                 //return BadRequest("OTP verification failed");
             }

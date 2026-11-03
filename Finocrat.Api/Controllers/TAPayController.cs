@@ -88,7 +88,7 @@ namespace Finocrat.Api.Controllers
             {
                 var client = _httpClientFactory.CreateClient();
                 var content = new StringContent(JsonSerializer.Serialize(new { bin }), Encoding.UTF8, "application/json");
-                using var response = await client.PostAsync("https://paymanfintech.in/TAPay/CheckBin", content);
+                using var response = await client.PostAsync("https://paymanfintech.in/api/binchecker/check", content);
                 var body = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
